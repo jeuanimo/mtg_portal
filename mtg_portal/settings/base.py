@@ -142,8 +142,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/login-redirect/'
-LOGIN_REDIRECT_URL = '/accounts/login-redirect/'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Our User model doesn't have username
+ACCOUNT_SIGNUP_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_ON_GET = True  # Allow logout via GET request
 

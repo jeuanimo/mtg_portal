@@ -202,7 +202,7 @@ class ConsultingProject(TimeStampedModel):
     
     # Client
     organization = models.ForeignKey(
-        Organization, on_delete=models.CASCADE, related_name='projects'
+        Organization, on_delete=models.CASCADE, related_name='consulting_projects'
     )
     primary_contact = models.ForeignKey(
         Contact, on_delete=models.SET_NULL, null=True, blank=True
@@ -211,7 +211,7 @@ class ConsultingProject(TimeStampedModel):
     # Team
     project_manager = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, blank=True, related_name='managed_projects'
+        null=True, blank=True, related_name='managed_consulting_projects'
     )
     team_members = models.ManyToManyField(
         settings.AUTH_USER_MODEL, blank=True, related_name='project_assignments'

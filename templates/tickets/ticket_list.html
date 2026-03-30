@@ -1,0 +1,174 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Tickets - MTG Portal{% endblock %}
+
+{% block page_title %}All Tickets{% endblock %}
+{% block page_subtitle %}Manage support requests{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'tickets:create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>New Ticket
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="OPEN" {% if request.GET.status == 'OPEN' %}selected{% endif %}>Open</option>
+                    <option value="IN_PROGRESS" {% if request.GET.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                    <option value="PENDING" {% if request.GET.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                    <option value="RESOLVED" {% if request.GET.status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+                    <option value="CLOSED" {% if request.GET.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-select">
+                    <option value="">All Priorities</option>
+                    <option value="CRITICAL" {% if request.GET.priority == 'CRITICAL' %}selected{% endif %}>Critical</option>
+                    <option value="HIGH" {% if request.GET.priority == 'HIGH' %}selected{% endif %}>High</option>
+                    <option value="MEDIUM" {% if request.GET.priority == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                    <option value="LOW" {% if request.GET.priority == 'LOW' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input type="text" name="q" class="form-control" placeholder="Search tickets..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets List -->
+<div class="card">
+    <div class="card-body">
+        {% if tickets %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Subject</th>
+                        <th>Organization</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'tickets:detail' ticket.pk %}" class="fw-medium">#{{ ticket.pk }}</a>
+                        </td>
+                        <td>
+                            <a href="{% url 'tickets:detail' ticket.pk %}">{{ ticket.subject|truncatechars:50 }}</a>
+                        </td>
+                        <td>
+                            {% if ticket.organization %}
+                            {{ ticket.organization.name|truncatechars:20 }}
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ticket.priority == 'CRITICAL' %}
+                            <span class="badge bg-danger">Critical</span>
+                            {% elif ticket.priority == 'HIGH' %}
+                            <span class="badge bg-warning text-dark">High</span>
+                            {% elif ticket.priority == 'MEDIUM' %}
+                            <span class="badge bg-info">Medium</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ticket.status == 'OPEN' %}
+                            <span class="badge bg-danger">Open</span>
+                            {% elif ticket.status == 'IN_PROGRESS' %}
+                            <span class="badge bg-warning text-dark">In Progress</span>
+                            {% elif ticket.status == 'PENDING' %}
+                            <span class="badge bg-info">Pending</span>
+                            {% elif ticket.status == 'RESOLVED' %}
+                            <span class="badge bg-success">Resolved</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ticket.assigned_to %}
+                            {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.email }}
+                            {% else %}
+                            <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'tickets:detail' ticket.pk %}" class="btn btn-outline-primary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'tickets:edit' ticket.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-ticket fs-1 text-muted"></i>
+            <p class="text-muted mt-3">No tickets found</p>
+            <a href="{% url 'tickets:create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Create a Ticket
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

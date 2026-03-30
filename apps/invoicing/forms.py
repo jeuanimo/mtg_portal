@@ -20,7 +20,7 @@ class InvoiceForm(forms.ModelForm):
         model = Invoice
         fields = [
             'organization', 'contact', 'invoice_number', 
-            'issue_date', 'due_date', 'tax_rate', 'discount_amount',
+            'issue_date', 'due_date', 'tax_rate', 'discount',
             'discount_description', 'terms', 'notes', 'footer',
         ]
         widgets = {
@@ -56,7 +56,7 @@ class InvoiceForm(forms.ModelForm):
             ),
             Row(
                 Column('tax_rate', css_class='col-md-4'),
-                Column('discount_amount', css_class='col-md-4'),
+                Column('discount', css_class='col-md-4'),
                 Column('discount_description', css_class='col-md-4'),
             ),
             'terms',

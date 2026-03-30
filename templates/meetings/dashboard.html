@@ -1,0 +1,167 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Meetings Dashboard - MTG Portal{% endblock %}
+
+{% block page_title %}Meetings{% endblock %}
+{% block page_subtitle %}Schedule and manage meetings{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'meetings:create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>New Meeting
+</a>
+<a href="{% url 'meetings:calendar' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-calendar3 me-1"></i>Calendar
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 mb-1">Upcoming Meetings</h6>
+                        <h2 class="mb-0">{{ stats.total_upcoming }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-event fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-white-50 mb-1">This Week</h6>
+                        <h2 class="mb-0">{{ stats.this_week }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-week fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-dark-50 mb-1">Pending Notes</h6>
+                        <h2 class="mb-0">{{ stats.pending_notes }}</h2>
+                    </div>
+                    <i class="bi bi-journal-text fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Today's Meetings -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-calendar-day me-2"></i>Today's Meetings</h5>
+                <span class="badge bg-primary">{{ todays_meetings.count }}</span>
+            </div>
+            <div class="card-body">
+                {% if todays_meetings %}
+                <div class="list-group list-group-flush">
+                    {% for meeting in todays_meetings %}
+                    <a href="{% url 'meetings:detail' meeting.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ meeting.title }}</h6>
+                            <small class="text-muted">{{ meeting.start_time|time:"g:i A" }}</small>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i>{{ meeting.duration }} min
+                            {% if meeting.meeting_type %}
+                            <span class="ms-2"><i class="bi bi-tag me-1"></i>{{ meeting.get_meeting_type_display }}</span>
+                            {% endif %}
+                        </small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No meetings scheduled for today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Upcoming Meetings -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Upcoming Meetings</h5>
+                <a href="{% url 'meetings:list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_meetings %}
+                <div class="list-group list-group-flush">
+                    {% for meeting in upcoming_meetings %}
+                    <a href="{% url 'meetings:detail' meeting.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ meeting.title }}</h6>
+                            <small class="text-muted">{{ meeting.start_time|date:"M d" }}</small>
+                        </div>
+                        <small class="text-muted">
+                            {{ meeting.start_time|time:"g:i A" }} - {{ meeting.end_time|time:"g:i A" }}
+                        </small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">No upcoming meetings</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Past Meetings -->
+{% if past_meetings %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Past Meetings</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Meeting</th>
+                        <th>Date</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for meeting in past_meetings %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'meetings:detail' meeting.pk %}">{{ meeting.title }}</a>
+                        </td>
+                        <td>{{ meeting.start_time|date:"M d, Y" }}</td>
+                        <td>{{ meeting.duration }} min</td>
+                        <td>
+                            <span class="badge bg-success">{{ meeting.get_status_display }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'meetings:detail' meeting.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

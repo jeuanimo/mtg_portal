@@ -41,13 +41,6 @@ class ContactForm(forms.ModelForm):
 class ConsultationRequestForm(forms.ModelForm):
     """Consultation request form."""
     
-    services = forms.ModelMultipleChoiceField(
-        queryset=Service.objects.filter(is_active=True),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label='Services you\'re interested in'
-    )
-    
     preferred_date = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'}),
         required=False,
@@ -68,9 +61,9 @@ class ConsultationRequestForm(forms.ModelForm):
     class Meta:
         model = ServiceRequest
         fields = [
-            'name', 'email', 'phone', 'company_name', 
-            'services', 'budget_range', 'timeline',
-            'preferred_date', 'preferred_time', 'message'
+            'name', 'email', 'phone', 'company', 
+            'service', 'budget_range', 'timeline',
+            'description'
         ]
     
     def __init__(self, *args, **kwargs):
@@ -85,10 +78,10 @@ class ConsultationRequestForm(forms.ModelForm):
             ),
             Row(
                 Column('phone', css_class='col-md-6'),
-                Column('company_name', css_class='col-md-6'),
+                Column('company', css_class='col-md-6'),
             ),
             HTML('<hr class="my-4"><h5 class="mb-3">Project Details</h5>'),
-            'services',
+            'service',
             Row(
                 Column('budget_range', css_class='col-md-6'),
                 Column('timeline', css_class='col-md-6'),
@@ -98,7 +91,7 @@ class ConsultationRequestForm(forms.ModelForm):
                 Column('preferred_date', css_class='col-md-6'),
                 Column('preferred_time', css_class='col-md-6'),
             ),
-            'message',
+            'description',
             Submit('submit', 'Request Consultation', css_class='btn-primary btn-lg w-100')
         )
         
@@ -106,7 +99,9 @@ class ConsultationRequestForm(forms.ModelForm):
         self.fields['name'].widget.attrs['placeholder'] = 'Your Full Name'
         self.fields['email'].widget.attrs['placeholder'] = 'your@email.com'
         self.fields['phone'].widget.attrs['placeholder'] = '(555) 123-4567'
-        self.fields['company_name'].widget.attrs['placeholder'] = 'Your Company Name'
-        self.fields['message'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
-        self.fields['message'].widget.attrs['rows'] = 4
-        self.fields['message'].label = 'Additional Information'
+        self.fields['company'].widget.attrs['placeholder'] = 'Your Company Name'
+        self.fields['description'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
+        self.fields['description'].widget.attrs['rows'] = 4
+        self.fields['description'].label = 'Additional Information'
+        self.fields['service'].label = 'Service Interested In'
+        self.fields['service'].required = False
