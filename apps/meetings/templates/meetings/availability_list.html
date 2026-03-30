@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}My Availability{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Availability</h1>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSlotModal">
+            <i class="bi bi-plus-lg"></i> Add Time Slot
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recurring Availability Slots</h5>
+                </div>
+                <div class="card-body">
+                    {% if slots %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for slot in slots %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            {{ slot.get_day_of_week_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ slot.start_time|time:"g:i A" }}</td>
+                                    <td>{{ slot.end_time|time:"g:i A" }}</td>
+                                    <td>
+                                        {% widthratio slot.end_time.hour|add:"-slot.start_time.hour" 1 60 as hours %}
+                                        {% with slot.end_time|time:"H"|add:0 as end_h %}
+                                        {% with slot.start_time|time:"H"|add:0 as start_h %}
+                                        {{ end_h|add:"-start_h"|intcomma }} hour(s)
+                                        {% endwith %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        {% if slot.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <form action="{% url 'meetings:availability_delete' slot.pk %}" method="post" class="d-inline"
+                                              onsubmit="return confirm('Delete this availability slot?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-week display-1 text-muted"></i>
+                        <h5 class="mt-3">No Availability Set</h5>
+                        <p class="text-muted">Add your available time slots so clients can schedule meetings with you.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSlotModal">
+                            <i class="bi bi-plus-lg"></i> Add Your First Slot
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Quick Tips</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-3">
+                            <i class="bi bi-lightbulb text-warning me-2"></i>
+                            <strong>Set recurring slots</strong> for your regular working hours
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-calendar-check text-success me-2"></i>
+                            <strong>Keep slots updated</strong> to avoid scheduling conflicts
+                        </li>
+                        <li class="mb-3">
+                            <i class="bi bi-clock-history text-info me-2"></i>
+                            <strong>Add buffer time</strong> between meetings for preparation
+                        </li>
+                        <li>
+                            <i class="bi bi-toggle-on text-primary me-2"></i>
+                            <strong>Deactivate slots</strong> when you're on vacation
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Weekly Overview</h5>
+                </div>
+                <div class="card-body">
+                    {% for day, day_name in days %}
+                    <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                        <span>{{ day_name }}</span>
+                        {% with day_slots=slots_by_day|default_if_none:""  %}
+                        <span class="text-muted small">
+                            {% for slot in slots %}
+                                {% if slot.day_of_week == day %}
+                                    {{ slot.start_time|time:"g:ia" }}-{{ slot.end_time|time:"g:ia" }}{% if not forloop.last %}, {% endif %}
+                                {% endif %}
+                            {% empty %}
+                                <span class="text-muted">--</span>
+                            {% endfor %}
+                        </span>
+                        {% endwith %}
+                    </div>
+                    {% empty %}
+                    <div class="py-2">
+                        <span class="text-muted">Monday</span> - <span class="text-muted small">--</span>
+                    </div>
+                    <div class="py-2 border-top">
+                        <span class="text-muted">Tuesday</span> - <span class="text-muted small">--</span>
+                    </div>
+                    <div class="py-2 border-top">
+                        <span class="text-muted">Wednesday</span> - <span class="text-muted small">--</span>
+                    </div>
+                    <div class="py-2 border-top">
+                        <span class="text-muted">Thursday</span> - <span class="text-muted small">--</span>
+                    </div>
+                    <div class="py-2 border-top">
+                        <span class="text-muted">Friday</span> - <span class="text-muted small">--</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Slot Modal -->
+<div class="modal fade" id="addSlotModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Availability Slot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="day_of_week" class="form-label">Day of Week</label>
+                        <select name="day_of_week" id="day_of_week" class="form-select" required>
+                            <option value="">Select a day...</option>
+                            <option value="0">Monday</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday</option>
+                            <option value="6">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="start_time" class="form-label">Start Time</label>
+                                <input type="time" name="start_time" id="start_time" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <label for="end_time" class="form-label">End Time</label>
+                                <input type="time" name="end_time" id="end_time" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_active" id="is_active" class="form-check-input" checked>
+                        <label for="is_active" class="form-check-label">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

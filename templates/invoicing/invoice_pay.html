@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Pay Invoice #{{ invoice.invoice_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+    #card-element {
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        background: #fff;
+    }
+    #card-errors {
+        color: #dc3545;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    .payment-summary {
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .processing-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .processing-overlay.active {
+        display: flex;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="payment-container">
+        <h2 class="text-center mb-4">Pay Invoice</h2>
+        
+        <!-- Invoice Summary -->
+        <div class="payment-summary">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Invoice Number:</span>
+                <strong>{{ invoice.invoice_number }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Client:</span>
+                <span>{{ invoice.organization.name }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>Due Date:</span>
+                <span>{{ invoice.due_date|date:"M d, Y" }}</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Amount Due:</strong>
+                <strong class="fs-4 text-primary">${{ invoice.balance_due|floatformat:2 }}</strong>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="card">
+            <div class="card-body">
+                <form id="payment-form">
+                    <div class="mb-3">
+                        <label for="card-element" class="form-label">Credit or Debit Card</label>
+                        <div id="card-element"></div>
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+                    
+                    <button id="submit-button" type="submit" class="btn btn-primary btn-lg w-100">
+                        <span id="button-text">Pay ${{ invoice.balance_due|floatformat:2 }}</span>
+                        <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-lock-fill"></i> Payments are securely processed by Stripe
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="btn btn-link">Cancel and return to invoice</a>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Overlay -->
+<div class="processing-overlay" id="processing-overlay">
+    <div class="text-center">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Processing...</span>
+        </div>
+        <h4>Processing Payment...</h4>
+        <p class="text-muted">Please do not close this page.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stripe = Stripe('{{ stripe_publishable_key }}');
+    const elements = stripe.elements();
+    
+    const style = {
+        base: {
+            color: '#32325d',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+                color: '#aab7c4'
+            }
+        },
+        invalid: {
+            color: '#dc3545',
+            iconColor: '#dc3545'
+        }
+    };
+    
+    const cardElement = elements.create('card', { style: style });
+    cardElement.mount('#card-element');
+    
+    // Handle validation errors
+    cardElement.on('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+    
+    // Handle form submission
+    const form = document.getElementById('payment-form');
+    const submitButton = document.getElementById('submit-button');
+    const buttonText = document.getElementById('button-text');
+    const spinner = document.getElementById('spinner');
+    const overlay = document.getElementById('processing-overlay');
+    
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        
+        // Disable button and show processing state
+        submitButton.disabled = true;
+        buttonText.classList.add('d-none');
+        spinner.classList.remove('d-none');
+        overlay.classList.add('active');
+        
+        const { error, paymentIntent } = await stripe.confirmCardPayment(
+            '{{ client_secret }}',
+            {
+                payment_method: {
+                    card: cardElement,
+                }
+            }
+        );
+        
+        if (error) {
+            // Show error
+            const displayError = document.getElementById('card-errors');
+            displayError.textContent = error.message;
+            
+            // Reset button
+            submitButton.disabled = false;
+            buttonText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+            overlay.classList.remove('active');
+        } else {
+            // Payment succeeded, redirect to success page
+            window.location.href = '{% url "invoicing:payment_success" invoice.pk %}';
+        }
+    });
+});
+</script>
+{% endblock %}

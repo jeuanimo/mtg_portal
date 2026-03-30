@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row { transition: all 0.3s ease; }
+    .formset-row.to-delete { opacity: 0.5; background-color: #f8d7da; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'invoicing:invoice_list' %}">Invoices</a></li>
+            {% if invoice %}
+            <li class="breadcrumb-item"><a href="{% url 'invoicing:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 mb-4">{{ title }}</h1>
+
+    <form method="post" id="invoice-form">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Invoice Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Invoice Details</h5>
+                    </div>
+                    <div class="card-body">
+                        {% crispy form %}
+                    </div>
+                </div>
+
+                <!-- Line Items -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Line Items</h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                            <i class="bi bi-plus-lg"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        
+                        <div class="table-responsive">
+                            <table class="table" id="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50%;">Description</th>
+                                        <th style="width: 15%;">Quantity</th>
+                                        <th style="width: 20%;">Unit Price</th>
+                                        <th style="width: 15%;">Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-body">
+                                    {% for item_form in formset %}
+                                    <tr class="formset-row" data-index="{{ forloop.counter0 }}">
+                                        <td>
+                                            {{ item_form.id }}
+                                            {{ item_form.description }}
+                                            {% if item_form.description.errors %}
+                                            <div class="invalid-feedback d-block">{{ item_form.description.errors.0 }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item_form.quantity }}
+                                            {% if item_form.quantity.errors %}
+                                            <div class="invalid-feedback d-block">{{ item_form.quantity.errors.0 }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ item_form.unit_price }}
+                                            {% if item_form.unit_price.errors %}
+                                            <div class="invalid-feedback d-block">{{ item_form.unit_price.errors.0 }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="item-total text-end">$0.00</td>
+                                        <td>
+                                            <div class="d-none">{{ item_form.DELETE }}</div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-item">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            {{ formset.non_form_errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Totals -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Totals</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong id="subtotal">$0.00</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Discount:</span>
+                            <span id="discount-display" class="text-success">-$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax:</span>
+                            <span id="tax-display">$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Total:</strong>
+                            <strong id="total">$0.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-check-lg"></i> Save Invoice
+                        </button>
+                        <a href="{% if invoice %}{% url 'invoicing:invoice_detail' invoice.pk %}{% else %}{% url 'invoicing:invoice_list' %}{% endif %}" class="btn btn-outline-secondary w-100">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Empty row template -->
+<template id="item-template">
+    <tr class="formset-row" data-index="__prefix__">
+        <td>
+            <input type="hidden" name="items-__prefix__-id" id="id_items-__prefix__-id">
+            <input type="text" name="items-__prefix__-description" class="form-control" id="id_items-__prefix__-description">
+        </td>
+        <td>
+            <input type="number" name="items-__prefix__-quantity" class="form-control" step="0.01" min="0" value="1" id="id_items-__prefix__-quantity">
+        </td>
+        <td>
+            <input type="number" name="items-__prefix__-unit_price" class="form-control" step="0.01" min="0" id="id_items-__prefix__-unit_price">
+        </td>
+        <td class="item-total text-end">$0.00</td>
+        <td>
+            <input type="checkbox" name="items-__prefix__-DELETE" class="d-none" id="id_items-__prefix__-DELETE">
+            <button type="button" class="btn btn-sm btn-outline-danger delete-item">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsBody = document.getElementById('items-body');
+    const template = document.getElementById('item-template');
+    const totalForms = document.querySelector('#id_items-TOTAL_FORMS');
+    
+    // Calculate totals
+    function calculateTotals() {
+        let subtotal = 0;
+        
+        document.querySelectorAll('.formset-row:not(.to-delete)').forEach(row => {
+            const qty = parseFloat(row.querySelector('[name$="-quantity"]').value) || 0;
+            const price = parseFloat(row.querySelector('[name$="-unit_price"]').value) || 0;
+            const lineTotal = qty * price;
+            row.querySelector('.item-total').textContent = '$' + lineTotal.toFixed(2);
+            subtotal += lineTotal;
+        });
+        
+        const discountEl = document.getElementById('id_discount_amount');
+        const taxRateEl = document.getElementById('id_tax_rate');
+        
+        const discount = parseFloat(discountEl?.value) || 0;
+        const taxRate = parseFloat(taxRateEl?.value) || 0;
+        
+        const taxAmount = (subtotal - discount) * (taxRate / 100);
+        const total = subtotal - discount + taxAmount;
+        
+        document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+        document.getElementById('discount-display').textContent = '-$' + discount.toFixed(2);
+        document.getElementById('tax-display').textContent = '$' + taxAmount.toFixed(2);
+        document.getElementById('total').textContent = '$' + total.toFixed(2);
+    }
+    
+    // Add item row
+    document.getElementById('add-item').addEventListener('click', function() {
+        const formNum = parseInt(totalForms.value);
+        const newRow = template.content.cloneNode(true);
+        const row = newRow.querySelector('tr');
+        
+        row.innerHTML = row.innerHTML.replace(/__prefix__/g, formNum);
+        row.dataset.index = formNum;
+        
+        itemsBody.appendChild(newRow);
+        totalForms.value = formNum + 1;
+        
+        // Add event listeners to new row
+        attachRowListeners(row);
+    });
+    
+    // Delete item row
+    function attachRowListeners(row) {
+        row.querySelectorAll('input').forEach(input => {
+            input.addEventListener('change', calculateTotals);
+            input.addEventListener('keyup', calculateTotals);
+        });
+        
+        row.querySelector('.delete-item').addEventListener('click', function() {
+            const deleteCheckbox = row.querySelector('[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = !deleteCheckbox.checked;
+                row.classList.toggle('to-delete', deleteCheckbox.checked);
+            }
+            calculateTotals();
+        });
+    }
+    
+    // Attach listeners to existing rows
+    document.querySelectorAll('.formset-row').forEach(attachRowListeners);
+    
+    // Watch discount and tax fields
+    const discountEl = document.getElementById('id_discount_amount');
+    const taxRateEl = document.getElementById('id_tax_rate');
+    
+    if (discountEl) discountEl.addEventListener('change', calculateTotals);
+    if (taxRateEl) taxRateEl.addEventListener('change', calculateTotals);
+    
+    // Initial calculation
+    calculateTotals();
+    
+    // HTMX: Load contacts when organization changes
+    const orgSelect = document.getElementById('id_organization');
+    const contactSelect = document.getElementById('id_contact');
+    
+    if (orgSelect && contactSelect) {
+        orgSelect.addEventListener('change', function() {
+            const orgId = this.value;
+            if (orgId) {
+                fetch(`{% url 'invoicing:get_organization_contacts' %}?organization_id=${orgId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        contactSelect.innerHTML = html;
+                    });
+            } else {
+                contactSelect.innerHTML = '<option value="">Select a contact</option>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% comment %}
+Activity Item Component
+Usage: {% include 'includes/activity_item.html' with icon='bi-person-plus' title='New lead created' subtitle='John Doe' time='5 min ago' variant='success' %}
+{% endcomment %}
+<div class="d-flex align-items-start py-2 activity-item">
+    <div class="activity-icon rounded-circle bg-{{ variant|default:'primary' }}-subtle p-2 me-3">
+        <i class="bi {{ icon|default:'bi-circle' }} text-{{ variant|default:'primary' }}"></i>
+    </div>
+    <div class="flex-grow-1">
+        <p class="mb-0 fw-medium">{{ title }}</p>
+        {% if subtitle %}
+        <small class="text-muted">{{ subtitle }}</small>
+        {% endif %}
+    </div>
+    {% if time %}
+    <small class="text-muted text-nowrap">{{ time }}</small>
+    {% endif %}
+</div>

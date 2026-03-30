@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ ticket.ticket_number }} - {{ ticket.subject }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_list' %}">Tickets</a></li>
+                    <li class="breadcrumb-item active">{{ ticket.ticket_number }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-1">{{ ticket.subject }}</h1>
+            <p class="text-muted">
+                <span class="badge bg-{% if ticket.priority == 'URGENT' %}danger{% elif ticket.priority == 'HIGH' %}warning{% elif ticket.priority == 'MEDIUM' %}info{% else %}secondary{% endif %}">
+                    {{ ticket.get_priority_display }}
+                </span>
+                <span class="badge bg-{% if ticket.status == 'NEW' %}primary{% elif ticket.status == 'OPEN' %}info{% elif ticket.status == 'IN_PROGRESS' %}primary{% elif ticket.status == 'PENDING' %}warning{% elif ticket.status == 'RESOLVED' %}success{% elif ticket.status == 'CLOSED' %}secondary{% elif ticket.status == 'ESCALATED' %}danger{% endif %} ms-1">
+                    {{ ticket.get_status_display }}
+                </span>
+                {% if ticket.is_overdue %}
+                <span class="badge bg-danger ms-1">OVERDUE</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'tickets:ticket_edit' ticket.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            {% if ticket.is_open %}
+            <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <form method="post" action="{% url 'tickets:ticket_resolve' ticket.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-success"><i class="bi bi-check-circle"></i> Mark Resolved</button>
+                    </form>
+                </li>
+                <li>
+                    <form method="post" action="{% url 'tickets:ticket_close' ticket.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-secondary"><i class="bi bi-x-circle"></i> Close Ticket</button>
+                    </form>
+                </li>
+            </ul>
+            {% elif ticket.status == 'RESOLVED' or ticket.status == 'CLOSED' %}
+            <form method="post" action="{% url 'tickets:ticket_reopen' ticket.pk %}" class="ms-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reopen
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="prose">{{ ticket.description|linebreaks }}</div>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            {% if attachments %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Attachments</h5>
+                    <span class="badge bg-secondary">{{ attachments.count }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for attachment in attachments %}
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-file-earmark fs-4"></i>
+                                <a href="{{ attachment.file.url }}" target="_blank" class="d-block text-truncate">
+                                    {{ attachment.filename }}
+                                </a>
+                                <small class="text-muted">{{ attachment.file_size|filesizeformat }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Add Attachment -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Add Attachment</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'tickets:ticket_add_attachment' ticket.pk %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ attachment_form|crispy }}
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Comments -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Comments</h5>
+                    <span class="badge bg-secondary">{{ comments.count }}</span>
+                </div>
+                <div class="card-body">
+                    <!-- Comment List -->
+                    <div class="comments-list mb-4">
+                        {% for comment in comments %}
+                        <div class="d-flex mb-3 {% if comment.is_internal %}bg-warning bg-opacity-10 p-3 rounded{% endif %}">
+                            <div class="flex-shrink-0">
+                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    {{ comment.author.first_name|slice:":1"|upper }}{{ comment.author.last_name|slice:":1"|upper }}
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">
+                                        {{ comment.author.get_full_name|default:comment.author.email }}
+                                        {% if comment.is_internal %}
+                                        <span class="badge bg-warning text-dark ms-1">Internal</span>
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                                </div>
+                                <div class="comment-content">{{ comment.content|linebreaks }}</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center py-4">No comments yet</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Add Comment Form -->
+                    <form method="post" action="{% url 'tickets:ticket_add_comment' ticket.pk %}">
+                        {% csrf_token %}
+                        {{ comment_form|crispy }}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-chat-left-text"></i> Add Comment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Ticket Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Ticket Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Ticket Number</dt>
+                        <dd class="col-sm-7">{{ ticket.ticket_number }}</dd>
+                        
+                        <dt class="col-sm-5">Category</dt>
+                        <dd class="col-sm-7">{{ ticket.get_category_display }}</dd>
+                        
+                        <dt class="col-sm-5">Created</dt>
+                        <dd class="col-sm-7">{{ ticket.created_at|date:"M d, Y g:i a" }}</dd>
+                        
+                        <dt class="col-sm-5">Updated</dt>
+                        <dd class="col-sm-7">{{ ticket.updated_at|date:"M d, Y g:i a" }}</dd>
+                        
+                        {% if ticket.due_date %}
+                        <dt class="col-sm-5">Due Date</dt>
+                        <dd class="col-sm-7 {% if ticket.is_overdue %}text-danger fw-bold{% endif %}">
+                            {{ ticket.due_date|date:"M d, Y" }}
+                        </dd>
+                        {% endif %}
+                        
+                        {% if ticket.first_response_at %}
+                        <dt class="col-sm-5">First Response</dt>
+                        <dd class="col-sm-7">{{ ticket.first_response_at|date:"M d, Y g:i a" }}</dd>
+                        {% endif %}
+                        
+                        {% if ticket.resolved_at %}
+                        <dt class="col-sm-5">Resolved</dt>
+                        <dd class="col-sm-7">{{ ticket.resolved_at|date:"M d, Y g:i a" }}</dd>
+                        {% endif %}
+                        
+                        {% if ticket.closed_at %}
+                        <dt class="col-sm-5">Closed</dt>
+                        <dd class="col-sm-7">{{ ticket.closed_at|date:"M d, Y g:i a" }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            <!-- People -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">People</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Created By</dt>
+                        <dd class="col-sm-7">
+                            {{ ticket.created_by.get_full_name|default:ticket.created_by.email }}
+                        </dd>
+                        
+                        <dt class="col-sm-5">Assigned To</dt>
+                        <dd class="col-sm-7">
+                            {% if ticket.assigned_to %}
+                                {{ ticket.assigned_to.get_full_name|default:ticket.assigned_to.email }}
+                            {% else %}
+                                <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Organization -->
+            {% if ticket.organization %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Organization</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ ticket.organization.name }}</h6>
+                    {% if ticket.contact %}
+                    <p class="mb-0 text-muted">
+                        Contact: {{ ticket.contact.full_name }}<br>
+                        {% if ticket.contact.email %}{{ ticket.contact.email }}{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Project -->
+            {% if ticket.project %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Related Project</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'tickets:project_detail' ticket.project.pk %}">
+                        {{ ticket.project.name }}
+                    </a>
+                    <p class="text-muted small mb-0">{{ ticket.project.project_number }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Status Update -->
+            {% if ticket.is_open and request.user.is_staff %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Quick Update</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'tickets:ticket_update_status' ticket.pk %}"
+                          hx-post="{% url 'tickets:ticket_update_status' ticket.pk %}"
+                          hx-swap="none">
+                        {% csrf_token %}
+                        {{ status_form|crispy }}
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

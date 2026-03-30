@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Email Invoice #{{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'invoicing:invoice_list' %}">Invoices</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'invoicing:invoice_detail' invoice.pk %}">{{ invoice.invoice_number }}</a></li>
+                    <li class="breadcrumb-item active">Email</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-envelope"></i> Send Invoice by Email</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Invoice Summary -->
+                    <div class="alert alert-light mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Invoice #{{ invoice.invoice_number }}</strong><br>
+                                <span class="text-muted">{{ invoice.organization.name }}</span>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <strong>${{ invoice.total|floatformat:2 }}</strong><br>
+                                <span class="text-muted">Due: {{ invoice.due_date|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_to_email" class="form-label">To Email *</label>
+                                {{ form.to_email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_cc_email" class="form-label">CC Email</label>
+                                {{ form.cc_email }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_subject" class="form-label">Subject *</label>
+                            {{ form.subject }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_message" class="form-label">Message *</label>
+                            {{ form.message }}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                {{ form.attach_pdf }}
+                                <label class="form-check-label" for="id_attach_pdf">
+                                    Attach PDF invoice
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Send Email
+                            </button>
+                            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

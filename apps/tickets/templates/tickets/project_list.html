@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Consulting Projects{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Consulting Projects</h1>
+        <a href="{% url 'tickets:project_create' %}" class="btn btn-primary">
+            <i class="bi bi-folder-plus"></i> New Project
+        </a>
+    </div>
+
+    <!-- Project Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.total }}</h3>
+                    <p class="text-muted mb-0">Total Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.in_progress }}</h3>
+                    <p class="text-muted mb-0">In Progress</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.on_hold }}</h3>
+                    <p class="text-muted mb-0">On Hold</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.completed }}</h3>
+                    <p class="text-muted mb-0">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="DISCOVERY" {% if request.GET.status == 'DISCOVERY' %}selected{% endif %}>Discovery</option>
+                        <option value="PROPOSAL" {% if request.GET.status == 'PROPOSAL' %}selected{% endif %}>Proposal</option>
+                        <option value="APPROVED" {% if request.GET.status == 'APPROVED' %}selected{% endif %}>Approved</option>
+                        <option value="IN_PROGRESS" {% if request.GET.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                        <option value="ON_HOLD" {% if request.GET.status == 'ON_HOLD' %}selected{% endif %}>On Hold</option>
+                        <option value="COMPLETED" {% if request.GET.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                        <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <select name="type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="IMPLEMENTATION" {% if request.GET.type == 'IMPLEMENTATION' %}selected{% endif %}>Implementation</option>
+                        <option value="MIGRATION" {% if request.GET.type == 'MIGRATION' %}selected{% endif %}>Migration</option>
+                        <option value="INTEGRATION" {% if request.GET.type == 'INTEGRATION' %}selected{% endif %}>Integration</option>
+                        <option value="CUSTOM_DEV" {% if request.GET.type == 'CUSTOM_DEV' %}selected{% endif %}>Custom Development</option>
+                        <option value="AUDIT" {% if request.GET.type == 'AUDIT' %}selected{% endif %}>Audit</option>
+                        <option value="TRAINING" {% if request.GET.type == 'TRAINING' %}selected{% endif %}>Training</option>
+                        <option value="OTHER" {% if request.GET.type == 'OTHER' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="q" class="form-control" placeholder="Search projects..." value="{{ request.GET.q }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div class="row g-4">
+        {% for project in projects %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-{% if project.status == 'IN_PROGRESS' %}primary{% elif project.status == 'COMPLETED' %}success{% elif project.status == 'ON_HOLD' %}warning{% elif project.status == 'CANCELLED' %}danger{% else %}secondary{% endif %}">
+                            {{ project.get_status_display }}
+                        </span>
+                        <span class="text-muted small">{{ project.project_number }}</span>
+                    </div>
+                    <h5 class="card-title">
+                        <a href="{% url 'tickets:project_detail' project.pk %}" class="text-decoration-none">
+                            {{ project.name }}
+                        </a>
+                    </h5>
+                    <p class="text-muted small mb-2">{{ project.organization.name }}</p>
+                    <p class="card-text small">{{ project.description|truncatechars:100 }}</p>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Progress</span>
+                            <span>{{ project.progress_percentage|default:0 }}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ project.progress_percentage|default:0 }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="row text-muted small">
+                        <div class="col-6">
+                            <i class="bi bi-calendar"></i> {{ project.start_date|date:"M d, Y"|default:"Not set" }}
+                        </div>
+                        <div class="col-6 text-end">
+                            <i class="bi bi-flag"></i> {{ project.target_end_date|date:"M d, Y"|default:"Not set" }}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="bi bi-person"></i> {{ project.project_manager.get_full_name|default:"Unassigned" }}
+                        </div>
+                        <span class="badge bg-light text-dark">{{ project.get_project_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-folder fs-1 d-block mb-2"></i>
+                <p>No projects found</p>
+                <a href="{% url 'tickets:project_create' %}" class="btn btn-primary">Create First Project</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

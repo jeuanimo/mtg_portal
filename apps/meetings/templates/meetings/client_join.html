@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Join Meeting: {{ meeting.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h2 class="mb-1">{{ meeting.title }}</h2>
+                    <p class="mb-0 opacity-75">Meeting Invitation</p>
+                </div>
+                <div class="card-body p-4">
+                    {% if meeting.organization %}
+                    <div class="text-center mb-4">
+                        <span class="badge bg-secondary">{{ meeting.organization.name }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar3 text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">Date</small>
+                                    <strong>{{ meeting.scheduled_at|date:"M d, Y" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">Time</small>
+                                    <strong>{{ meeting.scheduled_at|time:"g:i A" }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-hourglass text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">Duration</small>
+                                    <strong>{{ meeting.duration_minutes }} minutes</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person text-primary me-2 fs-5"></i>
+                                <div>
+                                    <small class="text-muted d-block">Host</small>
+                                    <strong>{{ meeting.host.get_full_name|default:meeting.host.email }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if meeting.description %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Description</h6>
+                        <p class="mb-0">{{ meeting.description|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if meeting.status == 'SCHEDULED' %}
+                        {% if meeting.can_join %}
+                            <div class="alert alert-success mb-4">
+                                <i class="bi bi-check-circle me-2"></i>
+                                This meeting is ready to join!
+                            </div>
+                            {% if meeting.meeting_url %}
+                            <div class="d-grid">
+                                <a href="{{ meeting.meeting_url }}" class="btn btn-primary btn-lg" target="_blank">
+                                    <i class="bi bi-camera-video me-2"></i>
+                                    Join Meeting
+                                </a>
+                            </div>
+                            {% elif meeting.host_url %}
+                            <div class="d-grid">
+                                <a href="{{ meeting.host_url }}" class="btn btn-primary btn-lg" target="_blank">
+                                    <i class="bi bi-camera-video me-2"></i>
+                                    Join Meeting
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Please wait for the host to start the meeting. The join link will be shared shortly.
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info mb-4">
+                                <i class="bi bi-clock me-2"></i>
+                                This meeting hasn't started yet. Please come back at the scheduled time.
+                            </div>
+                            <div class="text-center">
+                                <p class="text-muted mb-1">Meeting starts in:</p>
+                                <h3 id="countdown" class="text-primary">--:--:--</h3>
+                            </div>
+                        {% endif %}
+                    {% elif meeting.status == 'IN_PROGRESS' %}
+                        <div class="alert alert-success mb-4">
+                            <i class="bi bi-camera-video-fill me-2"></i>
+                            This meeting is currently in progress!
+                        </div>
+                        {% if meeting.meeting_url %}
+                        <div class="d-grid">
+                            <a href="{{ meeting.meeting_url }}" class="btn btn-success btn-lg" target="_blank">
+                                <i class="bi bi-camera-video me-2"></i>
+                                Join Now
+                            </a>
+                        </div>
+                        {% elif meeting.host_url %}
+                        <div class="d-grid">
+                            <a href="{{ meeting.host_url }}" class="btn btn-success btn-lg" target="_blank">
+                                <i class="bi bi-camera-video me-2"></i>
+                                Join Now
+                            </a>
+                        </div>
+                        {% endif %}
+                    {% elif meeting.status == 'COMPLETED' %}
+                        <div class="alert alert-secondary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            This meeting has ended.
+                        </div>
+                    {% elif meeting.status == 'CANCELLED' %}
+                        <div class="alert alert-danger">
+                            <i class="bi bi-x-circle me-2"></i>
+                            This meeting has been cancelled.
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Powered by Mitchell Technology Group
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if meeting.status == 'SCHEDULED' and not meeting.can_join %}
+<script>
+(function() {
+    var meetingTime = new Date('{{ meeting.scheduled_at|date:"c" }}');
+    var countdownEl = document.getElementById('countdown');
+    
+    function updateCountdown() {
+        var now = new Date();
+        var diff = meetingTime - now;
+        
+        if (diff <= 0) {
+            countdownEl.textContent = 'Starting now!';
+            setTimeout(function() {
+                location.reload();
+            }, 5000);
+            return;
+        }
+        
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        if (hours > 24) {
+            var days = Math.floor(hours / 24);
+            countdownEl.textContent = days + ' day' + (days > 1 ? 's' : '') + ', ' + (hours % 24) + ' hours';
+        } else {
+            countdownEl.textContent = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+})();
+</script>
+{% endif %}
+{% endblock %}

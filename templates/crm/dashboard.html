@@ -1,0 +1,182 @@
+{% extends 'base_dashboard.html' %}
+{% load crm_tags %}
+
+{% block title %}CRM Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">CRM Dashboard</h1>
+    <div>
+        <a href="{% url 'crm:lead_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus me-1"></i>New Lead
+        </a>
+    </div>
+</div>
+
+<!-- Lead Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-number">{{ lead_stats.total }}</div>
+                <div class="stat-label">Total Leads</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="stat-number">{{ lead_stats.new_this_month }}</div>
+                <div class="stat-label">New This Month</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="stat-number">${{ lead_stats.pipeline_value|floatformat:0 }}</div>
+                <div class="stat-label">Pipeline Value</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="stat-number">{{ lead_stats.won_this_month }}</div>
+                <div class="stat-label">Won This Month</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Leads -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Leads</h5>
+                <a href="{% url 'crm:lead_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                            <th>Assigned</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in recent_leads %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'crm:lead_detail' lead.pk %}">{{ lead.title|truncatechars:30 }}</a>
+                            </td>
+                            <td>{{ lead.contact.full_name }}</td>
+                            <td><span class="badge {{ lead.status|status_badge_class }}">{{ lead.get_status_display }}</span></td>
+                            <td>{% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}</td>
+                            <td>{{ lead.assigned_to.get_display_name|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No leads yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="row">
+            <div class="col-md-4">
+                <a href="{% url 'crm:pipeline' %}" class="card text-decoration-none h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-kanban display-4 text-primary"></i>
+                        <h5 class="mt-2 text-dark">Pipeline</h5>
+                        <p class="text-muted small mb-0">Kanban view of leads</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'crm:contact_list' %}" class="card text-decoration-none h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-primary"></i>
+                        <h5 class="mt-2 text-dark">Contacts</h5>
+                        <p class="text-muted small mb-0">Manage contacts</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'crm:organization_list' %}" class="card text-decoration-none h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-building display-4 text-primary"></i>
+                        <h5 class="mt-2 text-dark">Organizations</h5>
+                        <p class="text-muted small mb-0">Manage companies</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- My Tasks -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">My Tasks</h5>
+                <a href="{% url 'crm:task_list' %}?assigned_to=me" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for task in my_tasks %}
+                <div class="list-group-item {% if task.is_overdue %}list-group-item-danger{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong class="small">{{ task.title|truncatechars:35 }}</strong>
+                            {% if task.lead %}
+                            <br><small class="text-muted">{{ task.lead.title|truncatechars:25 }}</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'crm:task_complete' task.pk %}" class="btn btn-sm btn-outline-success" title="Complete">
+                            <i class="bi bi-check"></i>
+                        </a>
+                    </div>
+                    {% if task.due_date %}
+                    <small class="{% if task.is_overdue %}text-danger{% else %}text-muted{% endif %}">
+                        <i class="bi bi-clock me-1"></i>{{ task.due_date|date:"M j, g:i A" }}
+                    </small>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="list-group-item text-center text-muted py-3">
+                    No pending tasks
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Task Stats -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Task Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Pending</span>
+                    <span class="badge bg-warning text-dark">{{ task_stats.pending }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Overdue</span>
+                    <span class="badge bg-danger">{{ task_stats.overdue }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Due Today</span>
+                    <span class="badge bg-info">{{ task_stats.due_today }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

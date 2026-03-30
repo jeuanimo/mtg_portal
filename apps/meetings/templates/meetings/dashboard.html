@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Meetings Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Meetings</h1>
+        <div>
+            <a href="{% url 'meetings:quick_schedule' %}" class="btn btn-outline-primary">
+                <i class="bi bi-lightning"></i> Quick Schedule
+            </a>
+            <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Meeting
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.total_upcoming }}</h3>
+                    <p class="text-muted mb-0">Upcoming Meetings</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.this_week }}</h3>
+                    <p class="text-muted mb-0">This Week</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+                <div class="card-body">
+                    <h3 class="mb-0">{{ stats.pending_notes }}</h3>
+                    <p class="text-muted mb-0">Need Notes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Today's Meetings -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check text-primary"></i> Today's Meetings
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for meeting in todays_meetings %}
+                        <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ meeting.title }}</h6>
+                                    <small class="text-muted">
+                                        {{ meeting.start_time|time:"g:i A" }} - {{ meeting.end_time|time:"g:i A" }}
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-{% if meeting.status == 'IN_PROGRESS' %}success{% elif meeting.status == 'SCHEDULED' %}primary{% else %}secondary{% endif %}">
+                                        {{ meeting.get_status_display }}
+                                    </span>
+                                    {% if meeting.can_join and meeting.meeting_url %}
+                                    <a href="{{ meeting.meeting_url }}" class="btn btn-sm btn-success ms-2" target="_blank">
+                                        <i class="bi bi-camera-video"></i> Join
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">
+                            No meetings scheduled for today
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Meetings -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-week text-info"></i> Upcoming This Week
+                    </h5>
+                    <a href="{% url 'meetings:meeting_list' %}" class="text-decoration-none">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for meeting in upcoming_meetings %}
+                        <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ meeting.title }}</h6>
+                                    <small class="text-muted">
+                                        {{ meeting.start_time|date:"D, M d" }} at {{ meeting.start_time|time:"g:i A" }}
+                                    </small>
+                                    {% if meeting.organization %}
+                                    <br><small class="text-muted">{{ meeting.organization.name }}</small>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-{% if meeting.meeting_type == 'VIDEO' %}primary{% elif meeting.meeting_type == 'PHONE' %}info{% else %}secondary{% endif %} h-fit">
+                                    {{ meeting.get_meeting_type_display }}
+                                </span>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">
+                            No upcoming meetings
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Past Meetings -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history text-secondary"></i> Recent Completed
+                    </h5>
+                    <a href="{% url 'meetings:meeting_list' %}?status=COMPLETED" class="text-decoration-none">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Meeting</th>
+                                <th>Date</th>
+                                <th>Organization</th>
+                                <th>Duration</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for meeting in past_meetings %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'meetings:meeting_detail' meeting.pk %}">{{ meeting.title }}</a>
+                                </td>
+                                <td>{{ meeting.start_time|date:"M d, Y" }}</td>
+                                <td>{{ meeting.organization.name|default:"-" }}</td>
+                                <td>{{ meeting.duration_minutes }} min</td>
+                                <td>
+                                    {% if meeting.notes %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                    <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="text-warning">
+                                        <i class="bi bi-exclamation-circle"></i> Add notes
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No recent meetings</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

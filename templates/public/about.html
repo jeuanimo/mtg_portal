@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - Mitchell Technology Group{% endblock %}
+
+{% block content %}
+<section class="hero-section py-5">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">About Us</h1>
+        <p class="lead">Your trusted partner in technology solutions</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-4">Our Story</h2>
+                <p class="lead">Mitchell Technology Group was founded with a simple mission: to provide businesses with reliable, innovative IT solutions that drive growth and efficiency.</p>
+                <p>With decades of combined experience in the technology industry, our team brings deep expertise in network infrastructure, cloud computing, cybersecurity, and IT strategy. We've helped hundreds of businesses transform their technology operations and achieve their goals.</p>
+                <p>We believe that technology should empower your business, not complicate it. That's why we focus on building long-term partnerships with our clients, understanding their unique needs, and delivering solutions that truly make a difference.</p>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-building display-1 text-primary" style="font-size: 12rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <i class="bi bi-bullseye display-4 text-primary mb-3"></i>
+                    <h4>Our Mission</h4>
+                    <p class="text-muted">To empower businesses with technology solutions that drive innovation, efficiency, and growth.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <i class="bi bi-eye display-4 text-primary mb-3"></i>
+                    <h4>Our Vision</h4>
+                    <p class="text-muted">To be the most trusted technology partner for businesses seeking to thrive in the digital age.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <i class="bi bi-heart display-4 text-primary mb-3"></i>
+                    <h4>Our Values</h4>
+                    <p class="text-muted">Integrity, excellence, innovation, and unwavering commitment to client success.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if testimonials %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-5">What Our Clients Say</h2>
+        <div class="row g-4">
+            {% for testimonial in testimonials %}
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= testimonial.rating %}
+                                <i class="bi bi-star-fill text-warning"></i>
+                                {% else %}
+                                <i class="bi bi-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="card-text fs-5">"{{ testimonial.testimonial }}"</p>
+                        <div class="mt-4">
+                            <strong>{{ testimonial.client_name }}</strong>
+                            {% if testimonial.client_title %}
+                            <br><span class="text-muted">{{ testimonial.client_title }}, {{ testimonial.client_company }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Let's Work Together</h2>
+        <p class="lead mb-4">Ready to transform your IT? Get in touch with our team today.</p>
+        <a href="{% url 'public:contact' %}" class="btn btn-light btn-lg">Contact Us</a>
+    </div>
+</section>
+{% endblock %}

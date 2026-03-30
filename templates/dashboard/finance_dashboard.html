@@ -1,0 +1,273 @@
+{% extends 'base_dashboard.html' %}
+{% load humanize %}
+
+{% block title %}Finance Dashboard - Mitchell Technology Group{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Finance Dashboard</h1>
+            <p class="text-muted mb-0">Monitor invoices, payments, and cash flow</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Invoice
+            </a>
+            <a href="{% url 'invoicing:recurring_create' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-repeat me-1"></i> Recurring Invoice
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card kpi-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted text-uppercase small mb-1">Accounts Receivable</p>
+                            <h3 class="mb-0">${{ invoices_outstanding|floatformat:0|intcomma }}</h3>
+                            <small class="text-danger">{{ invoices_overdue }} overdue</small>
+                        </div>
+                        <div class="kpi-icon bg-warning-subtle rounded-circle p-3">
+                            <i class="bi bi-cash-stack text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card kpi-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted text-uppercase small mb-1">Overdue Amount</p>
+                            <h3 class="mb-0">${{ invoices_overdue_value|floatformat:0|intcomma }}</h3>
+                            <small class="text-muted">{{ invoices_overdue }} invoices</small>
+                        </div>
+                        <div class="kpi-icon bg-danger-subtle rounded-circle p-3">
+                            <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card kpi-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted text-uppercase small mb-1">Collected This Month</p>
+                            <h3 class="mb-0">${{ payments_this_month|floatformat:0|intcomma }}</h3>
+                            {% if payments_last_month %}
+                            <small class="{% if payments_this_month >= payments_last_month %}text-success{% else %}text-danger{% endif %}">
+                                {% if payments_this_month >= payments_last_month %}
+                                <i class="bi bi-arrow-up"></i>
+                                {% else %}
+                                <i class="bi bi-arrow-down"></i>
+                                {% endif %}
+                                vs last month
+                            </small>
+                            {% endif %}
+                        </div>
+                        <div class="kpi-icon bg-success-subtle rounded-circle p-3">
+                            <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm kpi-card kpi-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted text-uppercase small mb-1">Draft Invoices</p>
+                            <h3 class="mb-0">{{ draft_invoices }}</h3>
+                            <small class="text-muted">Pending send</small>
+                        </div>
+                        <div class="kpi-icon bg-info-subtle rounded-circle p-3">
+                            <i class="bi bi-file-earmark-text text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aging Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-calendar-range me-2"></i>Accounts Receivable Aging</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="p-3 rounded bg-success-subtle text-center">
+                                <small class="text-muted d-block">Current</small>
+                                <h4 class="mb-0 text-success">${{ aging_current|floatformat:0|intcomma }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded bg-warning-subtle text-center">
+                                <small class="text-muted d-block">1-30 Days</small>
+                                <h4 class="mb-0 text-warning">${{ aging_30|floatformat:0|intcomma }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded bg-orange-subtle text-center" style="background-color: #fff3cd;">
+                                <small class="text-muted d-block">31-60 Days</small>
+                                <h4 class="mb-0" style="color: #fd7e14;">${{ aging_60|floatformat:0|intcomma }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded bg-danger-subtle text-center">
+                                <small class="text-muted d-block">60+ Days</small>
+                                <h4 class="mb-0 text-danger">${{ aging_90plus|floatformat:0|intcomma }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Invoices Due -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-receipt text-warning me-2"></i>Invoices Requiring Attention</h6>
+                    <a href="{% url 'invoicing:invoice_list' %}?status=overdue" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if invoices_due %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Invoice #</th>
+                                    <th>Client</th>
+                                    <th>Due Date</th>
+                                    <th class="text-end">Amount Due</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for invoice in invoices_due %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="text-decoration-none fw-medium">
+                                            {{ invoice.invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ invoice.organization.name|default:invoice.contact.full_name }}</td>
+                                    <td>
+                                        {% if invoice.is_overdue %}
+                                        <span class="text-danger fw-bold">{{ invoice.due_date|date:"M d, Y" }}</span>
+                                        {% else %}
+                                        {{ invoice.due_date|date:"M d, Y" }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end fw-bold">${{ invoice.balance_due|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if invoice.status == 'OVERDUE' %}bg-danger
+                                            {% elif invoice.status == 'PARTIAL' %}bg-warning text-dark
+                                            {% elif invoice.status == 'SENT' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ invoice.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'invoicing:invoice_send_reminder' invoice.pk %}" class="btn btn-sm btn-outline-warning" title="Send Reminder">
+                                            <i class="bi bi-envelope"></i>
+                                        </a>
+                                        <a href="{% url 'invoicing:payment_record' invoice.pk %}" class="btn btn-sm btn-outline-success" title="Record Payment">
+                                            <i class="bi bi-plus-circle"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle text-success fs-1"></i>
+                        <p class="text-muted mb-0 mt-2">All invoices are current!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Recent Payments -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="bi bi-credit-card text-success me-2"></i>Recent Payments</h6>
+                    <a href="{% url 'invoicing:payment_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_payments %}
+                    <div class="list-group list-group-flush">
+                        {% for payment in recent_payments|slice:":6" %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-medium">${{ payment.amount|floatformat:2 }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ payment.invoice.organization.name|default:'Invoice '|add:payment.invoice.invoice_number }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success">{{ payment.get_payment_method_display }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ payment.payment_date|naturalday }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-cash-coin text-muted fs-1"></i>
+                        <p class="text-muted mb-0 mt-2">No recent payments</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'invoicing:invoice_create' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-plus-circle me-2"></i>Create Invoice
+                    </a>
+                    <a href="{% url 'invoicing:payment_list' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-credit-card me-2"></i>View All Payments
+                    </a>
+                    <a href="{% url 'invoicing:recurring_list' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-arrow-repeat me-2"></i>Recurring Invoices
+                    </a>
+                    <a href="{% url 'dashboard:reports' %}" class="list-group-item list-group-item-action">
+                        <i class="bi bi-graph-up me-2"></i>Financial Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

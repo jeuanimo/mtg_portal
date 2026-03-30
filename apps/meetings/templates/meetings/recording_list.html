@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Meeting Recordings{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Meeting Recordings</h1>
+        <form action="{% url 'meetings:sync_recordings' %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-repeat"></i> Sync Recordings
+            </button>
+        </form>
+    </div>
+
+    {% if recordings %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        {% for recording in recordings %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span class="text-truncate me-2">
+                        <i class="bi bi-camera-video me-2"></i>
+                        {{ recording.meeting.title }}
+                    </span>
+                    <span class="badge bg-primary">
+                        {{ recording.meeting.get_video_provider_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">Meeting Date</small>
+                        <p class="mb-0">{{ recording.meeting.scheduled_at|date:"M d, Y" }} at {{ recording.meeting.scheduled_at|time:"g:i A" }}</p>
+                    </div>
+                    
+                    {% if recording.duration_minutes %}
+                    <div class="mb-3">
+                        <small class="text-muted">Duration</small>
+                        <p class="mb-0">{{ recording.duration_minutes }} minutes</p>
+                    </div>
+                    {% endif %}
+
+                    {% if recording.file_size %}
+                    <div class="mb-3">
+                        <small class="text-muted">File Size</small>
+                        <p class="mb-0">{{ recording.file_size|filesizeformat }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if recording.meeting.organization %}
+                    <div class="mb-3">
+                        <small class="text-muted">Organization</small>
+                        <p class="mb-0">{{ recording.meeting.organization.name }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div>
+                        <small class="text-muted">Recorded</small>
+                        <p class="mb-0">{{ recording.recorded_at|naturaltime }}</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex gap-2">
+                        {% if recording.url %}
+                        <a href="{{ recording.url }}" class="btn btn-primary flex-grow-1" target="_blank">
+                            <i class="bi bi-play-fill"></i> Watch
+                        </a>
+                        {% endif %}
+                        {% if recording.transcript %}
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#transcriptModal{{ recording.pk }}">
+                            <i class="bi bi-file-text"></i>
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'meetings:meeting_detail' recording.meeting.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-info-circle"></i>
+                        </a>
+                    </div>
+                    {% if recording.password %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-lock me-1"></i>
+                            Password: <code>{{ recording.password }}</code>
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Transcript Modal -->
+        {% if recording.transcript %}
+        <div class="modal fade" id="transcriptModal{{ recording.pk }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Transcript: {{ recording.meeting.title }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <pre class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto;">{{ recording.transcript }}</pre>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if recordings.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if recordings.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recordings.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in recordings.paginator.page_range %}
+                {% if recordings.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > recordings.number|add:'-3' and num < recordings.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if recordings.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recordings.next_page_number }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-camera-video-off display-1 text-muted"></i>
+            <h4 class="mt-3">No Recordings Available</h4>
+            <p class="text-muted mb-4">Meeting recordings will appear here once meetings are completed with recording enabled.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'meetings:meeting_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list"></i> View Meetings
+                </a>
+                <form action="{% url 'meetings:sync_recordings' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-repeat"></i> Sync from Provider
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

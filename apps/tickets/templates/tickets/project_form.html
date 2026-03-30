@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if project %}Edit Project{% else %}New Project{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:project_list' %}">Projects</a></li>
+            <li class="breadcrumb-item active">{% if project %}Edit{% else %}New{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">{% if project %}Edit Project{% else %}Create New Project{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                {{ form.name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.project_type|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.organization|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.primary_contact|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.project_manager|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.start_date|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.target_end_date|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.actual_end_date|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form.estimated_hours|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.actual_hours|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form.budget|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.team_members|as_crispy_field }}
+                        </div>
+
+                        <!-- Milestones -->
+                        <h5 class="mt-4 mb-3">Milestones</h5>
+                        <div id="milestones-formset">
+                            {{ milestone_formset.management_form }}
+                            {% for milestone_form in milestone_formset %}
+                            <div class="card mb-3 milestone-form">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            {{ milestone_form.name|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3">
+                                            {{ milestone_form.due_date|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            {{ milestone_form.status|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            {{ milestone_form.order|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-1 d-flex align-items-end mb-3">
+                                            {{ milestone_form.DELETE }}
+                                        </div>
+                                    </div>
+                                    {{ milestone_form.id }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% if project %}{% url 'tickets:project_detail' project.pk %}{% else %}{% url 'tickets:project_list' %}{% endif %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> {% if project %}Update Project{% else %}Create Project{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

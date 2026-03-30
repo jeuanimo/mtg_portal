@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Meetings{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>All Meetings</h1>
+        <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> New Meeting
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    {{ filter_form.status }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.meeting_type }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.from_date }}
+                </div>
+                <div class="col-md-2">
+                    {{ filter_form.to_date }}
+                </div>
+                <div class="col-md-3">
+                    {{ filter_form.search }}
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Meetings Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Host</th>
+                        <th>Organization</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for meeting in meetings %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="fw-bold text-decoration-none">
+                                {{ meeting.title }}
+                            </a>
+                        </td>
+                        <td>
+                            {{ meeting.start_time|date:"M d, Y" }}<br>
+                            <small class="text-muted">{{ meeting.start_time|time:"g:i A" }} - {{ meeting.end_time|time:"g:i A" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if meeting.meeting_type == 'VIDEO' %}primary{% elif meeting.meeting_type == 'DEMO' %}info{% elif meeting.meeting_type == 'CONSULTING' %}success{% else %}secondary{% endif %}">
+                                {{ meeting.get_meeting_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if meeting.status == 'SCHEDULED' %}secondary{% elif meeting.status == 'CONFIRMED' %}primary{% elif meeting.status == 'IN_PROGRESS' %}success{% elif meeting.status == 'COMPLETED' %}info{% elif meeting.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+                                {{ meeting.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ meeting.host.get_full_name|default:meeting.organizer.get_full_name }}</td>
+                        <td>{{ meeting.organization.name|default:"-" }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'meetings:meeting_detail' meeting.pk %}">View Details</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'meetings:meeting_edit' meeting.pk %}">Edit</a></li>
+                                    {% if meeting.can_join and meeting.meeting_url %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-success" href="{{ meeting.meeting_url }}" target="_blank"><i class="bi bi-camera-video"></i> Join Meeting</a></li>
+                                    {% endif %}
+                                    {% if meeting.is_upcoming %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" action="{% url 'meetings:meeting_cancel' meeting.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger">Cancel</button>
+                                        </form>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                            No meetings found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">Previous</a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for k, v in request.GET.items %}{% if k != 'page' %}&{{ k }}={{ v }}{% endif %}{% endfor %}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

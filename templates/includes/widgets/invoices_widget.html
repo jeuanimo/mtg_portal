@@ -1,0 +1,54 @@
+{% comment %}
+Invoices Due Widget Component
+Usage: {% include 'includes/widgets/invoices_widget.html' with invoices=invoices_due title='Invoices Due' %}
+{% endcomment %}
+{% load humanize %}
+<div class="card border-0 shadow-sm h-100">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-receipt text-warning me-2"></i>{{ title|default:'Invoices Due' }}</h6>
+        <a href="{% url 'invoicing:invoice_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        {% if invoices %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Client</th>
+                        <th class="text-end">Amount</th>
+                        <th>Due</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in invoices|slice:":5" %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="text-decoration-none">
+                                {{ invoice.invoice_number }}
+                            </a>
+                        </td>
+                        <td class="text-truncate" style="max-width: 120px;">
+                            {{ invoice.organization.name|default:invoice.contact.full_name }}
+                        </td>
+                        <td class="text-end fw-bold">${{ invoice.total|floatformat:2 }}</td>
+                        <td>
+                            {% if invoice.is_overdue %}
+                            <span class="badge bg-danger">{{ invoice.due_date|naturalday }}</span>
+                            {% else %}
+                            <span class="text-muted">{{ invoice.due_date|naturalday }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-check-circle text-success fs-1"></i>
+            <p class="text-muted mb-0 mt-2">All invoices paid!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>

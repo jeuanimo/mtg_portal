@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Consultation Request Received - Mitchell Technology Group{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="mb-4">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                        </div>
+                        <h1 class="h2 fw-bold mb-3">Thank You!</h1>
+                        <p class="lead text-muted mb-4">Your consultation request has been received. Our team will contact you within 24 hours to schedule your free consultation.</p>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3">What Happens Next?</h5>
+                        <ul class="list-unstyled text-start mb-4">
+                            <li class="mb-2"><i class="bi bi-1-circle text-primary me-2"></i>Our team will review your request</li>
+                            <li class="mb-2"><i class="bi bi-2-circle text-primary me-2"></i>We'll reach out via email or phone</li>
+                            <li class="mb-2"><i class="bi bi-3-circle text-primary me-2"></i>Schedule a convenient meeting time</li>
+                            <li class="mb-2"><i class="bi bi-4-circle text-primary me-2"></i>Receive personalized recommendations</li>
+                        </ul>
+                        
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="{% url 'public:home' %}" class="btn btn-primary">Return Home</a>
+                            <a href="{% url 'public:services' %}" class="btn btn-outline-primary">Explore Services</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

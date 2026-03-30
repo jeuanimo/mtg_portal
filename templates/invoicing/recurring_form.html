@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'invoicing:recurring_list' %}">Recurring Invoices</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="h3 mb-4">{{ title }}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Basic Info -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recurring Invoice Details</h5>
+                    </div>
+                    <div class="card-body">
+                        {% crispy form %}
+                    </div>
+                </div>
+
+                <!-- Line Items -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Line Items</h5>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add-item">
+                            <i class="bi bi-plus-lg"></i> Add Item
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        
+                        <div class="table-responsive">
+                            <table class="table" id="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50%;">Description</th>
+                                        <th style="width: 20%;">Quantity</th>
+                                        <th style="width: 25%;">Unit Price</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="items-body">
+                                    {% for item_form in formset %}
+                                    <tr class="formset-row">
+                                        <td>
+                                            {{ item_form.id }}
+                                            {{ item_form.description }}
+                                        </td>
+                                        <td>{{ item_form.quantity }}</td>
+                                        <td>{{ item_form.unit_price }}</td>
+                                        <td>
+                                            <div class="d-none">{{ item_form.DELETE }}</div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-item">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-check-lg"></i> Save Recurring Invoice
+                        </button>
+                        <a href="{% url 'invoicing:recurring_list' %}" class="btn btn-outline-secondary w-100">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">How it works</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">
+                            Recurring invoices automatically generate new invoices based on your schedule.
+                        </p>
+                        <ul class="small text-muted mb-0">
+                            <li>Invoices are created as drafts</li>
+                            <li>Review and send when ready</li>
+                            <li>Pause anytime if needed</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<template id="item-template">
+    <tr class="formset-row">
+        <td>
+            <input type="hidden" name="items-__prefix__-id">
+            <input type="text" name="items-__prefix__-description" class="form-control">
+        </td>
+        <td>
+            <input type="number" name="items-__prefix__-quantity" class="form-control" step="0.01" value="1">
+        </td>
+        <td>
+            <input type="number" name="items-__prefix__-unit_price" class="form-control" step="0.01">
+        </td>
+        <td>
+            <input type="checkbox" name="items-__prefix__-DELETE" class="d-none">
+            <button type="button" class="btn btn-sm btn-outline-danger delete-item">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsBody = document.getElementById('items-body');
+    const template = document.getElementById('item-template');
+    const totalForms = document.querySelector('#id_items-TOTAL_FORMS');
+    
+    document.getElementById('add-item').addEventListener('click', function() {
+        const formNum = parseInt(totalForms.value);
+        const newRow = template.content.cloneNode(true);
+        const row = newRow.querySelector('tr');
+        
+        row.innerHTML = row.innerHTML.replace(/__prefix__/g, formNum);
+        itemsBody.appendChild(newRow);
+        totalForms.value = formNum + 1;
+        
+        attachDeleteListener(row);
+    });
+    
+    function attachDeleteListener(row) {
+        row.querySelector('.delete-item').addEventListener('click', function() {
+            const deleteCheckbox = row.querySelector('[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = !deleteCheckbox.checked;
+                row.classList.toggle('table-danger', deleteCheckbox.checked);
+            }
+        });
+    }
+    
+    document.querySelectorAll('.formset-row').forEach(attachDeleteListener);
+});
+</script>
+{% endblock %}

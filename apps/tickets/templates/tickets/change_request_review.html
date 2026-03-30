@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Review Change Request{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:project_list' %}">Projects</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:project_detail' change_request.project.pk %}">{{ change_request.project.name }}</a></li>
+            <li class="breadcrumb-item active">Review Change Request</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">{{ change_request.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-muted">Description</h6>
+                    <p>{{ change_request.description|linebreaks }}</p>
+
+                    <h6 class="text-muted mt-4">Reason for Change</h6>
+                    <p>{{ change_request.reason|linebreaks }}</p>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Submit Review</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Review Notes</label>
+                            <textarea name="review_notes" class="form-control" rows="4" placeholder="Enter your review comments..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="bi bi-check-lg"></i> Approve
+                            </button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger">
+                                <i class="bi bi-x-lg"></i> Reject
+                            </button>
+                            <a href="{% url 'tickets:project_detail' change_request.project.pk %}" class="btn btn-outline-secondary ms-auto">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Impact Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-6">Scope Impact</dt>
+                        <dd class="col-sm-6">
+                            <span class="badge bg-{% if change_request.scope_impact == 'MAJOR' %}danger{% elif change_request.scope_impact == 'MODERATE' %}warning{% else %}info{% endif %}">
+                                {{ change_request.get_scope_impact_display }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-6">Budget Impact</dt>
+                        <dd class="col-sm-6">
+                            {% if change_request.budget_impact %}
+                                ${{ change_request.budget_impact }}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-6">Schedule Impact</dt>
+                        <dd class="col-sm-6">
+                            {% if change_request.schedule_impact_days %}
+                                {{ change_request.schedule_impact_days }} days
+                            {% else %}
+                                None
+                            {% endif %}
+                        </dd>
+
+                        <dt class="col-sm-6">Requested By</dt>
+                        <dd class="col-sm-6">{{ change_request.requested_by.get_full_name|default:change_request.requested_by.email }}</dd>
+
+                        <dt class="col-sm-6">Requested On</dt>
+                        <dd class="col-sm-6">{{ change_request.created_at|date:"M d, Y" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

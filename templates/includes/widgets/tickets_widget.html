@@ -1,0 +1,44 @@
+{% comment %}
+Tickets Widget Component
+Usage: {% include 'includes/widgets/tickets_widget.html' with tickets=open_tickets title='Open Tickets' %}
+{% endcomment %}
+{% load humanize %}
+<div class="card border-0 shadow-sm h-100">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-ticket-detailed text-primary me-2"></i>{{ title|default:'Open Tickets' }}</h6>
+        <a href="{% url 'tickets:ticket_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body p-0">
+        {% if tickets %}
+        <div class="list-group list-group-flush">
+            {% for ticket in tickets|slice:":5" %}
+            <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between align-items-start">
+                    <div>
+                        <span class="badge bg-{{ ticket.priority|default:'medium' }}-priority mb-1
+                            {% if ticket.priority == 'URGENT' %}bg-danger
+                            {% elif ticket.priority == 'HIGH' %}bg-warning text-dark
+                            {% elif ticket.priority == 'MEDIUM' %}bg-info
+                            {% else %}bg-secondary{% endif %}">
+                            {{ ticket.get_priority_display }}
+                        </span>
+                        <h6 class="mb-1 text-truncate" style="max-width: 250px;">
+                            #{{ ticket.ticket_number }}: {{ ticket.subject }}
+                        </h6>
+                        <small class="text-muted">
+                            {% if ticket.organization %}{{ ticket.organization.name }}{% else %}{{ ticket.created_by.email }}{% endif %}
+                        </small>
+                    </div>
+                    <small class="text-muted text-nowrap">{{ ticket.created_at|naturaltime }}</small>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-check-circle text-success fs-1"></i>
+            <p class="text-muted mb-0 mt-2">No open tickets!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>

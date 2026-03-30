@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ meeting.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'meetings:meeting_dashboard' %}">Meetings</a></li>
+                    <li class="breadcrumb-item active">{{ meeting.title|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-1">{{ meeting.title }}</h1>
+            <p class="text-muted">
+                <span class="badge bg-{% if meeting.status == 'SCHEDULED' %}secondary{% elif meeting.status == 'CONFIRMED' %}primary{% elif meeting.status == 'IN_PROGRESS' %}success{% elif meeting.status == 'COMPLETED' %}info{% elif meeting.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+                    {{ meeting.get_status_display }}
+                </span>
+                <span class="badge bg-light text-dark ms-1">{{ meeting.get_meeting_type_display }}</span>
+                {% if meeting.video_provider != 'NONE' %}
+                <span class="badge bg-light text-dark ms-1">{{ meeting.get_video_provider_display }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="btn-group">
+            {% if meeting.can_join %}
+                {% if meeting.host_url and request.user == meeting.host or request.user == meeting.organizer %}
+                <a href="{{ meeting.host_url|default:meeting.meeting_url }}" class="btn btn-success" target="_blank">
+                    <i class="bi bi-camera-video-fill"></i> Start Meeting
+                </a>
+                {% elif meeting.meeting_url %}
+                <a href="{{ meeting.meeting_url }}" class="btn btn-success" target="_blank">
+                    <i class="bi bi-camera-video"></i> Join Meeting
+                </a>
+                {% endif %}
+            {% endif %}
+            {% if can_edit %}
+            <a href="{% url 'meetings:meeting_edit' meeting.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            {% if meeting.is_upcoming %}
+            <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if meeting.status == 'SCHEDULED' %}
+                <li>
+                    <form method="post" action="{% url 'meetings:meeting_start' meeting.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-success"><i class="bi bi-play-fill"></i> Start Meeting</button>
+                    </form>
+                </li>
+                {% endif %}
+                <li>
+                    <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                        <i class="bi bi-x-circle"></i> Cancel Meeting
+                    </button>
+                </li>
+            </ul>
+            {% elif meeting.status == 'IN_PROGRESS' %}
+            <form method="post" action="{% url 'meetings:meeting_complete' meeting.pk %}" class="ms-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-check-lg"></i> Complete
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Meeting Info Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Date & Time</h6>
+                            <p class="fs-5">
+                                {{ meeting.start_time|date:"l, F d, Y" }}<br>
+                                {{ meeting.start_time|time:"g:i A" }} - {{ meeting.end_time|time:"g:i A" }}
+                                <small class="text-muted">({{ meeting.duration_minutes }} min)</small>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if meeting.meeting_url %}
+                            <h6 class="text-muted">Meeting Link</h6>
+                            <p>
+                                <a href="{{ meeting.meeting_url }}" target="_blank" class="text-break">{{ meeting.meeting_url|truncatechars:50 }}</a>
+                                {% if meeting.meeting_password %}
+                                <br><small class="text-muted">Password: {{ meeting.meeting_password }}</small>
+                                {% endif %}
+                            </p>
+                            {% elif meeting.location %}
+                            <h6 class="text-muted">Location</h6>
+                            <p>{{ meeting.location }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            {% if meeting.description %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    {{ meeting.description|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Agenda -->
+            {% if meeting.agenda %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Agenda</h5>
+                </div>
+                <div class="card-body">
+                    {{ meeting.agenda|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notes (editable if completed) -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Meeting Notes</h5>
+                </div>
+                <div class="card-body">
+                    {% if meeting.status == 'COMPLETED' and can_edit %}
+                    <form method="post" action="{% url 'meetings:meeting_update_notes' meeting.pk %}">
+                        {% csrf_token %}
+                        {{ notes_form|crispy }}
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Notes
+                        </button>
+                    </form>
+                    {% else %}
+                    {% if meeting.notes %}
+                    <p>{{ meeting.notes|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted">No notes recorded yet.</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Items -->
+            {% if meeting.action_items %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Action Items</h5>
+                </div>
+                <div class="card-body">
+                    {{ meeting.action_items|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recordings -->
+            {% if recordings %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recordings</h5>
+                    {% if request.user.is_staff %}
+                    <form method="post" action="{% url 'meetings:sync_recordings' meeting.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i> Sync
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for recording in recordings %}
+                    <a href="{{ recording.recording_url }}" class="list-group-item list-group-item-action" target="_blank">
+                        <i class="bi bi-play-circle"></i> {{ recording.title }}
+                        <span class="float-end text-muted">{{ recording.duration_seconds|div:60 }} min</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Attendees -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Attendees</h5>
+                    {% if can_edit and meeting.is_upcoming %}
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAttendeeModal">
+                        <i class="bi bi-plus"></i> Add
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>RSVP</th>
+                                <th>Attendance</th>
+                                {% if can_edit %}
+                                <th></th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendee in attendees %}
+                            <tr>
+                                <td>
+                                    {{ attendee.get_display_name }}
+                                    {% if attendee.email %}<br><small class="text-muted">{{ attendee.email }}</small>{% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if attendee.rsvp_status == 'ACCEPTED' %}success{% elif attendee.rsvp_status == 'DECLINED' %}danger{% elif attendee.rsvp_status == 'TENTATIVE' %}warning{% else %}secondary{% endif %}">
+                                        {{ attendee.get_rsvp_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if attendee.attendance_status == 'ATTENDED' %}success{% elif attendee.attendance_status == 'NO_SHOW' %}danger{% elif attendee.attendance_status == 'PARTIAL' %}warning{% else %}secondary{% endif %}">
+                                        {{ attendee.get_attendance_status_display }}
+                                    </span>
+                                </td>
+                                {% if can_edit %}
+                                <td>
+                                    <form method="post" action="{% url 'meetings:meeting_remove_attendee' meeting.pk attendee.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this attendee?')">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No attendees added</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Organizer/Host -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Host & Organizer</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Organizer</dt>
+                        <dd class="col-sm-7">{{ meeting.organizer.get_full_name|default:meeting.organizer.email }}</dd>
+                        
+                        <dt class="col-sm-5">Host</dt>
+                        <dd class="col-sm-7">{{ meeting.host.get_full_name|default:meeting.host.email|default:"Same as organizer" }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Client Info -->
+            {% if meeting.organization %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Client</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ meeting.organization.name }}</h6>
+                    {% if meeting.contact %}
+                    <p class="text-muted mb-0">
+                        {{ meeting.contact.full_name }}<br>
+                        {{ meeting.contact.email }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Client Join Link -->
+            {% if meeting.allow_client_join and meeting.is_upcoming %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Client Join Page</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Share this link with external attendees:</p>
+                    <input type="text" class="form-control form-control-sm" readonly 
+                           value="{{ request.scheme }}://{{ request.get_host }}{% url 'meetings:client_join' meeting.client_join_token %}">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Items -->
+            {% if meeting.project or meeting.ticket %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Related Items</h5>
+                </div>
+                <div class="card-body">
+                    {% if meeting.project %}
+                    <p>
+                        <i class="bi bi-folder"></i>
+                        <a href="{% url 'tickets:project_detail' meeting.project.pk %}">{{ meeting.project.name }}</a>
+                    </p>
+                    {% endif %}
+                    {% if meeting.ticket %}
+                    <p class="mb-0">
+                        <i class="bi bi-ticket"></i>
+                        <a href="{% url 'tickets:ticket_detail' meeting.ticket.pk %}">{{ meeting.ticket.ticket_number }}</a>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Meta Info -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0 small">
+                        <dt class="col-sm-5">Created</dt>
+                        <dd class="col-sm-7">{{ meeting.created_at|date:"M d, Y" }}</dd>
+                        
+                        {% if meeting.is_recorded %}
+                        <dt class="col-sm-5">Recording</dt>
+                        <dd class="col-sm-7">Enabled</dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-5">Timezone</dt>
+                        <dd class="col-sm-7">{{ meeting.timezone }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Attendee Modal -->
+<div class="modal fade" id="addAttendeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'meetings:meeting_add_attendee' meeting.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Attendee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {{ attendee_form|crispy }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Attendee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Meeting Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'meetings:meeting_cancel' meeting.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Cancel Meeting</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to cancel this meeting?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Reason (optional)</label>
+                        <textarea name="reason" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Meeting</button>
+                    <button type="submit" class="btn btn-danger">Cancel Meeting</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if ticket %}Edit Ticket{% else %}New Ticket{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_list' %}">Tickets</a></li>
+            <li class="breadcrumb-item active">{% if ticket %}Edit {{ ticket.ticket_number }}{% else %}New Ticket{% endif %}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">{% if ticket %}Edit Ticket{% else %}Create New Ticket{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                {{ form.subject|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.priority|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.category|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        {% if form.status %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.assigned_to|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if form.organization %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.organization|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.contact|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if form.due_date %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.due_date|as_crispy_field }}
+                            </div>
+                            {% if form.project %}
+                            <div class="col-md-6 mb-3">
+                                {{ form.project|as_crispy_field }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            {{ form.description|as_crispy_field }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% if ticket %}{% url 'tickets:ticket_detail' ticket.pk %}{% else %}{% url 'tickets:ticket_list' %}{% endif %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> {% if ticket %}Update Ticket{% else %}Create Ticket{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

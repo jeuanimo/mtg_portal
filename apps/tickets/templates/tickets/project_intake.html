@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Project Intake - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Project Intake Form</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>{{ project.name }}</h5>
+                        <p class="text-muted">{{ project.organization.name }}</p>
+                    </div>
+
+                    <p class="lead mb-4">
+                        Please complete this intake form to help us better understand your project requirements.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">What are your primary goals for this project?</label>
+                            <textarea name="goals" class="form-control" rows="4" required>{{ project.intake_responses.goals|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">What is your ideal timeline for completion?</label>
+                            <textarea name="timeline" class="form-control" rows="2" required>{{ project.intake_responses.timeline|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">What is your budget range?</label>
+                            <select name="budget_range" class="form-select" required>
+                                <option value="">Select a range...</option>
+                                <option value="under_5k" {% if project.intake_responses.budget_range == 'under_5k' %}selected{% endif %}>Under $5,000</option>
+                                <option value="5k_15k" {% if project.intake_responses.budget_range == '5k_15k' %}selected{% endif %}>$5,000 - $15,000</option>
+                                <option value="15k_50k" {% if project.intake_responses.budget_range == '15k_50k' %}selected{% endif %}>$15,000 - $50,000</option>
+                                <option value="50k_100k" {% if project.intake_responses.budget_range == '50k_100k' %}selected{% endif %}>$50,000 - $100,000</option>
+                                <option value="over_100k" {% if project.intake_responses.budget_range == 'over_100k' %}selected{% endif %}>Over $100,000</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Describe your current technology stack/systems (if applicable)</label>
+                            <textarea name="current_stack" class="form-control" rows="3">{{ project.intake_responses.current_stack|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Who are the key stakeholders and decision makers?</label>
+                            <textarea name="stakeholders" class="form-control" rows="3" required>{{ project.intake_responses.stakeholders|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">What are the biggest challenges you're trying to solve?</label>
+                            <textarea name="challenges" class="form-control" rows="4" required>{{ project.intake_responses.challenges|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">How will you measure success for this project?</label>
+                            <textarea name="success_metrics" class="form-control" rows="3" required>{{ project.intake_responses.success_metrics|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Are there any regulatory or compliance requirements we should be aware of?</label>
+                            <textarea name="compliance" class="form-control" rows="2">{{ project.intake_responses.compliance|default:"" }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Any additional information you'd like to share?</label>
+                            <textarea name="additional_info" class="form-control" rows="3">{{ project.intake_responses.additional_info|default:"" }}</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-lg"></i> Submit Intake Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

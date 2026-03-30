@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'tickets:project_list' %}">Projects</a></li>
+                    <li class="breadcrumb-item active">{{ project.project_number }}</li>
+                </ol>
+            </nav>
+            <h1 class="mb-1">{{ project.name }}</h1>
+            <p class="text-muted">
+                <span class="badge bg-{% if project.status == 'IN_PROGRESS' %}primary{% elif project.status == 'COMPLETED' %}success{% elif project.status == 'ON_HOLD' %}warning{% elif project.status == 'CANCELLED' %}danger{% else %}secondary{% endif %}">
+                    {{ project.get_status_display }}
+                </span>
+                <span class="badge bg-light text-dark ms-1">{{ project.get_project_type_display }}</span>
+                <span class="ms-2">{{ project.project_number }}</span>
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'tickets:project_edit' project.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Progress Overview -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="text-muted mb-2">Overall Progress</h6>
+                            <div class="progress mb-2" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ project.progress_percentage|default:0 }}%">
+                                    {{ project.progress_percentage|default:0 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <small class="text-muted">
+                                {% if project.actual_hours %}{{ project.actual_hours }}{% else %}0{% endif %} / {{ project.estimated_hours|default:0 }} hours
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    {{ project.description|linebreaks }}
+                </div>
+            </div>
+
+            <!-- Milestones -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Milestones</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for milestone in milestones %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-{% if milestone.status == 'COMPLETED' %}check-circle-fill text-success{% elif milestone.status == 'IN_PROGRESS' %}circle-half text-primary{% else %}circle text-muted{% endif %} me-2"></i>
+                                    <strong>{{ milestone.name }}</strong>
+                                    {% if milestone.description %}
+                                    <p class="mb-0 text-muted small ms-4">{{ milestone.description }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{% if milestone.status == 'COMPLETED' %}success{% elif milestone.status == 'IN_PROGRESS' %}primary{% else %}secondary{% endif %}">
+                                        {{ milestone.get_status_display }}
+                                    </span>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% if milestone.completed_date %}
+                                            Completed {{ milestone.completed_date|date:"M d" }}
+                                        {% elif milestone.due_date %}
+                                            Due {{ milestone.due_date|date:"M d" }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted py-4">No milestones defined</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Deliverables -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Deliverables</h5>
+                    <a href="{% url 'tickets:deliverable_create' project.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i> Add
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Milestone</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for deliverable in deliverables %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'tickets:deliverable_detail' deliverable.pk %}">{{ deliverable.name }}</a>
+                                </td>
+                                <td>{{ deliverable.milestone.name|default:"-" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if deliverable.status == 'APPROVED' %}success{% elif deliverable.status == 'SUBMITTED' %}info{% elif deliverable.status == 'IN_PROGRESS' %}primary{% elif deliverable.status == 'REVISION' %}warning{% else %}secondary{% endif %}">
+                                        {{ deliverable.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ deliverable.due_date|date:"M d, Y"|default:"-" }}</td>
+                                <td>
+                                    {% if deliverable.status == 'SUBMITTED' and request.user.is_staff %}
+                                    <form method="post" action="{% url 'tickets:deliverable_approve' deliverable.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No deliverables</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Change Requests -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Change Requests</h5>
+                    <a href="{% url 'tickets:change_request_create' project.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i> New Request
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Impact</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cr in change_requests %}
+                            <tr>
+                                <td>{{ cr.title }}</td>
+                                <td>
+                                    <span class="badge bg-{% if cr.scope_impact == 'MAJOR' %}danger{% elif cr.scope_impact == 'MODERATE' %}warning{% else %}info{% endif %}">
+                                        {{ cr.get_scope_impact_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if cr.status == 'APPROVED' %}success{% elif cr.status == 'REJECTED' %}danger{% elif cr.status == 'PENDING' %}warning{% else %}secondary{% endif %}">
+                                        {{ cr.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ cr.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if cr.status == 'PENDING' and request.user.is_staff %}
+                                    <a href="{% url 'tickets:change_request_review' cr.pk %}" class="btn btn-sm btn-outline-primary">Review</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No change requests</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Related Tickets -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Related Tickets</h5>
+                    <a href="{% url 'tickets:ticket_create' %}?project={{ project.pk }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i> Create Ticket
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in related_tickets %}
+                            <tr>
+                                <td><a href="{% url 'tickets:ticket_detail' ticket.pk %}">{{ ticket.ticket_number }}</a></td>
+                                <td>{{ ticket.subject|truncatechars:40 }}</td>
+                                <td>
+                                    <span class="badge bg-{% if ticket.priority == 'URGENT' %}danger{% elif ticket.priority == 'HIGH' %}warning{% else %}secondary{% endif %}">
+                                        {{ ticket.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>{{ ticket.get_status_display }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No related tickets</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Project Notes -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Project Notes</h5>
+                </div>
+                <div class="card-body">
+                    {% for note in notes %}
+                    <div class="border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ note.author.get_full_name|default:note.author.email }}</strong>
+                            <small class="text-muted">{{ note.created_at|date:"M d, Y g:i a" }}</small>
+                        </div>
+                        <p class="mb-0">{{ note.content|linebreaks }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No notes yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Project Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Project Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Organization</dt>
+                        <dd class="col-sm-7">{{ project.organization.name }}</dd>
+                        
+                        <dt class="col-sm-5">Primary Contact</dt>
+                        <dd class="col-sm-7">{{ project.primary_contact.full_name|default:"-" }}</dd>
+                        
+                        <dt class="col-sm-5">Project Manager</dt>
+                        <dd class="col-sm-7">{{ project.project_manager.get_full_name|default:"-" }}</dd>
+                        
+                        <dt class="col-sm-5">Start Date</dt>
+                        <dd class="col-sm-7">{{ project.start_date|date:"M d, Y"|default:"-" }}</dd>
+                        
+                        <dt class="col-sm-5">Target End</dt>
+                        <dd class="col-sm-7">{{ project.target_end_date|date:"M d, Y"|default:"-" }}</dd>
+                        
+                        {% if project.actual_end_date %}
+                        <dt class="col-sm-5">Actual End</dt>
+                        <dd class="col-sm-7">{{ project.actual_end_date|date:"M d, Y" }}</dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-5">Budget</dt>
+                        <dd class="col-sm-7">${{ project.budget|default:"-" }}</dd>
+                        
+                        <dt class="col-sm-5">Est. Hours</dt>
+                        <dd class="col-sm-7">{{ project.estimated_hours|default:"-" }}</dd>
+                        
+                        <dt class="col-sm-5">Actual Hours</dt>
+                        <dd class="col-sm-7">{{ project.actual_hours|default:"0" }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Team Members -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Team</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        {% for member in project.team_members.all %}
+                        <li class="d-flex align-items-center mb-2">
+                            <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                {{ member.first_name|slice:":1"|upper }}{{ member.last_name|slice:":1"|upper }}
+                            </div>
+                            {{ member.get_full_name|default:member.email }}
+                        </li>
+                        {% empty %}
+                        <li class="text-muted">No team members assigned</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Time Tracking -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Time Entries</h5>
+                    <a href="{% url 'tickets:time_entry_create' %}?project={{ project.pk }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Total Hours</span>
+                        <strong>{{ total_hours|default:"0" }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Billable Hours</span>
+                        <strong>{{ billable_hours|default:"0" }}</strong>
+                    </div>
+                    <a href="{% url 'tickets:time_entry_list' %}?project={{ project.pk }}" class="btn btn-outline-secondary btn-sm w-100">
+                        View All Time Entries
+                    </a>
+                </div>
+            </div>
+
+            <!-- Intake Responses -->
+            {% if project.intake_responses %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Intake Responses</h5>
+                </div>
+                <div class="card-body">
+                    {% for key, value in project.intake_responses.items %}
+                    <div class="mb-2">
+                        <small class="text-muted">{{ key }}</small>
+                        <p class="mb-0">{{ value }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
