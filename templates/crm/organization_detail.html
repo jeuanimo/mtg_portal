@@ -1,0 +1,90 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ organization.name }}{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ organization.name }}</h1>
+            <p class="text-muted mb-0">{{ organization.industry|default:"Organization" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'crm:contact_create' %}" class="btn btn-outline-primary">Add Contact</a>
+            <a href="{% url 'crm:organization_edit' organization.pk %}"
+               class="btn btn-primary">Edit Organization</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Details</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Email:</strong> {{ organization.email|default:"-" }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Phone:</strong> {{ organization.phone|default:"-" }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Website:</strong> {{ organization.website|default:"-" }}
+                    </p>
+                    <p class="mb-0">
+                        <strong>Location:</strong> {{ organization.city|default:"-" }}
+                        {% if organization.state %}, {{ organization.state }}{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Contacts</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for contact in contacts %}
+                        <a href="{% url 'crm:contact_detail' contact.pk %}"
+                           class="list-group-item list-group-item-action">
+                            {{ contact.full_name }}
+                            {% if contact.job_title %}- {{ contact.job_title }}{% endif %}
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-muted text-center py-4">No contacts recorded.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Leads</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for lead in leads %}
+                        <a href="{% url 'crm:lead_detail' lead.pk %}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ lead.title }}</span>
+                                <span class="text-muted">{{ lead.get_status_display }}</span>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="list-group-item text-muted text-center py-4">No leads associated with this organization.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tasks</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for task in tasks %}
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>{{ task.title }}</span>
+                            <span class="text-muted">{{ task.get_status_display }}</span>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-muted text-center py-4">No tasks assigned.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

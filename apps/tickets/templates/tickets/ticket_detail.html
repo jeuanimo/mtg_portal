@@ -263,7 +263,7 @@
             {% endif %}
 
             <!-- Quick Status Update -->
-            {% if ticket.is_open and request.user.is_staff %}
+            {% if ticket.is_open and request.user.is_staff_user %}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Quick Update</h5>

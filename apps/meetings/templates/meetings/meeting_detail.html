@@ -168,7 +168,7 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recordings</h5>
-                    {% if request.user.is_staff %}
+                    {% if request.user.is_staff_user %}
                     <form method="post" action="{% url 'meetings:sync_recordings' meeting.pk %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-outline-secondary">

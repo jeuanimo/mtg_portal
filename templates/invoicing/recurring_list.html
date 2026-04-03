@@ -1,74 +1,78 @@
 {% extends "base.html" %}
-
 {% block title %}Recurring Invoices{% endblock %}
-
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Recurring Invoices</h1>
-        <a href="{% url 'invoicing:recurring_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> New Recurring Invoice
-        </a>
-    </div>
-
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Client</th>
-                            <th>Frequency</th>
-                            <th>Next Invoice</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for recurring in recurring_invoices %}
-                        <tr>
-                            <td>
-                                <strong>{{ recurring.name }}</strong>
-                            </td>
-                            <td>{{ recurring.organization.name }}</td>
-                            <td>{{ recurring.get_frequency_display }}</td>
-                            <td>{{ recurring.next_invoice_date|date:"M d, Y" }}</td>
-                            <td>
-                                {% if recurring.is_active %}
-                                <span class="badge bg-success">Active</span>
-                                {% else %}
-                                <span class="badge bg-secondary">Paused</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'invoicing:recurring_edit' recurring.pk %}" class="btn btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <form method="post" action="{% url 'invoicing:recurring_toggle' recurring.pk %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-{% if recurring.is_active %}warning{% else %}success{% endif %}" title="{% if recurring.is_active %}Pause{% else %}Activate{% endif %}">
-                                            <i class="bi bi-{% if recurring.is_active %}pause{% else %}play{% endif %}"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                <i class="bi bi-arrow-repeat fs-1 d-block mb-2"></i>
-                                No recurring invoices set up
-                                <br>
-                                <a href="{% url 'invoicing:recurring_create' %}" class="btn btn-primary btn-sm mt-2">Create your first one</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">Recurring Invoices</h1>
+            <a href="{% url 'invoicing:recurring_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Recurring Invoice
+            </a>
+        </div>
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Client</th>
+                                <th>Frequency</th>
+                                <th>Next Invoice</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for recurring in recurring_invoices %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ recurring.name }}</strong>
+                                    </td>
+                                    <td>{{ recurring.organization.name }}</td>
+                                    <td>{{ recurring.get_frequency_display }}</td>
+                                    <td>{{ recurring.next_invoice_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if recurring.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Paused</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'invoicing:recurring_edit' recurring.pk %}"
+                                               class="btn btn-outline-primary"
+                                               title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="post"
+                                                  action="{% url 'invoicing:recurring_toggle' recurring.pk %}"
+                                                  class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                        class="btn btn-outline-{% if recurring.is_active %}warning{% else %}success{% endif %}"
+                                                        title="{% if recurring.is_active %}Pause{% else %}Activate{% endif %}">
+                                                    <i class="bi bi-{% if recurring.is_active %}pause{% else %}play{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="bi bi-arrow-repeat fs-1 d-block mb-2"></i>
+                                        No recurring invoices set up
+                                        <br>
+                                        <a href="{% url 'invoicing:recurring_create' %}"
+                                           class="btn btn-primary btn-sm mt-2">Create your first one</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

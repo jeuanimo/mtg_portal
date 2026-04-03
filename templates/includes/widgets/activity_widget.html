@@ -5,43 +5,31 @@ Usage: {% include 'includes/widgets/activity_widget.html' with activities=recent
 {% load humanize %}
 <div class="card border-0 shadow-sm h-100">
     <div class="card-header bg-white">
-        <h6 class="mb-0"><i class="bi bi-activity text-primary me-2"></i>Recent Activity</h6>
+        <h6 class="mb-0">
+            <i class="bi bi-activity text-primary me-2"></i>Recent Activity
+        </h6>
     </div>
     <div class="card-body">
         {% if activities %}
-        <div class="activity-feed">
-            {% for activity in activities|slice:":8" %}
-            <div class="d-flex align-items-start mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
-                <div class="activity-icon rounded-circle p-2 me-3
-                    {% if activity.type == 'lead' %}bg-success-subtle
-                    {% elif activity.type == 'ticket' %}bg-warning-subtle
-                    {% elif activity.type == 'invoice' %}bg-info-subtle
-                    {% elif activity.type == 'meeting' %}bg-primary-subtle
-                    {% elif activity.type == 'payment' %}bg-success-subtle
-                    {% else %}bg-secondary-subtle{% endif %}">
-                    <i class="bi 
-                        {% if activity.type == 'lead' %}bi-person-plus text-success
-                        {% elif activity.type == 'ticket' %}bi-ticket text-warning
-                        {% elif activity.type == 'invoice' %}bi-receipt text-info
-                        {% elif activity.type == 'meeting' %}bi-calendar-event text-primary
-                        {% elif activity.type == 'payment' %}bi-credit-card text-success
-                        {% else %}bi-circle text-secondary{% endif %}"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <p class="mb-0 fw-medium">{{ activity.title }}</p>
-                    {% if activity.description %}
-                    <small class="text-muted">{{ activity.description }}</small>
-                    {% endif %}
-                </div>
-                <small class="text-muted text-nowrap">{{ activity.timestamp|naturaltime }}</small>
+            <div class="activity-feed">
+                {% for activity in activities|slice:":8" %}
+                    <div class="d-flex align-items-start mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <div class="activity-icon rounded-circle p-2 me-3 {% if activity.type == 'lead' %}bg-success-subtle {% elif activity.type == 'ticket' %}bg-warning-subtle {% elif activity.type == 'invoice' %}bg-info-subtle {% elif activity.type == 'meeting' %}bg-primary-subtle {% elif activity.type == 'payment' %}bg-success-subtle {% else %}bg-secondary-subtle{% endif %}">
+                            <i class="bi {% if activity.type == 'lead' %}bi-person-plus text-success {% elif activity.type == 'ticket' %}bi-ticket text-warning {% elif activity.type == 'invoice' %}bi-receipt text-info {% elif activity.type == 'meeting' %}bi-calendar-event text-primary {% elif activity.type == 'payment' %}bi-credit-card text-success {% else %}bi-circle text-secondary{% endif %}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="mb-0 fw-medium">{{ activity.title }}</p>
+                            {% if activity.description %}<small class="text-muted">{{ activity.description }}</small>{% endif %}
+                        </div>
+                        <small class="text-muted text-nowrap">{{ activity.timestamp|naturaltime }}</small>
+                    </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
         {% else %}
-        <div class="text-center py-4">
-            <i class="bi bi-journal-x text-muted fs-1"></i>
-            <p class="text-muted mb-0 mt-2">No recent activity</p>
-        </div>
+            <div class="text-center py-4">
+                <i class="bi bi-journal-x text-muted fs-1"></i>
+                <p class="text-muted mb-0 mt-2">No recent activity</p>
+            </div>
         {% endif %}
     </div>
 </div>

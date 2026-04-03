@@ -75,9 +75,48 @@ class Invoice(TimeStampedModel):
             models.Index(fields=['organization', '-issue_date']),
             models.Index(fields=['due_date', 'status']),
         ]
+
+    OUTSTANDING_STATUSES = (
+        Status.SENT,
+        Status.VIEWED,
+        Status.PARTIAL,
+        Status.OVERDUE,
+    )
+    NON_EDITABLE_STATUSES = (Status.PAID, Status.CANCELLED)
     
     def __str__(self):
         return f"Invoice #{self.invoice_number} - {self.organization.name}"
+
+    @property
+    def total_amount(self):
+        """Backwards-compatible alias for stale views/templates."""
+        return self.total
+
+    @property
+    def paid_amount(self):
+        """Backwards-compatible alias for stale views/templates."""
+        return self.amount_paid
+
+    @property
+    def discount_amount(self):
+        """Backwards-compatible alias for stale views/templates."""
+        return self.discount
+
+    @property
+    def can_send(self):
+        return self.status == self.Status.DRAFT
+
+    @property
+    def can_record_payment(self):
+        return self.status not in self.NON_EDITABLE_STATUSES
+
+    @property
+    def can_pay_online(self):
+        return self.status in self.OUTSTANDING_STATUSES
+
+    @property
+    def can_cancel(self):
+        return self.status not in self.NON_EDITABLE_STATUSES
     
     def calculate_totals(self):
         """Recalculate all totals from line items."""
@@ -96,7 +135,7 @@ class Invoice(TimeStampedModel):
     
     @property
     def is_overdue(self):
-        if self.status in [self.Status.PAID, self.Status.CANCELLED]:
+        if self.status in self.NON_EDITABLE_STATUSES:
             return False
         return self.due_date < timezone.now().date()
     
@@ -149,6 +188,11 @@ class InvoiceItem(TimeStampedModel):
     
     def __str__(self):
         return f"{self.description} - {self.line_total}"
+
+    @property
+    def total(self):
+        """Backwards-compatible alias for older templates."""
+        return self.line_total
     
     def save(self, *args, **kwargs):
         self.line_total = self.quantity * self.unit_price

@@ -1,7 +1,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit, HTML, Field, Div
-from .models import ContactSubmission, ServiceRequest, Service
+from crispy_forms.layout import Layout, Row, Column, Submit, HTML
+from .models import ContactSubmission, ServiceRequest
 
 
 class ContactForm(forms.ModelForm):
@@ -31,7 +31,7 @@ class ContactForm(forms.ModelForm):
         # Add placeholders
         self.fields['name'].widget.attrs['placeholder'] = 'Your Name'
         self.fields['email'].widget.attrs['placeholder'] = 'your@email.com'
-        self.fields['phone'].widget.attrs['placeholder'] = '(555) 123-4567'
+        self.fields['phone'].widget.attrs['placeholder'] = 'Your phone number'
         self.fields['company'].widget.attrs['placeholder'] = 'Your Company'
         self.fields['subject'].widget.attrs['placeholder'] = 'How can we help?'
         self.fields['message'].widget.attrs['placeholder'] = 'Tell us about your project or question...'
@@ -98,7 +98,7 @@ class ConsultationRequestForm(forms.ModelForm):
         # Add placeholders and styling
         self.fields['name'].widget.attrs['placeholder'] = 'Your Full Name'
         self.fields['email'].widget.attrs['placeholder'] = 'your@email.com'
-        self.fields['phone'].widget.attrs['placeholder'] = '(555) 123-4567'
+        self.fields['phone'].widget.attrs['placeholder'] = 'Your phone number'
         self.fields['company'].widget.attrs['placeholder'] = 'Your Company Name'
         self.fields['description'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
         self.fields['description'].widget.attrs['rows'] = 4

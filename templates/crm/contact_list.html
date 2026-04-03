@@ -1,0 +1,63 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Contacts{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Contacts</h1>
+            <p class="text-muted mb-0">People connected to organizations and opportunities.</p>
+        </div>
+        <a href="{% url 'crm:contact_create' %}" class="btn btn-primary">New Contact</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body border-bottom">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text"
+                           name="q"
+                           value="{{ request.GET.q }}"
+                           class="form-control"
+                           placeholder="Search contacts">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Organization</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Primary</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'crm:contact_detail' contact.pk %}">{{ contact.full_name }}</a>
+                            </td>
+                            <td>{{ contact.organization.name|default:"-" }}</td>
+                            <td>{{ contact.email }}</td>
+                            <td>{{ contact.phone|default:"-" }}</td>
+                            <td>
+                                {% if contact.is_primary %}
+                                    Yes
+                                {% else %}
+                                    No
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No contacts found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

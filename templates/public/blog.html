@@ -1,89 +1,88 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block title %}Blog - Mitchell Technology Group{% endblock %}
-
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="display-5 fw-bold">Blog & Resources</h1>
-                <p class="lead mb-0">Insights, tips, and updates from our technology experts.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Coming Soon -->
-<section class="py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <div class="py-5">
-                    <i class="bi bi-pencil-square display-1 text-primary mb-4"></i>
-                    <h2 class="fw-bold mb-3">Coming Soon</h2>
-                    <p class="lead text-muted mb-4">We're working on bringing you valuable content about technology trends, best practices, and industry insights. Check back soon!</p>
-                    
-                    <!-- Newsletter Signup -->
-                    <div class="card bg-light border-0 p-4">
-                        <h5 class="mb-3">Get Notified When We Launch</h5>
-                        <form class="row g-3 justify-content-center">
-                            <div class="col-auto">
-                                <input type="email" class="form-control" placeholder="Enter your email" style="min-width: 300px;">
-                            </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn btn-primary">Subscribe</button>
-                            </div>
-                        </form>
-                        <small class="text-muted mt-2">We'll never share your email. Unsubscribe anytime.</small>
-                    </div>
+    <!-- Hero Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold">Blog & Resources</h1>
+                    <p class="lead mb-0">Insights, tips, and updates from our technology experts.</p>
                 </div>
             </div>
         </div>
-        
-        <!-- Topics Preview -->
-        <div class="row mt-5">
-            <div class="col-12 text-center mb-4">
-                <h4 class="fw-bold">Topics We'll Cover</h4>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-cloud text-primary display-5 mb-3"></i>
-                        <h5>Cloud Computing</h5>
-                        <p class="text-muted small">Best practices for cloud migration, optimization, and security.</p>
+    </section>
+    <!-- Coming Soon -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <div class="py-5">
+                        <i class="bi bi-pencil-square display-1 text-primary mb-4"></i>
+                        <h2 class="fw-bold mb-3">Coming Soon</h2>
+                        <p class="lead text-muted mb-4">
+                            We're working on bringing you valuable content about technology trends, best practices, and industry insights. Check back soon!
+                        </p>
+                        <!-- Newsletter Signup -->
+                        <div class="card bg-light border-0 p-4">
+                            <h5 class="mb-3">Get Notified When We Launch</h5>
+                            <form class="row g-3 justify-content-center">
+                                <div class="col-auto">
+                                    <input type="email"
+                                           class="form-control"
+                                           placeholder="Enter your email"
+                                           style="min-width: 300px">
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                                </div>
+                            </form>
+                            <small class="text-muted mt-2">We'll never share your email. Unsubscribe anytime.</small>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-shield-check text-primary display-5 mb-3"></i>
-                        <h5>Cybersecurity</h5>
-                        <p class="text-muted small">Protecting your business from evolving digital threats.</p>
+            <!-- Topics Preview -->
+            <div class="row mt-5">
+                <div class="col-12 text-center mb-4">
+                    <h4 class="fw-bold">Topics We'll Cover</h4>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-cloud text-primary display-5 mb-3"></i>
+                            <h5>Cloud Computing</h5>
+                            <p class="text-muted small">Best practices for cloud migration, optimization, and security.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-graph-up text-primary display-5 mb-3"></i>
-                        <h5>Digital Transformation</h5>
-                        <p class="text-muted small">Leveraging technology to drive business growth.</p>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-shield-check text-primary display-5 mb-3"></i>
+                            <h5>Cybersecurity</h5>
+                            <p class="text-muted small">Protecting your business from evolving digital threats.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <i class="bi bi-graph-up text-primary display-5 mb-3"></i>
+                            <h5>Digital Transformation</h5>
+                            <p class="text-muted small">Leveraging technology to drive business growth.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- CTA -->
-<section class="py-5 bg-light">
-    <div class="container text-center">
-        <h3 class="fw-bold mb-3">Have a Question Now?</h3>
-        <p class="text-muted mb-4">Don't wait for the blog - reach out to our experts directly.</p>
-        <a href="{% url 'public:consultation' %}" class="btn btn-primary btn-lg">Request a Consultation</a>
-    </div>
-</section>
+    </section>
+    <!-- CTA -->
+    <section class="py-5 bg-light">
+        <div class="container text-center">
+            <h3 class="fw-bold mb-3">Have a Question Now?</h3>
+            <p class="text-muted mb-4">Don't wait for the blog - reach out to our experts directly.</p>
+            <a href="{% url 'public:consultation' %}" class="btn btn-primary btn-lg">Request a Consultation</a>
+        </div>
+    </section>
 {% endblock %}

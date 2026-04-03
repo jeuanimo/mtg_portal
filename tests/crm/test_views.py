@@ -104,7 +104,7 @@ class TestLeadUpdateView:
             'priority': lead.priority,
             'notes': lead.notes or '',
         }
-        response = authenticated_client.post(
+        authenticated_client.post(
             reverse('crm:lead_update', args=[lead.pk]), data
         )
         
@@ -152,7 +152,7 @@ class TestContactViews:
             'last_name': 'Contact',
             'email': 'new@contact.com',
         }
-        response = authenticated_client.post(reverse('crm:contact_create'), data)
+        authenticated_client.post(reverse('crm:contact_create'), data)
         assert Contact.objects.filter(email='new@contact.com').exists()
 
 
@@ -178,7 +178,7 @@ class TestOrganizationViews:
             'name': 'New Organization',
             'industry': 'Finance',
         }
-        response = authenticated_client.post(reverse('crm:organization_create'), data)
+        authenticated_client.post(reverse('crm:organization_create'), data)
         assert Organization.objects.filter(name='New Organization').exists()
 
 

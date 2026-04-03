@@ -8,11 +8,7 @@ Usage: {% include 'includes/activity_item.html' with icon='bi-person-plus' title
     </div>
     <div class="flex-grow-1">
         <p class="mb-0 fw-medium">{{ title }}</p>
-        {% if subtitle %}
-        <small class="text-muted">{{ subtitle }}</small>
-        {% endif %}
+        {% if subtitle %}<small class="text-muted">{{ subtitle }}</small>{% endif %}
     </div>
-    {% if time %}
-    <small class="text-muted text-nowrap">{{ time }}</small>
-    {% endif %}
+    {% if time %}<small class="text-muted text-nowrap">{{ time }}</small>{% endif %}
 </div>

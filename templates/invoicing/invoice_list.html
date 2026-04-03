@@ -1,154 +1,158 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-
 {% block title %}Invoices{% endblock %}
-
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Invoices</h1>
-        {% if request.user.is_finance_user %}
-        <div>
-            <a href="{% url 'invoicing:quick_invoice' %}" class="btn btn-outline-primary me-2">
-                <i class="bi bi-lightning"></i> Quick Invoice
-            </a>
-            <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> New Invoice
-            </a>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">Invoices</h1>
+            {% if request.user.is_finance_user %}
+                <div>
+                    <a href="{% url 'invoicing:quick_invoice' %}"
+                       class="btn btn-outline-primary me-2">
+                        <i class="bi bi-lightning"></i> Quick Invoice
+                    </a>
+                    <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> New Invoice
+                    </a>
+                </div>
+            {% endif %}
         </div>
+        {% if filter_form %}
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" class="row g-3 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            {{ filter_form.status }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Organization</label>
+                            {{ filter_form.organization }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">From Date</label>
+                            {{ filter_form.date_from }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">To Date</label>
+                            {{ filter_form.date_to }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Search</label>
+                            {{ filter_form.search }}
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary w-100">Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         {% endif %}
-    </div>
-
-    {% if filter_form %}
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    {{ filter_form.status }}
+        <!-- Invoice List -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoice in invoices %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoicing:invoice_detail' invoice.pk %}"
+                                           class="fw-bold">{{ invoice.invoice_number }}</a>
+                                    </td>
+                                    <td>{{ invoice.organization.name }}</td>
+                                    <td>{{ invoice.issue_date }}</td>
+                                    <td>
+                                        {{ invoice.due_date }}
+                                        {% if invoice.is_overdue %}<span class="badge bg-danger ms-1">Overdue</span>{% endif %}
+                                    </td>
+                                    <td>${{ invoice.total|floatformat:2 }}</td>
+                                    <td>${{ invoice.balance_due|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}primary{% elif invoice.status == 'draft' %}secondary{% elif invoice.status == 'void' %}dark{% elif invoice.status == 'partial' %}warning{% else %}info{% endif %}">
+                                            {{ invoice.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}"
+                                               class="btn btn-outline-primary"
+                                               title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if request.user.is_finance_user and invoice.status == 'draft' %}
+                                                <a href="{% url 'invoicing:invoice_edit' invoice.pk %}"
+                                                   class="btn btn-outline-secondary"
+                                                   title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if invoice.status == 'sent' or invoice.status == 'partial' %}
+                                                <a href="{% url 'invoicing:invoice_pay' invoice.pk %}"
+                                                   class="btn btn-outline-success"
+                                                   title="Pay">
+                                                    <i class="bi bi-credit-card"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+                                        No invoices found
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Organization</label>
-                    {{ filter_form.organization }}
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">From Date</label>
-                    {{ filter_form.date_from }}
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">To Date</label>
-                    {{ filter_form.date_to }}
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Search</label>
-                    {{ filter_form.search }}
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Invoice List -->
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Invoice #</th>
-                            <th>Client</th>
-                            <th>Issue Date</th>
-                            <th>Due Date</th>
-                            <th>Amount</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for invoice in invoices %}
-                        <tr>
-                            <td>
-                                <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="fw-bold">
-                                    {{ invoice.invoice_number }}
-                                </a>
-                            </td>
-                            <td>{{ invoice.organization.name }}</td>
-                            <td>{{ invoice.issue_date }}</td>
-                            <td>
-                                {{ invoice.due_date }}
-                                {% if invoice.is_overdue %}
-                                <span class="badge bg-danger ms-1">Overdue</span>
-                                {% endif %}
-                            </td>
-                            <td>${{ invoice.total|floatformat:2 }}</td>
-                            <td>${{ invoice.balance_due|floatformat:2 }}</td>
-                            <td>
-                                <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}primary{% elif invoice.status == 'draft' %}secondary{% elif invoice.status == 'void' %}dark{% elif invoice.status == 'partial' %}warning{% else %}info{% endif %}">
-                                    {{ invoice.get_status_display }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="btn btn-outline-primary" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if request.user.is_finance_user and invoice.status == 'draft' %}
-                                    <a href="{% url 'invoicing:invoice_edit' invoice.pk %}" class="btn btn-outline-secondary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    {% endif %}
-                                    {% if invoice.status == 'sent' or invoice.status == 'partial' %}
-                                    <a href="{% url 'invoicing:invoice_pay' invoice.pk %}" class="btn btn-outline-success" title="Pay">
-                                        <i class="bi bi-credit-card"></i>
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">
-                                <i class="bi bi-receipt fs-1 d-block mb-2"></i>
-                                No invoices found
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
+        <!-- Pagination -->
+        {% if invoices.has_other_pages %}
+            <nav aria-label="Invoice pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if invoices.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ invoices.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in invoices.paginator.page_range %}
+                        {% if invoices.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > invoices.number|add:'-3' and num < invoices.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if invoices.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ invoices.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
     </div>
-
-    <!-- Pagination -->
-    {% if invoices.has_other_pages %}
-    <nav aria-label="Invoice pagination" class="mt-4">
-        <ul class="pagination justify-content-center">
-            {% if invoices.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ invoices.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
-            </li>
-            {% endif %}
-            
-            {% for num in invoices.paginator.page_range %}
-            {% if invoices.number == num %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-            {% elif num > invoices.number|add:'-3' and num < invoices.number|add:'3' %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
-            {% endif %}
-            {% endfor %}
-            
-            {% if invoices.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ invoices.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
-            </li>
-            {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
-</div>
 {% endblock %}

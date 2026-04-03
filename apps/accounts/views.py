@@ -1,8 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.urls import reverse
 from .forms import UserUpdateForm, UserProfileForm, NotificationSettingsForm
+
+# URL name constants
+DASHBOARD_INDEX_URL = 'dashboard:index'
+INVOICING_LIST_URL = 'invoicing:invoice_list'
+PROFILE_URL = 'accounts:profile'
+PROFILE_EDIT_URL = 'accounts:profile_edit'
 
 
 @login_required
@@ -12,27 +17,27 @@ def after_login_redirect(request):
     
     # Super Admin and Finance Admin go to main dashboard
     if user.is_admin_user:
-        return redirect('dashboard:index')
+        return redirect(DASHBOARD_INDEX_URL)
     
     # Finance users go to invoicing
     if user.is_finance_user:
-        return redirect('invoicing:invoice_list')
+        return redirect(INVOICING_LIST_URL)
     
     # Staff and Consultants to staff dashboard
     if user.is_staff_user:
-        return redirect('dashboard:index')
+        return redirect(DASHBOARD_INDEX_URL)
     
     # Clients go to client dashboard
     if user.is_client_user:
-        return redirect('dashboard:index')
+        return redirect(DASHBOARD_INDEX_URL)
     
     # Prospects should complete their profile
     if user.is_prospect_user:
         messages.info(request, 'Please complete your profile to get started.')
-        return redirect('accounts:profile_edit')
+        return redirect(PROFILE_EDIT_URL)
     
     # Default fallback
-    return redirect('dashboard:index')
+    return redirect(DASHBOARD_INDEX_URL)
 
 
 @login_required
@@ -54,7 +59,7 @@ def profile_edit(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated.')
-            return redirect('accounts:profile')
+            return redirect(PROFILE_URL)
     else:
         form = UserUpdateForm(instance=request.user)
     
@@ -71,7 +76,7 @@ def profile_address(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your address has been updated.')
-            return redirect('accounts:profile')
+            return redirect(PROFILE_URL)
     else:
         form = UserProfileForm(instance=profile)
     

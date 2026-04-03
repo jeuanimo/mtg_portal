@@ -1,22 +1,25 @@
 """
-Custom decorators for the MTG Portal.
+Redirect-based permission decorators for portal access checks.
+
+These decorators redirect with a user-friendly message on access failure, which
+is appropriate for views where a hard 403 would be confusing (e.g. meeting flows
+that non-staff users might navigate to).  For internal portal views that should
+return HTTP 403, use apps.accounts.decorators instead.
 """
 from functools import wraps
-from django.shortcuts import redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+
+LOGIN_URL_NAME = 'account_login'
 
 
 def staff_required(view_func):
-    """
-    Decorator that requires the user to be authenticated and be a staff member.
-    Redirects to login if not authenticated, or shows an error if not staff.
-    """
+    """Require access to internal staff workflows."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('accounts:login')
-        if not request.user.is_staff:
+            return redirect(LOGIN_URL_NAME)
+        if not request.user.is_staff_user:
             messages.error(request, 'You do not have permission to access this page.')
             return redirect('public:home')
         return view_func(request, *args, **kwargs)
@@ -24,14 +27,12 @@ def staff_required(view_func):
 
 
 def admin_required(view_func):
-    """
-    Decorator that requires the user to be authenticated and be a superuser.
-    """
+    """Require an administrative portal role."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('accounts:login')
-        if not request.user.is_superuser:
+            return redirect(LOGIN_URL_NAME)
+        if not request.user.is_admin_user:
             messages.error(request, 'Administrator access required.')
             return redirect('dashboard:index')
         return view_func(request, *args, **kwargs)
@@ -39,15 +40,12 @@ def admin_required(view_func):
 
 
 def client_required(view_func):
-    """
-    Decorator that requires the user to be authenticated and be associated with a client.
-    """
+    """Require a client user tied to an organization."""
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            return redirect('accounts:login')
-        # Check if user has an associated contact in CRM
-        if not hasattr(request.user, 'contact') or not request.user.contact:
+            return redirect(LOGIN_URL_NAME)
+        if not request.user.is_client_user or not request.user.organization_id:
             messages.error(request, 'Client access required.')
             return redirect('dashboard:index')
         return view_func(request, *args, **kwargs)
@@ -55,17 +53,13 @@ def client_required(view_func):
 
 
 def role_required(*roles):
-    """
-    Decorator that requires the user to have one of the specified roles.
-    Usage: @role_required('admin', 'manager')
-    """
+    """Require one of the specified portal roles."""
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect('accounts:login')
-            user_role = getattr(request.user, 'role', None)
-            if user_role not in roles:
+                return redirect(LOGIN_URL_NAME)
+            if not request.user.has_any_role(*roles):
                 messages.error(request, 'You do not have the required role to access this page.')
                 return redirect('dashboard:index')
             return view_func(request, *args, **kwargs)

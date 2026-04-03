@@ -1,6 +1,5 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.db.models import Q
 from .models import Project, Task
 
@@ -8,7 +7,7 @@ from .models import Project, Task
 @login_required
 def project_list(request):
     """List projects."""
-    if request.user.is_staff:
+    if request.user.is_staff_user:
         projects = Project.objects.select_related('organization', 'project_manager').all()
     else:
         projects = Project.objects.filter(
@@ -45,7 +44,7 @@ def project_detail(request, pk):
 @login_required
 def task_list(request):
     """List tasks assigned to user."""
-    if request.user.is_staff:
+    if request.user.is_staff_user:
         tasks = Task.objects.select_related('project', 'assigned_to').all()
     else:
         tasks = Task.objects.filter(assigned_to=request.user)

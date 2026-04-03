@@ -42,6 +42,10 @@ THIRD_PARTY_APPS = [
     'django_htmx',
 ]
 
+# Cloudinary is optional - only add if configured (for production media storage)
+if os.getenv('CLOUDINARY_CLOUD_NAME'):
+    THIRD_PARTY_APPS = ['cloudinary_storage', 'cloudinary'] + THIRD_PARTY_APPS
+
 LOCAL_APPS = [
     'apps.core',
     'apps.accounts',
@@ -91,12 +95,15 @@ WSGI_APPLICATION = 'mtg_portal.wsgi.application'
 ASGI_APPLICATION = 'mtg_portal.asgi.application'
 
 # Database
+# NOTE: These defaults are for LOCAL DEVELOPMENT ONLY.
+# Production uses DATABASE_URL or explicit env vars without fallbacks.
+_DB_DEV_CREDENTIAL = 'mtg_dev_local'  # pragma: allowlist secret
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'mtg_portal'),
         'USER': os.getenv('DB_USER', 'mtg_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'mtg_password'),
+        'PASSWORD': os.getenv('DB_PASSWORD', _DB_DEV_CREDENTIAL),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
@@ -138,15 +145,16 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# django-allauth configuration (updated for 0.60+)
+ACCOUNT_LOGIN_METHODS = {'email'}  # Login with email only
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Required signup fields
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Our User model doesn't have username
 ACCOUNT_SIGNUP_REDIRECT_URL = '/dashboard/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_ON_GET = True  # Allow logout via GET request
+# Allow logout via GET for convenience. Override in production.py if desired.
+ACCOUNT_LOGOUT_ON_GET = os.getenv('ACCOUNT_LOGOUT_ON_GET', 'True').lower() in ('true', '1', 'yes')
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
@@ -172,7 +180,8 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@mitchelltechgroup.com')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@mitchelltechgroup.com')
+SERVER_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@mitchelltechgroup.com')
 
 # Logging
 LOGGING = {

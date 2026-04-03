@@ -37,7 +37,7 @@ class TestTicketViewPermissions:
         client1 = User.objects.create_user(
             email='client1@test.com', password=password, role='client'
         )
-        client2 = User.objects.create_user(
+        User.objects.create_user(
             email='client2@test.com', password=password, role='client'
         )
         
@@ -101,7 +101,7 @@ class TestTicketCreatePermissions:
             'description': 'I need help with something.',
             'priority': 'medium',
         }
-        response = client_user_client.post(
+        client_user_client.post(
             reverse('tickets:ticket_create'), data
         )
         
@@ -143,7 +143,7 @@ class TestTicketEditPermissions:
             'status': ticket.status,
             'assigned_to': consultant_user.pk,
         }
-        response = authenticated_client.post(
+        authenticated_client.post(
             reverse('tickets:ticket_update', args=[ticket.pk]), data
         )
         
@@ -218,7 +218,7 @@ class TestCommentPermissions:
         )
         
         # Public comment
-        public_comment = TicketComment.objects.create(
+        TicketComment.objects.create(
             ticket=ticket,
             author=staff_user,
             content='Response to client',
@@ -298,10 +298,10 @@ class TestTicketListFiltering:
         )
         
         # Create tickets for both
-        ticket1 = Ticket.objects.create(
+        Ticket.objects.create(
             subject='Client 1 Ticket', description='Test', created_by=client1
         )
-        ticket2 = Ticket.objects.create(
+        Ticket.objects.create(
             subject='Client 2 Ticket', description='Test', created_by=client2
         )
         

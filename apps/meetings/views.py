@@ -1,19 +1,56 @@
+from urllib.parse import urlparse
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils.html import escape
 from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from django.utils import timezone
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.core.paginator import Paginator
 
-from apps.core.decorators import staff_required
+# Trusted domains for video meeting URLs
+TRUSTED_MEETING_DOMAINS = frozenset({
+    'zoom.us', 'us02web.zoom.us', 'us04web.zoom.us', 'us05web.zoom.us', 'us06web.zoom.us',
+    'meet.google.com', 'teams.microsoft.com', 'teams.live.com',
+    'webex.com', 'meetingsamer.webex.com', 'meetingsemea.webex.com',
+    'gotomeeting.com', 'global.gotomeeting.com',
+})
+
+
+def _is_trusted_meeting_url(url):
+    """Validate that a meeting URL is from a trusted video conferencing domain."""
+    if not url:
+        return False
+    try:
+        parsed = urlparse(url)
+        host = parsed.netloc.lower()
+        # Check if host matches or is a subdomain of a trusted domain
+        return any(
+            host == domain or host.endswith('.' + domain)
+            for domain in TRUSTED_MEETING_DOMAINS
+        )
+    except (ValueError, AttributeError):
+        return False
+
 from .models import Meeting, MeetingAttendee, MeetingRecording, AvailabilitySlot
 from .forms import (
     MeetingForm, QuickMeetingForm, MeetingNotesForm,
     MeetingAttendeeForm, AvailabilitySlotForm, MeetingFilterForm
 )
 from .services import video_service
+
+# URL name constants
+MEETING_DETAIL_URL = 'meetings:meeting_detail'
+MEETING_LIST_URL = 'meetings:meeting_list'
+
+
+def _meeting_access_q(user):
+    """Return the visibility scope for meeting querysets."""
+    if user.is_staff_user:
+        return Q()
+    return Q(organizer=user) | Q(host=user) | Q(participants=user)
 
 
 @login_required
@@ -24,43 +61,43 @@ def meeting_dashboard(request):
     
     # Upcoming meetings (next 7 days)
     upcoming_meetings = Meeting.objects.filter(
-        Q(organizer=user) | Q(host=user) | Q(participants=user),
+        _meeting_access_q(user),
         start_time__gte=now,
         start_time__lte=now + timezone.timedelta(days=7),
-        status__in=['SCHEDULED', 'CONFIRMED']
+        status__in=Meeting.UPCOMING_STATUSES,
     ).distinct().order_by('start_time')[:10]
     
     # Today's meetings
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timezone.timedelta(days=1)
     todays_meetings = Meeting.objects.filter(
-        Q(organizer=user) | Q(host=user) | Q(participants=user),
+        _meeting_access_q(user),
         start_time__gte=today_start,
         start_time__lt=today_end
     ).distinct().order_by('start_time')
     
     # Recent past meetings
     past_meetings = Meeting.objects.filter(
-        Q(organizer=user) | Q(host=user) | Q(participants=user),
+        _meeting_access_q(user),
         end_time__lt=now,
-        status='COMPLETED'
+        status=Meeting.Status.COMPLETED,
     ).distinct().order_by('-start_time')[:5]
     
     # Stats
     stats = {
         'total_upcoming': Meeting.objects.filter(
-            Q(organizer=user) | Q(host=user) | Q(participants=user),
+            _meeting_access_q(user),
             start_time__gte=now,
-            status__in=['SCHEDULED', 'CONFIRMED']
+            status__in=Meeting.UPCOMING_STATUSES,
         ).distinct().count(),
         'this_week': Meeting.objects.filter(
-            Q(organizer=user) | Q(host=user) | Q(participants=user),
+            _meeting_access_q(user),
             start_time__gte=now,
             start_time__lt=now + timezone.timedelta(days=7)
         ).distinct().count(),
         'pending_notes': Meeting.objects.filter(
             Q(organizer=user) | Q(host=user),
-            status='COMPLETED',
+            status=Meeting.Status.COMPLETED,
             notes=''
         ).count(),
     }
@@ -81,11 +118,11 @@ def meeting_list(request):
     user = request.user
     
     # Base queryset
-    if user.is_staff:
+    if user.is_staff_user:
         meetings = Meeting.objects.all()
     else:
         meetings = Meeting.objects.filter(
-            Q(organizer=user) | Q(host=user) | Q(participants=user)
+            _meeting_access_q(user)
         ).distinct()
     
     # Apply filters
@@ -137,7 +174,7 @@ def meeting_create(request):
             video_service.create_meeting(meeting)
             
             messages.success(request, f"Meeting '{meeting.title}' scheduled successfully.")
-            return redirect('meetings:meeting_detail', pk=meeting.pk)
+            return redirect(MEETING_DETAIL_URL, pk=meeting.pk)
     else:
         form = MeetingForm(user=request.user)
     
@@ -152,7 +189,7 @@ def meeting_detail(request, pk):
     
     # Check access
     user = request.user
-    if not user.is_staff:
+    if not user.is_staff_user:
         if not (meeting.organizer == user or meeting.host == user or user in meeting.participants.all()):
             raise Http404("Meeting not found")
     
@@ -169,7 +206,7 @@ def meeting_detail(request, pk):
         'recordings': recordings,
         'notes_form': notes_form,
         'attendee_form': attendee_form,
-        'can_edit': meeting.organizer == user or meeting.host == user or user.is_staff,
+        'can_edit': meeting.organizer == user or meeting.host == user or user.is_staff_user,
     }
     return render(request, 'meetings/meeting_detail.html', context)
 
@@ -180,9 +217,9 @@ def meeting_edit(request, pk):
     meeting = get_object_or_404(Meeting, pk=pk)
     
     # Check permission
-    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff):
+    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff_user):
         messages.error(request, "You don't have permission to edit this meeting.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     if request.method == 'POST':
         form = MeetingForm(request.POST, instance=meeting, user=request.user)
@@ -191,7 +228,7 @@ def meeting_edit(request, pk):
             # Update video meeting
             video_service.update_meeting(meeting)
             messages.success(request, "Meeting updated successfully.")
-            return redirect('meetings:meeting_detail', pk=meeting.pk)
+            return redirect(MEETING_DETAIL_URL, pk=meeting.pk)
     else:
         form = MeetingForm(instance=meeting, user=request.user)
     
@@ -205,16 +242,16 @@ def meeting_cancel(request, pk):
     """Cancel a meeting."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff):
+    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff_user):
         messages.error(request, "You don't have permission to cancel this meeting.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     reason = request.POST.get('reason', '')
     meeting.cancel_meeting(reason)
     video_service.delete_meeting(meeting)
     
     messages.success(request, "Meeting cancelled.")
-    return redirect('meetings:meeting_list')
+    return redirect(MEETING_LIST_URL)
 
 
 @login_required
@@ -223,20 +260,25 @@ def meeting_start(request, pk):
     """Mark meeting as in progress."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff):
+    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff_user):
         messages.error(request, "Only the host can start this meeting.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     meeting.start_meeting()
     messages.success(request, "Meeting started.")
     
-    # Redirect to meeting URL if available
-    if meeting.host_url:
-        return redirect(meeting.host_url)
-    elif meeting.meeting_url:
-        return redirect(meeting.meeting_url)
+    # Redirect to meeting URL if available (validated against trusted domains)
+    # nosec: URL is validated by _is_trusted_meeting_url before redirect
+    validated_url = None
+    if meeting.host_url and _is_trusted_meeting_url(meeting.host_url):
+        validated_url = meeting.host_url  # noqa: S310
+    elif meeting.meeting_url and _is_trusted_meeting_url(meeting.meeting_url):
+        validated_url = meeting.meeting_url  # noqa: S310
     
-    return redirect('meetings:meeting_detail', pk=pk)
+    if validated_url:
+        return redirect(validated_url)
+    
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -245,13 +287,13 @@ def meeting_complete(request, pk):
     """Mark meeting as completed."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff):
+    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff_user):
         messages.error(request, "Only the host can complete this meeting.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     meeting.complete_meeting()
     messages.success(request, "Meeting marked as completed. Don't forget to add notes!")
-    return redirect('meetings:meeting_detail', pk=pk)
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -260,16 +302,16 @@ def meeting_update_notes(request, pk):
     """Update meeting notes."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff):
+    if not (meeting.host == request.user or meeting.organizer == request.user or request.user.is_staff_user):
         messages.error(request, "You don't have permission to update meeting notes.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     form = MeetingNotesForm(request.POST, instance=meeting)
     if form.is_valid():
         form.save()
         messages.success(request, "Meeting notes saved.")
     
-    return redirect('meetings:meeting_detail', pk=pk)
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -278,9 +320,9 @@ def meeting_add_attendee(request, pk):
     """Add an attendee to a meeting."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff):
+    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff_user):
         messages.error(request, "You don't have permission to add attendees.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     form = MeetingAttendeeForm(request.POST, meeting=meeting)
     if form.is_valid():
@@ -290,7 +332,7 @@ def meeting_add_attendee(request, pk):
         for error in form.errors.values():
             messages.error(request, error)
     
-    return redirect('meetings:meeting_detail', pk=pk)
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -299,15 +341,15 @@ def meeting_remove_attendee(request, pk, attendee_pk):
     """Remove an attendee from a meeting."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff):
+    if not (meeting.organizer == request.user or meeting.host == request.user or request.user.is_staff_user):
         messages.error(request, "You don't have permission to remove attendees.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     attendee = get_object_or_404(MeetingAttendee, pk=attendee_pk, meeting=meeting)
     attendee.delete()
     messages.success(request, "Attendee removed.")
     
-    return redirect('meetings:meeting_detail', pk=pk)
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 def client_join(request, token):
@@ -337,8 +379,8 @@ def quick_schedule(request):
             
             video_service.create_meeting(meeting)
             
-            messages.success(request, f"Meeting scheduled!")
-            return redirect('meetings:meeting_detail', pk=meeting.pk)
+            messages.success(request, "Meeting scheduled successfully.")
+            return redirect(MEETING_DETAIL_URL, pk=meeting.pk)
     else:
         form = QuickMeetingForm()
     
@@ -357,7 +399,7 @@ def meeting_calendar(request):
         end = request.GET.get('end')
         
         meetings = Meeting.objects.filter(
-            Q(organizer=user) | Q(host=user) | Q(participants=user) if not user.is_staff else Q()
+            _meeting_access_q(user)
         )
         
         if start:
@@ -430,7 +472,7 @@ def recording_list(request):
     """List meeting recordings."""
     user = request.user
     
-    if user.is_staff:
+    if user.is_staff_user:
         recordings = MeetingRecording.objects.all()
     else:
         recordings = MeetingRecording.objects.filter(
@@ -457,13 +499,13 @@ def sync_recordings(request, pk):
     """Sync recordings from video provider."""
     meeting = get_object_or_404(Meeting, pk=pk)
     
-    if not request.user.is_staff:
+    if not request.user.is_staff_user:
         messages.error(request, "Only staff can sync recordings.")
-        return redirect('meetings:meeting_detail', pk=pk)
+        return redirect(MEETING_DETAIL_URL, pk=pk)
     
     recordings = video_service.sync_recordings(meeting)
     messages.success(request, f"Synced {len(recordings)} recording(s).")
-    return redirect('meetings:meeting_detail', pk=pk)
+    return redirect(MEETING_DETAIL_URL, pk=pk)
 
 
 # ============ HTMX Endpoints ============
@@ -474,10 +516,10 @@ def get_organization_contacts(request):
     org_id = request.GET.get('organization')
     
     from apps.crm.models import Contact
-    contacts = Contact.objects.filter(organization_id=org_id, is_active=True)
+    contacts = Contact.objects.filter(organization_id=org_id).order_by('last_name', 'first_name')
     
     options = '<option value="">Select contact...</option>'
     for contact in contacts:
-        options += f'<option value="{contact.pk}">{contact.full_name}</option>'
-    
+        options += f'<option value="{contact.pk}">{escape(contact.full_name)}</option>'
+
     return JsonResponse({'html': options})

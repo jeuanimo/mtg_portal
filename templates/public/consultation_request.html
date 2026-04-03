@@ -1,115 +1,129 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load crispy_forms_tags %}
-
 {% block title %}Request a Consultation - Mitchell Technology Group{% endblock %}
-
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="display-5 fw-bold">Request a Consultation</h1>
-                <p class="lead mb-0">Schedule a free consultation with our experts and discover how we can help transform your business.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Consultation Form -->
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4 p-lg-5">
-                        <h3 class="mb-4">Tell Us About Your Project</h3>
-                        {% crispy form %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <!-- Side Info -->
-                <div class="card bg-light border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3"><i class="bi bi-check-circle text-success me-2"></i>What to Expect</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Response within 24 hours</li>
-                            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>30-60 minute consultation</li>
-                            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>No obligation quote</li>
-                            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Customized recommendations</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="card bg-light border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3"><i class="bi bi-telephone text-primary me-2"></i>Prefer to Call?</h5>
-                        <p class="mb-2">Speak directly with our team:</p>
-                        <p class="h5 mb-0"><a href="tel:+15551234567" class="text-decoration-none">(555) 123-4567</a></p>
-                    </div>
-                </div>
-                
-                <div class="card bg-primary text-white border-0">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3"><i class="bi bi-shield-check me-2"></i>Our Commitment</h5>
-                        <p class="mb-0 small">Your information is secure and will never be shared with third parties. We respect your privacy.</p>
-                    </div>
+    <!-- Hero Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold">Request a Consultation</h1>
+                    <p class="lead mb-0">
+                        Schedule a free consultation with our experts and discover how we can help transform your business.
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Services Preview -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <h3 class="text-center mb-4">Popular Services</h3>
-        <div class="row g-4">
-            {% for service in services|slice:":4" %}
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi {{ service.icon|default:'bi-gear' }} display-5 text-primary mb-3"></i>
-                        <h6 class="card-title">{{ service.title }}</h6>
+    </section>
+    <!-- Consultation Form -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4 p-lg-5">
+                            <h3 class="mb-4">Tell Us About Your Project</h3>
+                            {% crispy form %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <!-- Side Info -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-check-circle text-success me-2"></i>What to Expect
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success me-2"></i>Response within 24 hours
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success me-2"></i>30-60 minute consultation
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success me-2"></i>No obligation quote
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check text-success me-2"></i>Customized recommendations
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-telephone text-primary me-2"></i>Prefer to Call?
+                            </h5>
+                            <p class="mb-2">Speak directly with our team:</p>
+                            <p class="h5 mb-0">
+                                <a href="tel:+16188022133" class="text-decoration-none">(618) 802-2133</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card bg-primary text-white border-0">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-shield-check me-2"></i>Our Commitment
+                            </h5>
+                            <p class="mb-0 small">
+                                Your information is secure and will never be shared with third parties. We respect your privacy.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-pc-display display-5 text-primary mb-3"></i>
-                        <h6 class="card-title">IT Consulting</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-cloud display-5 text-primary mb-3"></i>
-                        <h6 class="card-title">Cloud Services</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-shield-check display-5 text-primary mb-3"></i>
-                        <h6 class="card-title">Security</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="bi bi-hdd-network display-5 text-primary mb-3"></i>
-                        <h6 class="card-title">Managed IT</h6>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
         </div>
-    </div>
-</section>
+    </section>
+    <!-- Services Preview -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h3 class="text-center mb-4">Popular Services</h3>
+            <div class="row g-4">
+                {% for service in services|slice:":4" %}
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi {{ service.icon|default:'bi-gear' }} display-5 text-primary mb-3"></i>
+                                <h6 class="card-title">{{ service.title }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi bi-pc-display display-5 text-primary mb-3"></i>
+                                <h6 class="card-title">IT Consulting</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi bi-cloud display-5 text-primary mb-3"></i>
+                                <h6 class="card-title">Cloud Services</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi bi-shield-check display-5 text-primary mb-3"></i>
+                                <h6 class="card-title">Security</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card h-100 border-0 shadow-sm text-center">
+                            <div class="card-body">
+                                <i class="bi bi-hdd-network display-5 text-primary mb-3"></i>
+                                <h6 class="card-title">Managed IT</h6>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
 {% endblock %}

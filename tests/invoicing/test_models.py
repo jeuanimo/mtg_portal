@@ -5,7 +5,6 @@ Tests for Invoice models - Invoice calculations, status, and payment logic.
 import pytest
 from decimal import Decimal
 from datetime import date, timedelta
-from django.utils import timezone
 from apps.invoicing.models import Invoice, InvoiceItem, Payment
 
 
@@ -44,7 +43,6 @@ class TestInvoiceItems:
     @pytest.mark.django_db
     def test_add_item_to_invoice(self, invoice):
         """Test adding an item to invoice."""
-        from apps.invoicing.models import InvoiceItem
         item = InvoiceItem.objects.create(
             invoice=invoice,
             description='Consulting Services',
@@ -58,7 +56,6 @@ class TestInvoiceItems:
     @pytest.mark.django_db
     def test_item_total_calculation(self, invoice):
         """Test line item total calculation."""
-        from apps.invoicing.models import InvoiceItem
         item = InvoiceItem.objects.create(
             invoice=invoice,
             description='Development Work',
@@ -72,7 +69,6 @@ class TestInvoiceItems:
     @pytest.mark.django_db
     def test_invoice_subtotal_with_items(self, invoice):
         """Test invoice subtotal with multiple items."""
-        from apps.invoicing.models import InvoiceItem
         InvoiceItem.objects.create(
             invoice=invoice,
             description='Service 1',
@@ -185,7 +181,7 @@ class TestPaymentModel:
     @pytest.mark.django_db
     def test_payment_updates_invoice(self, invoice_with_items):
         """Test payment updates invoice amount_paid."""
-        initial_paid = invoice_with_items.amount_paid or Decimal('0.00')
+        invoice_with_items.amount_paid or Decimal('0.00')
         
         # Use the record_payment method which updates invoice
         invoice_with_items.record_payment(

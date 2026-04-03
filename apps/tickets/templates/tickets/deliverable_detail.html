@@ -50,7 +50,7 @@
             </div>
 
             <!-- Actions -->
-            {% if deliverable.status == 'SUBMITTED' and request.user.is_staff %}
+            {% if deliverable.status == 'in_review' and request.user.is_staff_user %}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Review Deliverable</h5>

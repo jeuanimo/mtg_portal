@@ -9,6 +9,44 @@
     --mtg-danger: #dc3545;
     --mtg-dark: #212529;
     --mtg-light: #f8f9fa;
+    
+    /* Light mode (default) */
+    --mtg-body-bg: #ffffff;
+    --mtg-body-color: #212529;
+    --mtg-card-bg: #ffffff;
+    --mtg-card-border: rgba(0, 0, 0, 0.125);
+    --mtg-sidebar-bg: #ffffff;
+    --mtg-sidebar-border: #e9ecef;
+    --mtg-table-bg: #ffffff;
+    --mtg-table-header-bg: #f8f9fa;
+    --mtg-input-bg: #ffffff;
+    --mtg-input-border: #ced4da;
+    --mtg-text-muted: #6c757d;
+    --mtg-border-color: #dee2e6;
+    --mtg-hover-bg: #f8f9fa;
+    --mtg-dropdown-bg: #ffffff;
+    --mtg-dropdown-border: rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] {
+    --mtg-body-bg: #1a1d21;
+    --mtg-body-color: #e9ecef;
+    --mtg-card-bg: #212529;
+    --mtg-card-border: rgba(255, 255, 255, 0.1);
+    --mtg-sidebar-bg: #212529;
+    --mtg-sidebar-border: #343a40;
+    --mtg-table-bg: #212529;
+    --mtg-table-header-bg: #2c3136;
+    --mtg-input-bg: #2c3136;
+    --mtg-input-border: #495057;
+    --mtg-text-muted: #adb5bd;
+    --mtg-border-color: #495057;
+    --mtg-hover-bg: #2c3136;
+    --mtg-dropdown-bg: #212529;
+    --mtg-dropdown-border: rgba(255, 255, 255, 0.15);
+    --mtg-light: #2c3136;
+    --mtg-dark: #e9ecef;
 }
 
 /* Global styles */
@@ -17,6 +55,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: var(--mtg-body-bg);
+    color: var(--mtg-body-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 main {
@@ -39,7 +80,9 @@ main {
 .card {
     border: none;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: box-shadow 0.2s ease-in-out;
+    transition: box-shadow 0.2s ease-in-out, background-color 0.3s ease;
+    background-color: var(--mtg-card-bg);
+    border: 1px solid var(--mtg-card-border);
 }
 
 .card:hover {
@@ -47,8 +90,16 @@ main {
 }
 
 .card-header {
-    background-color: var(--mtg-light);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: var(--mtg-table-header-bg);
+    border-bottom: 1px solid var(--mtg-card-border);
+}
+
+[data-bs-theme="dark"] .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
 }
 
 /* Services cards */
@@ -656,4 +707,500 @@ html {
 
 .empty-state p {
     color: #6c757d;
+}
+
+/* Public marketing pages */
+:root {
+    --mtg-deep: #0b1f3a;
+    --mtg-deep-2: #12315b;
+    --mtg-accent: #6fd3ff;
+    --mtg-surface: #f4f8fc;
+    --mtg-border-soft: rgba(11, 31, 58, 0.08);
+    --mtg-shadow-soft: 0 18px 40px rgba(11, 31, 58, 0.08);
+}
+
+.eyebrow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.public-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 0;
+    background:
+        radial-gradient(circle at top right, rgba(111, 211, 255, 0.18), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(29, 128, 255, 0.18), transparent 30%),
+        linear-gradient(135deg, #07162b 0%, #0b1f3a 48%, #12315b 100%);
+}
+
+.public-hero::before,
+.public-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(8px);
+    pointer-events: none;
+}
+
+.public-hero::before {
+    width: 18rem;
+    height: 18rem;
+    top: -4rem;
+    right: -3rem;
+    background: rgba(111, 211, 255, 0.12);
+}
+
+.public-hero::after {
+    width: 14rem;
+    height: 14rem;
+    left: -3rem;
+    bottom: -5rem;
+    background: rgba(13, 110, 253, 0.16);
+}
+
+.public-hero .eyebrow-badge {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.public-hero-copy {
+    position: relative;
+    z-index: 1;
+}
+
+.public-hero-title {
+    max-width: 12ch;
+    line-height: 1.03;
+    letter-spacing: -0.03em;
+}
+
+.public-hero .lead,
+.public-hero .hero-trust-line {
+    max-width: 42rem;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.hero-trust-line {
+    font-size: 0.98rem;
+}
+
+.hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.hero-metric {
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+}
+
+.hero-metric strong {
+    display: block;
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.hero-metric span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.9rem;
+}
+
+.hero-showcase {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    background: rgba(9, 23, 42, 0.46);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 60px rgba(4, 10, 22, 0.35);
+}
+
+.hero-showcase-window {
+    border-radius: 1.2rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #f9fbfd;
+}
+
+.hero-showcase-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.9rem 1.15rem;
+    background: #edf4fb;
+    border-bottom: 1px solid rgba(11, 31, 58, 0.08);
+}
+
+.hero-showcase-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: rgba(11, 31, 58, 0.22);
+}
+
+.hero-showcase-body {
+    padding: 1.25rem;
+}
+
+.hero-showcase-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 1rem;
+}
+
+.hero-showcase-panel {
+    border-radius: 1rem;
+    border: 1px solid var(--mtg-border-soft);
+    background: #fff;
+    padding: 1.1rem;
+    box-shadow: var(--mtg-shadow-soft);
+}
+
+.hero-showcase-panel h3,
+.hero-showcase-panel h4 {
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+}
+
+.showcase-kpi {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 0.9rem;
+    background: var(--mtg-surface);
+    margin-bottom: 0.75rem;
+}
+
+.showcase-kpi:last-child,
+.solution-list li:last-child,
+.build-list li:last-child {
+    margin-bottom: 0;
+}
+
+.showcase-kpi strong {
+    color: var(--mtg-deep);
+}
+
+.showcase-kpi span,
+.panel-note,
+.public-section-subtitle,
+.solution-list li,
+.build-list li,
+.problem-card p,
+.about-copy p,
+.contact-helper-copy,
+.testimonial-card-public p,
+.testimonial-meta,
+.footer-note {
+    color: #5d6b7d;
+}
+
+.panel-note {
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+.mini-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.status-chip,
+.insight-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.status-chip {
+    color: var(--mtg-deep-2);
+    background: rgba(13, 110, 253, 0.08);
+}
+
+.insight-badge {
+    color: #0b4f7a;
+    background: rgba(111, 211, 255, 0.18);
+}
+
+.public-section-header {
+    max-width: 46rem;
+}
+
+.public-section-label {
+    color: var(--mtg-primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+}
+
+.public-section-title {
+    color: var(--mtg-deep);
+    letter-spacing: -0.03em;
+}
+
+.public-soft-section {
+    background: linear-gradient(180deg, #f8fbfe 0%, #eef5fb 100%);
+}
+
+.trust-point-card,
+.solution-card,
+.problem-card,
+.build-card,
+.about-principle-card,
+.contact-method-card,
+.testimonial-card-public {
+    height: 100%;
+    padding: 1.75rem;
+    border: 1px solid var(--mtg-border-soft);
+    border-radius: 1.2rem;
+    background: #fff;
+    box-shadow: var(--mtg-shadow-soft);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trust-point-card:hover,
+.solution-card:hover,
+.problem-card:hover,
+.build-card:hover,
+.about-principle-card:hover,
+.contact-method-card:hover,
+.testimonial-card-public:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 45px rgba(11, 31, 58, 0.12);
+}
+
+.trust-point-icon,
+.solution-icon,
+.problem-icon,
+.build-icon,
+.about-principle-icon,
+.contact-method-icon {
+    width: 3.4rem;
+    height: 3.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    margin-bottom: 1.1rem;
+    font-size: 1.2rem;
+    color: var(--mtg-primary);
+    background: rgba(13, 110, 253, 0.08);
+}
+
+.solution-card h3,
+.problem-card h3,
+.build-card h3,
+.about-principle-card h3,
+.contact-method-card h3,
+.trust-point-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.8rem;
+    color: var(--mtg-deep);
+}
+
+.solution-list,
+.build-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+}
+
+.solution-list li,
+.build-list li {
+    position: relative;
+    padding-left: 1.15rem;
+    margin-bottom: 0.7rem;
+}
+
+.solution-list li::before,
+.build-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--mtg-primary);
+}
+
+.service-featured-card {
+    border: 1px solid var(--mtg-border-soft);
+    border-radius: 1.1rem;
+    box-shadow: var(--mtg-shadow-soft);
+}
+
+.service-featured-card .card-body {
+    padding: 1.5rem;
+}
+
+.service-featured-card .service-icon {
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--mtg-primary);
+    background: rgba(13, 110, 253, 0.08);
+    margin-bottom: 1rem;
+}
+
+.build-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.quote-mark {
+    color: rgba(13, 110, 253, 0.22);
+    font-size: 2.2rem;
+    line-height: 1;
+    margin-bottom: 0.9rem;
+}
+
+.testimonial-meta strong {
+    display: block;
+    color: var(--mtg-deep);
+}
+
+.public-final-cta {
+    background:
+        radial-gradient(circle at top right, rgba(111, 211, 255, 0.18), transparent 28%),
+        linear-gradient(135deg, var(--mtg-deep) 0%, var(--mtg-deep-2) 100%);
+    border-radius: 1.5rem;
+    padding: 3rem;
+    box-shadow: 0 26px 60px rgba(11, 31, 58, 0.18);
+}
+
+.public-final-cta h2,
+.public-final-cta p,
+.public-final-cta .footer-note {
+    color: #fff;
+}
+
+.public-final-cta p,
+.public-final-cta .footer-note {
+    color: rgba(255, 255, 255, 0.76);
+}
+
+.public-page-header {
+    padding: 4.5rem 0 2rem;
+    background: linear-gradient(180deg, #f8fbfe 0%, #eef5fb 100%);
+}
+
+.public-page-header h1 {
+    color: var(--mtg-deep);
+    letter-spacing: -0.03em;
+}
+
+.public-page-header .lead {
+    color: #516070;
+    max-width: 46rem;
+}
+
+.about-copy .lead,
+.contact-helper-copy {
+    color: #516070;
+}
+
+.about-highlight {
+    padding: 1.25rem;
+    border-left: 4px solid var(--mtg-primary);
+    background: var(--mtg-surface);
+    border-radius: 0 1rem 1rem 0;
+}
+
+.contact-form-card {
+    border: 1px solid var(--mtg-border-soft);
+    border-radius: 1.25rem;
+    box-shadow: var(--mtg-shadow-soft);
+}
+
+.contact-method-card p:last-child,
+.about-principle-card p:last-child,
+.trust-point-card p:last-child,
+.problem-card p:last-child,
+.build-card p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 991.98px) {
+    .public-hero {
+        padding: 4.75rem 0;
+    }
+
+    .hero-showcase-grid,
+    .hero-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .public-final-cta {
+        padding: 2.25rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .public-hero-title {
+        max-width: none;
+    }
+
+    .public-hero .btn-lg {
+        width: 100%;
+    }
+
+    .trust-point-card,
+    .solution-card,
+    .problem-card,
+    .build-card,
+    .about-principle-card,
+    .contact-method-card,
+    .testimonial-card-public {
+        padding: 1.4rem;
+    }
+
+    .public-page-header {
+        padding-top: 3.25rem;
+    }
+}
+
+/* ===================================
+   Profile Page Styles
+   =================================== */
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.profile-avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    font-size: 3rem;
 }

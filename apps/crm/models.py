@@ -39,6 +39,19 @@ class Organization(TimeStampedModel):
     def primary_contact(self):
         return self.contacts.filter(is_primary=True).first()
 
+    @property
+    def address(self):
+        """Compatibility helper for templates expecting a single address string."""
+        parts = [
+            self.address_line1,
+            self.address_line2,
+            self.city,
+            self.state,
+            self.postal_code,
+            self.country,
+        ]
+        return ', '.join(part for part in parts if part)
+
 
 class Contact(TimeStampedModel):
     """Individual contacts, potentially linked to organizations."""

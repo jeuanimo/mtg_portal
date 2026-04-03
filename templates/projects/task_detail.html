@@ -1,0 +1,39 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">{{ task.title }}</h1>
+            <p class="text-muted mb-0">{{ task.project.name }}</p>
+        </div>
+        <a href="{% url 'projects:task_list' %}"
+           class="btn btn-outline-secondary">Back to Tasks</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Status</small>
+                    <strong>{{ task.get_status_display }}</strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Priority</small>
+                    <strong>{{ task.get_priority_display }}</strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Assigned To</small>
+                    <strong>{{ task.assigned_to.get_display_name|default:"Unassigned" }}</strong>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Due Date</small>
+                    <strong>{{ task.due_date|date:"M j, Y"|default:"-" }}</strong>
+                </div>
+            </div>
+            {% if task.description %}
+                <hr>
+                <h5>Description</h5>
+                <p class="mb-0">{{ task.description|linebreaks }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

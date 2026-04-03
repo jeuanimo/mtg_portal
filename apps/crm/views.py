@@ -1,13 +1,23 @@
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Sum, Count, Q
-from django.http import JsonResponse
 from django.utils import timezone
+
 from apps.accounts.decorators import staff_required
 from .models import Organization, Contact, Lead, Activity, Task
-from .forms import OrganizationForm, ContactForm, LeadForm, ActivityForm, TaskForm, LeadStatusForm
+from .forms import OrganizationForm, ContactForm, LeadForm, ActivityForm, TaskForm
+
+logger = logging.getLogger(__name__)
+
+# URL name constants
+LEAD_DETAIL_URL = 'crm:lead_detail'
+CONTACT_DETAIL_URL = 'crm:contact_detail'
+ORGANIZATION_DETAIL_URL = 'crm:organization_detail'
+TASK_LIST_URL = 'crm:task_list'
 
 
 @login_required
@@ -120,7 +130,7 @@ def lead_detail(request, pk):
                 lead.save()
             
             messages.success(request, 'Activity added.')
-            return redirect('crm:lead_detail', pk=pk)
+            return redirect(LEAD_DETAIL_URL, pk=pk)
     else:
         form = ActivityForm()
     
@@ -142,7 +152,7 @@ def lead_create(request):
         if form.is_valid():
             lead = form.save()
             messages.success(request, f'Lead "{lead.title}" created.')
-            return redirect('crm:lead_detail', pk=lead.pk)
+            return redirect(LEAD_DETAIL_URL, pk=lead.pk)
     else:
         form = LeadForm()
     
@@ -171,7 +181,7 @@ def lead_edit(request, pk):
                 )
             
             messages.success(request, 'Lead updated.')
-            return redirect('crm:lead_detail', pk=pk)
+            return redirect(LEAD_DETAIL_URL, pk=pk)
     else:
         form = LeadForm(instance=lead)
     
@@ -208,7 +218,7 @@ def lead_update_status(request, pk):
             
             messages.success(request, f'Lead status updated to {lead.get_status_display()}')
     
-    return redirect('crm:lead_detail', pk=pk)
+    return redirect(LEAD_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -219,11 +229,11 @@ def lead_convert(request, pk):
     
     if lead.status != Lead.Status.WON:
         messages.error(request, 'Only won leads can be converted to clients.')
-        return redirect('crm:lead_detail', pk=pk)
+        return redirect(LEAD_DETAIL_URL, pk=pk)
     
     if lead.converted_to_client:
         messages.warning(request, 'This lead has already been converted.')
-        return redirect('crm:lead_detail', pk=pk)
+        return redirect(LEAD_DETAIL_URL, pk=pk)
     
     try:
         client_user = lead.convert_to_client(user=request.user)
@@ -232,9 +242,10 @@ def lead_convert(request, pk):
             f'Lead converted! Client account created for {client_user.email}'
         )
     except Exception as e:
-        messages.error(request, f'Error converting lead: {str(e)}')
+        logger.error('Lead conversion failed for lead #%s: %s', pk, e)
+        messages.error(request, 'An error occurred converting this lead. Please try again or contact support.')
     
-    return redirect('crm:lead_detail', pk=pk)
+    return redirect(LEAD_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -286,7 +297,7 @@ def contact_create(request):
         if form.is_valid():
             contact = form.save()
             messages.success(request, f'Contact "{contact.full_name}" created.')
-            return redirect('crm:contact_detail', pk=contact.pk)
+            return redirect(CONTACT_DETAIL_URL, pk=contact.pk)
     else:
         form = ContactForm()
     
@@ -304,7 +315,7 @@ def contact_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Contact updated.')
-            return redirect('crm:contact_detail', pk=pk)
+            return redirect(CONTACT_DETAIL_URL, pk=pk)
     else:
         form = ContactForm(instance=contact)
     
@@ -355,7 +366,7 @@ def organization_create(request):
         if form.is_valid():
             org = form.save()
             messages.success(request, f'Organization "{org.name}" created.')
-            return redirect('crm:organization_detail', pk=org.pk)
+            return redirect(ORGANIZATION_DETAIL_URL, pk=org.pk)
     else:
         form = OrganizationForm()
     
@@ -373,7 +384,7 @@ def organization_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Organization updated.')
-            return redirect('crm:organization_detail', pk=pk)
+            return redirect(ORGANIZATION_DETAIL_URL, pk=pk)
     else:
         form = OrganizationForm(instance=organization)
     
@@ -454,10 +465,10 @@ def task_create(request):
             
             # Redirect to source if applicable
             if task.lead:
-                return redirect('crm:lead_detail', pk=task.lead.pk)
+                return redirect(LEAD_DETAIL_URL, pk=task.lead.pk)
             if task.contact:
-                return redirect('crm:contact_detail', pk=task.contact.pk)
-            return redirect('crm:task_list')
+                return redirect(CONTACT_DETAIL_URL, pk=task.contact.pk)
+            return redirect(TASK_LIST_URL)
     else:
         form = TaskForm(**kwargs)
         form.fields['assigned_to'].initial = request.user
@@ -476,7 +487,7 @@ def task_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Task updated.')
-            return redirect('crm:task_list')
+            return redirect(TASK_LIST_URL)
     else:
         form = TaskForm(instance=task)
     
@@ -493,10 +504,10 @@ def task_complete(request, pk):
     
     # Return to source
     if task.lead:
-        return redirect('crm:lead_detail', pk=task.lead.pk)
+        return redirect(LEAD_DETAIL_URL, pk=task.lead.pk)
     if task.contact:
-        return redirect('crm:contact_detail', pk=task.contact.pk)
-    return redirect('crm:task_list')
+        return redirect(CONTACT_DETAIL_URL, pk=task.contact.pk)
+    return redirect(TASK_LIST_URL)
 
 
 # CRM Dashboard

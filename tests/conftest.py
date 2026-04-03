@@ -4,7 +4,6 @@ Pytest configuration and shared fixtures for MTG Portal tests.
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.test import Client
 
 from apps.crm.models import Organization, Contact, Lead
 from apps.invoicing.models import Invoice, InvoiceItem
@@ -204,33 +203,6 @@ def invoice_with_items(invoice):
 # =====================================================
 # Ticket Fixtures
 # =====================================================
-
-@pytest.fixture
-def ticket(db, client_user):
-    """Create a test ticket."""
-    return Ticket.objects.create(
-        subject='Test Support Issue',
-        description='Description of the test support issue.',
-        created_by=client_user,
-        priority='medium',
-        status='new',
-        category='general',
-    )
-
-
-@pytest.fixture
-def urgent_ticket(db, client_user):
-    """Create an urgent ticket."""
-    return Ticket.objects.create(
-        subject='Urgent System Down',
-        description='Critical system is not responding.',
-        created_by=client_user,
-        priority='urgent',
-        status='new',
-        category='technical',
-    )
-
-
 
 # =====================================================
 # Ticket Fixtures

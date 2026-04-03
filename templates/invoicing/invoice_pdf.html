@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ invoice.invoice_number }}</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invoice #{{ invoice.invoice_number }}</title>
+        <style>
         * {
             margin: 0;
             padding: 0;
@@ -159,122 +159,124 @@
             body { padding: 20px; }
             .no-print { display: none; }
         }
-    </style>
-</head>
-<body>
-    <div class="no-print" style="margin-bottom: 20px; text-align: right;">
-        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Print / Save PDF</button>
-        <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" style="padding: 10px 20px;">Back to Invoice</a>
-    </div>
-
-    <div class="header">
-        <div class="company-info">
-            <h1>Mitchell Technology Group</h1>
-            <p>IT Services & Solutions</p>
-            <p>support@mitchelltech.com</p>
+        </style>
+    </head>
+    <body>
+        <div class="no-print" style="margin-bottom: 20px; text-align: right;">
+            <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Print / Save PDF</button>
+            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}"
+               style="padding: 10px 20px">Back to Invoice</a>
         </div>
-        <div class="invoice-info">
-            <h2>INVOICE</h2>
-            <p><strong>Invoice #:</strong> {{ invoice.invoice_number }}</p>
-            <p><strong>Issue Date:</strong> {{ invoice.issue_date|date:"M d, Y" }}</p>
-            <p><strong>Due Date:</strong> {{ invoice.due_date|date:"M d, Y" }}</p>
-            <span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+        <div class="header">
+            <div class="company-info">
+                <h1>Mitchell Technology Group</h1>
+                <p>IT Services & Solutions</p>
+                <p>support@mitchelltech.com</p>
+            </div>
+            <div class="invoice-info">
+                <h2>INVOICE</h2>
+                <p>
+                    <strong>Invoice #:</strong> {{ invoice.invoice_number }}
+                </p>
+                <p>
+                    <strong>Issue Date:</strong> {{ invoice.issue_date|date:"M d, Y" }}
+                </p>
+                <p>
+                    <strong>Due Date:</strong> {{ invoice.due_date|date:"M d, Y" }}
+                </p>
+                <span class="status-badge status-{{ invoice.status }}">{{ invoice.get_status_display }}</span>
+            </div>
         </div>
-    </div>
-
-    <div class="bill-section">
-        <div class="bill-to">
-            <h3>Bill To</h3>
-            <h4>{{ invoice.organization.name }}</h4>
-            {% if invoice.contact %}
-            <p>{{ invoice.contact.full_name }}</p>
-            {% if invoice.contact.email %}<p>{{ invoice.contact.email }}</p>{% endif %}
-            {% endif %}
-            {% if invoice.organization.address %}
-            <p>{{ invoice.organization.address }}</p>
-            {% endif %}
+        <div class="bill-section">
+            <div class="bill-to">
+                <h3>Bill To</h3>
+                <h4>{{ invoice.organization.name }}</h4>
+                {% if invoice.contact %}
+                    <p>{{ invoice.contact.full_name }}</p>
+                    {% if invoice.contact.email %}<p>{{ invoice.contact.email }}</p>{% endif %}
+                {% endif %}
+                {% if invoice.organization.address %}<p>{{ invoice.organization.address }}</p>{% endif %}
+            </div>
         </div>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 50%;">Description</th>
-                <th class="text-center" style="width: 15%;">Qty</th>
-                <th class="text-right" style="width: 17%;">Rate</th>
-                <th class="text-right" style="width: 18%;">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in invoice.items.all %}
-            <tr>
-                <td>{{ item.description }}</td>
-                <td class="text-center">{{ item.quantity }}</td>
-                <td class="text-right">${{ item.unit_price|floatformat:2 }}</td>
-                <td class="text-right">${{ item.total|floatformat:2 }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="totals-section">
-        <table class="totals-table">
-            <tr>
-                <td>Subtotal</td>
-                <td class="text-right">${{ invoice.subtotal|floatformat:2 }}</td>
-            </tr>
-            {% if invoice.discount_amount %}
-            <tr>
-                <td>Discount{% if invoice.discount_description %} ({{ invoice.discount_description }}){% endif %}</td>
-                <td class="text-right" style="color: #059669;">-${{ invoice.discount_amount|floatformat:2 }}</td>
-            </tr>
-            {% endif %}
-            {% if invoice.tax_rate %}
-            <tr>
-                <td>Tax ({{ invoice.tax_rate }}%)</td>
-                <td class="text-right">${{ invoice.tax_amount|floatformat:2 }}</td>
-            </tr>
-            {% endif %}
-            <tr class="total-row">
-                <td>Total</td>
-                <td class="text-right">${{ invoice.total|floatformat:2 }}</td>
-            </tr>
-            {% if invoice.paid_amount %}
-            <tr>
-                <td>Amount Paid</td>
-                <td class="text-right" style="color: #059669;">-${{ invoice.paid_amount|floatformat:2 }}</td>
-            </tr>
-            <tr class="balance-row">
-                <td>Balance Due</td>
-                <td class="text-right">${{ invoice.balance_due|floatformat:2 }}</td>
-            </tr>
-            {% endif %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Description</th>
+                    <th class="text-center" style="width: 15%;">Qty</th>
+                    <th class="text-right" style="width: 17%;">Rate</th>
+                    <th class="text-right" style="width: 18%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items.all %}
+                    <tr>
+                        <td>{{ item.description }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-right">${{ item.unit_price|floatformat:2 }}</td>
+                        <td class="text-right">${{ item.total|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
         </table>
-    </div>
-
-    {% if invoice.notes or invoice.terms %}
-    <div class="notes-section">
-        {% if invoice.notes %}
-        <div style="margin-bottom: 20px;">
-            <h3>Notes</h3>
-            <p>{{ invoice.notes|linebreaks }}</p>
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td>Subtotal</td>
+                    <td class="text-right">${{ invoice.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% if invoice.discount_amount %}
+                    <tr>
+                        <td>
+                            Discount
+                            {% if invoice.discount_description %}({{ invoice.discount_description }}){% endif %}
+                        </td>
+                        <td class="text-right" style="color: #059669;">-${{ invoice.discount_amount|floatformat:2 }}</td>
+                    </tr>
+                {% endif %}
+                {% if invoice.tax_rate %}
+                    <tr>
+                        <td>Tax ({{ invoice.tax_rate }}%)</td>
+                        <td class="text-right">${{ invoice.tax_amount|floatformat:2 }}</td>
+                    </tr>
+                {% endif %}
+                <tr class="total-row">
+                    <td>Total</td>
+                    <td class="text-right">${{ invoice.total|floatformat:2 }}</td>
+                </tr>
+                {% if invoice.paid_amount %}
+                    <tr>
+                        <td>Amount Paid</td>
+                        <td class="text-right" style="color: #059669;">-${{ invoice.paid_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="balance-row">
+                        <td>Balance Due</td>
+                        <td class="text-right">${{ invoice.balance_due|floatformat:2 }}</td>
+                    </tr>
+                {% endif %}
+            </table>
         </div>
+        {% if invoice.notes or invoice.terms %}
+            <div class="notes-section">
+                {% if invoice.notes %}
+                    <div style="margin-bottom: 20px;">
+                        <h3>Notes</h3>
+                        <p>{{ invoice.notes|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                {% if invoice.terms %}
+                    <div>
+                        <h3>Terms & Conditions</h3>
+                        <p>{{ invoice.terms|linebreaks }}</p>
+                    </div>
+                {% endif %}
+            </div>
         {% endif %}
-        {% if invoice.terms %}
-        <div>
-            <h3>Terms & Conditions</h3>
-            <p>{{ invoice.terms|linebreaks }}</p>
+        <div class="footer">
+            {% if invoice.footer %}
+                <p>{{ invoice.footer }}</p>
+            {% else %}
+                <p>Thank you for your business!</p>
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <div class="footer">
-        {% if invoice.footer %}
-        <p>{{ invoice.footer }}</p>
-        {% else %}
-        <p>Thank you for your business!</p>
-        {% endif %}
-    </div>
-</body>
+    </body>
 </html>

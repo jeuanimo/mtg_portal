@@ -43,6 +43,8 @@ class Project(TimeStampedModel):
         verbose_name = 'Project'
         verbose_name_plural = 'Projects'
         ordering = ['-created_at']
+
+    ACTIVE_STATUSES = (Status.PLANNING, Status.IN_PROGRESS, Status.ON_HOLD)
     
     def __str__(self):
         return self.name
@@ -52,7 +54,7 @@ class Project(TimeStampedModel):
         total_tasks = self.tasks.count()
         if total_tasks == 0:
             return 0
-        completed = self.tasks.filter(status='completed').count()
+        completed = self.tasks.filter(status=Task.Status.COMPLETED).count()
         return int((completed / total_tasks) * 100)
 
 

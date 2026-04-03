@@ -1,5 +1,9 @@
 """
-Permission decorators and mixins for role-based access control.
+Permission decorators for role-based access control.
+
+These decorators raise PermissionDenied (HTTP 403) on access failures, which
+is appropriate for internal portal views.  For public-facing views that should
+redirect to a friendly page on failure, use apps.core.decorators instead.
 """
 from functools import wraps
 from django.contrib.auth.decorators import login_required
@@ -17,7 +21,7 @@ def role_required(*roles):
         @wraps(view_func)
         @login_required
         def wrapper(request, *args, **kwargs):
-            if request.user.role in roles or request.user.is_superuser:
+            if request.user.has_any_role(*roles):
                 return view_func(request, *args, **kwargs)
             raise PermissionDenied("You don't have permission to access this page.")
         return wrapper
@@ -65,6 +69,17 @@ def client_or_staff_required(view_func):
         if request.user.is_staff_user or request.user.is_client_user:
             return view_func(request, *args, **kwargs)
         raise PermissionDenied("Client or staff access required.")
+    return wrapper
+
+
+def client_required(view_func):
+    """Decorator requiring client role with an associated organization."""
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_client_user and request.user.organization_id:
+            return view_func(request, *args, **kwargs)
+        raise PermissionDenied("Client access required.")
     return wrapper
 
 

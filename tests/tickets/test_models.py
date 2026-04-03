@@ -152,10 +152,10 @@ class TestTicketComments:
     @pytest.mark.django_db
     def test_comment_ordering(self, ticket, staff_user):
         """Test comments are ordered by creation time."""
-        comment1 = TicketComment.objects.create(
+        TicketComment.objects.create(
             ticket=ticket, author=staff_user, content='First'
         )
-        comment2 = TicketComment.objects.create(
+        TicketComment.objects.create(
             ticket=ticket, author=staff_user, content='Second'
         )
         

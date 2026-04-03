@@ -1,295 +1,296 @@
-{% extends 'base_dashboard.html' %}
+{% extends "base_dashboard.html" %}
 {% load crispy_forms_tags crm_tags %}
-
 {% block title %}{{ lead.title }} - CRM{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{% url 'crm:dashboard' %}">CRM</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'crm:lead_list' %}">Leads</a></li>
-                <li class="breadcrumb-item active">{{ lead.title|truncatechars:30 }}</li>
-            </ol>
-        </nav>
-        <h1 class="h3 mb-0">{{ lead.title }}</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'crm:dashboard' %}">CRM</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'crm:lead_list' %}">Leads</a>
+                    </li>
+                    <li class="breadcrumb-item active">{{ lead.title|truncatechars:30 }}</li>
+                </ol>
+            </nav>
+            <h1 class="h3 mb-0">{{ lead.title }}</h1>
+        </div>
+        <div>
+            <a href="{% url 'crm:lead_edit' lead.pk %}" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+        </div>
     </div>
-    <div>
-        <a href="{% url 'crm:lead_edit' lead.pk %}" class="btn btn-primary">
-            <i class="bi bi-pencil me-1"></i>Edit
-        </a>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Main Content -->
-    <div class="col-md-8">
-        <!-- Lead Info Card -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Lead Information</h5>
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Lead Info Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Lead Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <span class="badge {{ lead.status|status_badge_class }} ms-2">{{ lead.get_status_display }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Priority:</strong>
+                            <span class="badge {{ lead.priority|priority_badge_class }} ms-2">{{ lead.get_priority_display }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Source:</strong> {{ lead.get_source_display }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Days in Pipeline:</strong> {{ lead.days_in_pipeline }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Estimated Value:</strong>
+                            {% if lead.estimated_value %}
+                                ${{ lead.estimated_value|floatformat:0 }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Probability:</strong> {{ lead.probability }}%
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Expected Close:</strong>
+                            {% if lead.expected_close_date %}
+                                {{ lead.expected_close_date|date:"M j, Y" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Weighted Value:</strong>
+                            {% if lead.weighted_value %}
+                                ${{ lead.weighted_value|floatformat:0 }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if lead.notes %}
+                        <div class="border-top pt-3 mt-3">
+                            <strong>Notes:</strong>
+                            <p class="mb-0">{{ lead.notes|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                    {% if lead.lost_reason %}
+                        <div class="alert alert-danger mt-3">
+                            <strong>Lost Reason:</strong> {{ lead.lost_reason }}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Status:</strong>
-                        <span class="badge {{ lead.status|status_badge_class }} ms-2">{{ lead.get_status_display }}</span>
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Priority:</strong>
-                        <span class="badge {{ lead.priority|priority_badge_class }} ms-2">{{ lead.get_priority_display }}</span>
-                    </div>
+            <!-- Tasks -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Tasks</h5>
+                    <a href="{% url 'crm:task_create' %}?lead={{ lead.pk }}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus me-1"></i>Add Task
+                    </a>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Source:</strong> {{ lead.get_source_display }}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Days in Pipeline:</strong> {{ lead.days_in_pipeline }}
-                    </div>
+                <div class="list-group list-group-flush">
+                    {% for task in tasks %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center {% if task.is_overdue %}list-group-item-danger{% endif %}">
+                            <div>
+                                <strong>{{ task.title }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {% if task.due_date %}Due: {{ task.due_date|date:"M j, Y g:i A" }}{% endif %}
+                                    {% if task.assigned_to %}• {{ task.assigned_to.get_display_name }}{% endif %}
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge {{ task.status|task_status_class }} me-2">{{ task.get_status_display }}</span>
+                                {% if task.status != 'completed' %}
+                                    <a href="{% url 'crm:task_complete' task.pk %}"
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-check"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted py-3">No tasks yet</div>
+                    {% endfor %}
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Estimated Value:</strong> 
-                        {% if lead.estimated_value %}${{ lead.estimated_value|floatformat:0 }}{% else %}-{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Probability:</strong> {{ lead.probability }}%
-                    </div>
+            </div>
+            <!-- Activities -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Activity</h5>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <strong>Expected Close:</strong> 
-                        {% if lead.expected_close_date %}{{ lead.expected_close_date|date:"M j, Y" }}{% else %}-{% endif %}
-                    </div>
-                    <div class="col-md-6">
-                        <strong>Weighted Value:</strong> 
-                        {% if lead.weighted_value %}${{ lead.weighted_value|floatformat:0 }}{% else %}-{% endif %}
-                    </div>
+                <div class="card-body">{% crispy activity_form %}</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Activity History</h5>
                 </div>
-                {% if lead.notes %}
-                <div class="border-top pt-3 mt-3">
-                    <strong>Notes:</strong>
-                    <p class="mb-0">{{ lead.notes|linebreaks }}</p>
+                <div class="list-group list-group-flush">
+                    {% for activity in activities %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <span class="badge bg-secondary me-2">{{ activity.get_activity_type_display }}</span>
+                                    <strong>{{ activity.subject }}</strong>
+                                </div>
+                                <small class="text-muted">{{ activity.performed_at|date:"M j, Y g:i A" }}</small>
+                            </div>
+                            {% if activity.description %}<p class="mb-0 mt-2 small text-muted">{{ activity.description }}</p>{% endif %}
+                            <small class="text-muted">By {{ activity.performed_by.get_display_name|default:"System" }}</small>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item text-center text-muted py-3">No activities recorded yet</div>
+                    {% endfor %}
                 </div>
-                {% endif %}
-                {% if lead.lost_reason %}
-                <div class="alert alert-danger mt-3">
-                    <strong>Lost Reason:</strong> {{ lead.lost_reason }}
-                </div>
-                {% endif %}
             </div>
         </div>
-        
-        <!-- Tasks -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Tasks</h5>
-                <a href="{% url 'crm:task_create' %}?lead={{ lead.pk }}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-plus me-1"></i>Add Task
-                </a>
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Status Update -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'crm:lead_update_status' lead.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <select name="status" class="form-select" id="statusSelect">
+                                {% for value, label in lead.Status.choices %}
+                                    <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="lostReasonDiv">
+                            <label class="form-label">Reason for Loss</label>
+                            <textarea name="lost_reason" class="form-control" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                    </form>
+                </div>
             </div>
-            <div class="list-group list-group-flush">
-                {% for task in tasks %}
-                <div class="list-group-item d-flex justify-content-between align-items-center {% if task.is_overdue %}list-group-item-danger{% endif %}">
-                    <div>
-                        <strong>{{ task.title }}</strong>
-                        <br>
-                        <small class="text-muted">
-                            {% if task.due_date %}Due: {{ task.due_date|date:"M j, Y g:i A" }}{% endif %}
-                            {% if task.assigned_to %} • {{ task.assigned_to.get_display_name }}{% endif %}
-                        </small>
+            <!-- Convert to Client -->
+            {% if lead.status == 'won' and not lead.converted_to_client %}
+                <div class="card mb-4 border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-trophy me-2"></i>Convert to Client
+                        </h5>
                     </div>
-                    <div>
-                        <span class="badge {{ task.status|task_status_class }} me-2">{{ task.get_status_display }}</span>
-                        {% if task.status != 'completed' %}
-                        <a href="{% url 'crm:task_complete' task.pk %}" class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-check"></i>
+                    <div class="card-body">
+                        <p class="small">This lead has been won! Convert it to create a client account.</p>
+                        <a href="{% url 'crm:lead_convert' lead.pk %}"
+                           class="btn btn-success w-100"
+                           onclick="return confirm('Convert this lead to a client account?')">
+                            <i class="bi bi-person-plus me-1"></i>Create Client Account
                         </a>
+                    </div>
+                </div>
+            {% endif %}
+            {% if lead.converted_to_client %}
+                <div class="card mb-4 border-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle-fill text-success display-4"></i>
+                        <h6 class="mt-2">Converted to Client</h6>
+                        <small class="text-muted">{{ lead.converted_at|date:"M j, Y" }}</small>
+                    </div>
+                </div>
+            {% endif %}
+            <!-- Contact Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Contact</h5>
+                </div>
+                <div class="card-body">
+                    <h6>
+                        <a href="{% url 'crm:contact_detail' lead.contact.pk %}">{{ lead.contact.full_name }}</a>
+                    </h6>
+                    {% if lead.contact.email %}
+                        <p class="mb-1">
+                            <i class="bi bi-envelope me-2"></i>
+                            <a href="mailto:{{ lead.contact.email }}">{{ lead.contact.email }}</a>
+                        </p>
+                    {% endif %}
+                    {% if lead.contact.phone %}
+                        <p class="mb-1">
+                            <i class="bi bi-telephone me-2"></i>
+                            <a href="tel:{{ lead.contact.phone }}">{{ lead.contact.phone }}</a>
+                        </p>
+                    {% endif %}
+                    {% if lead.contact.job_title %}
+                        <p class="mb-0 text-muted">
+                            <i class="bi bi-briefcase me-2"></i>{{ lead.contact.job_title }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Organization Info -->
+            {% if lead.organization %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Organization</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>
+                            <a href="{% url 'crm:organization_detail' lead.organization.pk %}">{{ lead.organization.name }}</a>
+                        </h6>
+                        {% if lead.organization.website %}
+                            <p class="mb-1">
+                                <i class="bi bi-globe me-2"></i>
+                                <a href="{{ lead.organization.website }}" target="_blank">{{ lead.organization.website }}</a>
+                            </p>
+                        {% endif %}
+                        {% if lead.organization.industry %}
+                            <p class="mb-0 text-muted">
+                                <i class="bi bi-building me-2"></i>{{ lead.organization.industry }}
+                            </p>
                         {% endif %}
                     </div>
                 </div>
-                {% empty %}
-                <div class="list-group-item text-center text-muted py-3">
-                    No tasks yet
+            {% endif %}
+            <!-- Assignment -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Assignment</h5>
                 </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <!-- Activities -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Add Activity</h5>
-            </div>
-            <div class="card-body">
-                {% crispy activity_form %}
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Activity History</h5>
-            </div>
-            <div class="list-group list-group-flush">
-                {% for activity in activities %}
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <span class="badge bg-secondary me-2">{{ activity.get_activity_type_display }}</span>
-                            <strong>{{ activity.subject }}</strong>
+                <div class="card-body">
+                    {% if lead.assigned_to %}
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle display-6 me-3 text-muted"></i>
+                            <div>
+                                <h6 class="mb-0">{{ lead.assigned_to.get_display_name }}</h6>
+                                <small class="text-muted">{{ lead.assigned_to.email }}</small>
+                            </div>
                         </div>
-                        <small class="text-muted">{{ activity.performed_at|date:"M j, Y g:i A" }}</small>
-                    </div>
-                    {% if activity.description %}
-                    <p class="mb-0 mt-2 small text-muted">{{ activity.description }}</p>
+                    {% else %}
+                        <p class="text-muted mb-0">Not assigned</p>
                     {% endif %}
-                    <small class="text-muted">By {{ activity.performed_by.get_display_name|default:"System" }}</small>
+                    {% if lead.next_followup %}
+                        <div class="border-top mt-3 pt-3">
+                            <small class="text-muted">Next Follow-up:</small>
+                            <p class="mb-0 fw-semibold">{{ lead.next_followup|date:"M j, Y g:i A" }}</p>
+                        </div>
+                    {% endif %}
                 </div>
-                {% empty %}
-                <div class="list-group-item text-center text-muted py-3">
-                    No activities recorded yet
-                </div>
-                {% endfor %}
             </div>
         </div>
     </div>
-    
-    <!-- Sidebar -->
-    <div class="col-md-4">
-        <!-- Quick Status Update -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Update Status</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" action="{% url 'crm:lead_update_status' lead.pk %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <select name="status" class="form-select" id="statusSelect">
-                            {% for value, label in lead.Status.choices %}
-                            <option value="{{ value }}" {% if lead.status == value %}selected{% endif %}>{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mb-3 d-none" id="lostReasonDiv">
-                        <label class="form-label">Reason for Loss</label>
-                        <textarea name="lost_reason" class="form-control" rows="2"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Convert to Client -->
-        {% if lead.status == 'won' and not lead.converted_to_client %}
-        <div class="card mb-4 border-success">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Convert to Client</h5>
-            </div>
-            <div class="card-body">
-                <p class="small">This lead has been won! Convert it to create a client account.</p>
-                <a href="{% url 'crm:lead_convert' lead.pk %}" class="btn btn-success w-100" onclick="return confirm('Convert this lead to a client account?')">
-                    <i class="bi bi-person-plus me-1"></i>Create Client Account
-                </a>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if lead.converted_to_client %}
-        <div class="card mb-4 border-success">
-            <div class="card-body text-center">
-                <i class="bi bi-check-circle-fill text-success display-4"></i>
-                <h6 class="mt-2">Converted to Client</h6>
-                <small class="text-muted">{{ lead.converted_at|date:"M j, Y" }}</small>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Contact Info -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Contact</h5>
-            </div>
-            <div class="card-body">
-                <h6>
-                    <a href="{% url 'crm:contact_detail' lead.contact.pk %}">{{ lead.contact.full_name }}</a>
-                </h6>
-                {% if lead.contact.email %}
-                <p class="mb-1">
-                    <i class="bi bi-envelope me-2"></i>
-                    <a href="mailto:{{ lead.contact.email }}">{{ lead.contact.email }}</a>
-                </p>
-                {% endif %}
-                {% if lead.contact.phone %}
-                <p class="mb-1">
-                    <i class="bi bi-telephone me-2"></i>
-                    <a href="tel:{{ lead.contact.phone }}">{{ lead.contact.phone }}</a>
-                </p>
-                {% endif %}
-                {% if lead.contact.job_title %}
-                <p class="mb-0 text-muted">
-                    <i class="bi bi-briefcase me-2"></i>{{ lead.contact.job_title }}
-                </p>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Organization Info -->
-        {% if lead.organization %}
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Organization</h5>
-            </div>
-            <div class="card-body">
-                <h6>
-                    <a href="{% url 'crm:organization_detail' lead.organization.pk %}">{{ lead.organization.name }}</a>
-                </h6>
-                {% if lead.organization.website %}
-                <p class="mb-1">
-                    <i class="bi bi-globe me-2"></i>
-                    <a href="{{ lead.organization.website }}" target="_blank">{{ lead.organization.website }}</a>
-                </p>
-                {% endif %}
-                {% if lead.organization.industry %}
-                <p class="mb-0 text-muted">
-                    <i class="bi bi-building me-2"></i>{{ lead.organization.industry }}
-                </p>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Assignment -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Assignment</h5>
-            </div>
-            <div class="card-body">
-                {% if lead.assigned_to %}
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-circle display-6 me-3 text-muted"></i>
-                    <div>
-                        <h6 class="mb-0">{{ lead.assigned_to.get_display_name }}</h6>
-                        <small class="text-muted">{{ lead.assigned_to.email }}</small>
-                    </div>
-                </div>
-                {% else %}
-                <p class="text-muted mb-0">Not assigned</p>
-                {% endif %}
-                {% if lead.next_followup %}
-                <div class="border-top mt-3 pt-3">
-                    <small class="text-muted">Next Follow-up:</small>
-                    <p class="mb-0 fw-semibold">{{ lead.next_followup|date:"M j, Y g:i A" }}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
+    <script>
 document.getElementById('statusSelect').addEventListener('change', function() {
     var lostReasonDiv = document.getElementById('lostReasonDiv');
     if (this.value === 'lost') {
@@ -298,5 +299,5 @@ document.getElementById('statusSelect').addEventListener('change', function() {
         lostReasonDiv.classList.add('d-none');
     }
 });
-</script>
+    </script>
 {% endblock %}

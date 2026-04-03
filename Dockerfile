@@ -1,5 +1,5 @@
 # Production Dockerfile for Mitchell Technology Group Portal
-FROM python:3.12-slim as base
+FROM python:3.12-slim AS base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -30,9 +30,15 @@ COPY --chown=mtgportal:mtgportal . .
 RUN mkdir -p /var/log/mtg_portal /app/media /app/staticfiles \
     && chown -R mtgportal:mtgportal /var/log/mtg_portal /app/media /app/staticfiles
 
-# Collect static files
+# Collect static files — SECRET_KEY is required by production.py at import time;
+# use a dummy value here since collectstatic never touches the database or secrets.
 ENV DJANGO_SETTINGS_MODULE=mtg_portal.settings.production
-RUN python manage.py collectstatic --noinput --clear || true
+RUN SECRET_KEY=collectstatic-dummy-key \
+    DJANGO_ENV=production \
+    CLOUDINARY_CLOUD_NAME=dummy \
+    CLOUDINARY_API_KEY=dummy \
+    CLOUDINARY_API_SECRET=dummy \
+    python manage.py collectstatic --noinput --clear
 
 # Switch to non-root user
 USER mtgportal

@@ -119,20 +119,33 @@ class Meeting(TimeStampedModel):
             models.Index(fields=['meeting_uuid']),
             models.Index(fields=['client_join_token']),
         ]
+
+    UPCOMING_STATUSES = (Status.SCHEDULED, Status.CONFIRMED)
+    ACTIVE_STATUSES = (Status.SCHEDULED, Status.CONFIRMED, Status.IN_PROGRESS)
     
     def __str__(self):
         return f"{self.title} - {self.start_time.strftime('%Y-%m-%d %H:%M')}"
     
+    @property
+    def scheduled_at(self):
+        """Backwards-compatible alias for legacy templates."""
+        return self.start_time
+
     @property
     def duration_minutes(self):
         if self.end_time and self.start_time:
             delta = self.end_time - self.start_time
             return int(delta.total_seconds() / 60)
         return 0
+
+    @property
+    def duration(self):
+        """Backwards-compatible alias for legacy templates."""
+        return self.duration_minutes
     
     @property
     def is_upcoming(self):
-        return self.start_time > timezone.now() and self.status in ['SCHEDULED', 'CONFIRMED']
+        return self.start_time > timezone.now() and self.status in self.UPCOMING_STATUSES
     
     @property
     def is_past(self):
@@ -143,7 +156,7 @@ class Meeting(TimeStampedModel):
         """Check if meeting can be joined (15 min before to end time)"""
         now = timezone.now()
         start_buffer = self.start_time - timezone.timedelta(minutes=15)
-        return start_buffer <= now <= self.end_time and self.status in ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS']
+        return start_buffer <= now <= self.end_time and self.status in self.ACTIVE_STATUSES
     
     def start_meeting(self):
         self.status = self.Status.IN_PROGRESS

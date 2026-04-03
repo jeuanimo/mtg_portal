@@ -1,94 +1,130 @@
-{% extends 'base.html' %}
-
-{% block title %}About Us - Mitchell Technology Group{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}About Mitchell Technology Group{% endblock %}
+{% block meta_description %}
+    Learn how Mitchell Technology Group approaches business portals, secure systems, cloud infrastructure, and practical technology strategy for growing organizations.
+{% endblock %}
 {% block content %}
-<section class="hero-section py-5">
-    <div class="container text-center">
-        <h1 class="display-4 fw-bold">About Us</h1>
-        <p class="lead">Your trusted partner in technology solutions</p>
-    </div>
-</section>
-
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center mb-5">
-            <div class="col-lg-6">
-                <h2 class="fw-bold mb-4">Our Story</h2>
-                <p class="lead">Mitchell Technology Group was founded with a simple mission: to provide businesses with reliable, innovative IT solutions that drive growth and efficiency.</p>
-                <p>With decades of combined experience in the technology industry, our team brings deep expertise in network infrastructure, cloud computing, cybersecurity, and IT strategy. We've helped hundreds of businesses transform their technology operations and achieve their goals.</p>
-                <p>We believe that technology should empower your business, not complicate it. That's why we focus on building long-term partnerships with our clients, understanding their unique needs, and delivering solutions that truly make a difference.</p>
-            </div>
-            <div class="col-lg-6 text-center">
-                <i class="bi bi-building display-1 text-primary" style="font-size: 12rem; opacity: 0.3;"></i>
-            </div>
-        </div>
-        
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <i class="bi bi-bullseye display-4 text-primary mb-3"></i>
-                    <h4>Our Mission</h4>
-                    <p class="text-muted">To empower businesses with technology solutions that drive innovation, efficiency, and growth.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <i class="bi bi-eye display-4 text-primary mb-3"></i>
-                    <h4>Our Vision</h4>
-                    <p class="text-muted">To be the most trusted technology partner for businesses seeking to thrive in the digital age.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 text-center p-4">
-                    <i class="bi bi-heart display-4 text-primary mb-3"></i>
-                    <h4>Our Values</h4>
-                    <p class="text-muted">Integrity, excellence, innovation, and unwavering commitment to client success.</p>
+    <section class="public-page-header">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-9">
+                    <span class="public-section-label d-inline-block mb-2">About MTG</span>
+                    <h1 class="display-4 fw-bold mb-3">
+                        A business technology partner focused on practical systems, security, and execution
+                    </h1>
+                    <p class="lead mx-auto">
+                        Mitchell Technology Group helps organizations move from disconnected tools and manual processes to cleaner systems that support real work.
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-{% if testimonials %}
-<section class="py-5 bg-light">
-    <div class="container">
-        <h2 class="fw-bold text-center mb-5">What Our Clients Say</h2>
-        <div class="row g-4">
-            {% for testimonial in testimonials %}
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= testimonial.rating %}
-                                <i class="bi bi-star-fill text-warning"></i>
-                                {% else %}
-                                <i class="bi bi-star text-muted"></i>
-                                {% endif %}
-                            {% endfor %}
+    </section>
+    <section class="py-5">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 about-copy">
+                    <span class="public-section-label d-inline-block mb-2">Our Approach</span>
+                    <h2 class="display-6 fw-bold public-section-title mb-4">
+                        Technology should make the business easier to run, not harder to manage
+                    </h2>
+                    <p class="lead">
+                        MTG works with organizations that need better visibility, stronger workflows, and more reliable technology foundations.
+                    </p>
+                    <p>
+                        That can mean building a secure business portal, improving cloud infrastructure, reducing manual operational friction, or helping leadership make more confident technology decisions. The goal is not to sell generic services. The goal is to deliver systems that support how your business actually works.
+                    </p>
+                    <div class="about-highlight mt-4">
+                        <strong class="d-block mb-2">What clients can expect from MTG</strong>
+                        <span class="d-block">Clear communication, practical recommendations, and implementation that keeps business needs, maintainability, and security in the same conversation.</span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <article class="about-principle-card">
+                                <span class="about-principle-icon"><i class="bi bi-kanban"></i></span>
+                                <h3>Business-first systems thinking</h3>
+                                <p>Solutions are shaped around workflows, reporting needs, user roles, and operational realities.</p>
+                            </article>
                         </div>
-                        <p class="card-text fs-5">"{{ testimonial.testimonial }}"</p>
-                        <div class="mt-4">
-                            <strong>{{ testimonial.client_name }}</strong>
-                            {% if testimonial.client_title %}
-                            <br><span class="text-muted">{{ testimonial.client_title }}, {{ testimonial.client_company }}</span>
-                            {% endif %}
+                        <div class="col-sm-6">
+                            <article class="about-principle-card">
+                                <span class="about-principle-icon"><i class="bi bi-shield-check"></i></span>
+                                <h3>Security-aware delivery</h3>
+                                <p>MTG brings a cybersecurity-focused mindset to architecture, access, and implementation choices.</p>
+                            </article>
+                        </div>
+                        <div class="col-sm-6">
+                            <article class="about-principle-card">
+                                <span class="about-principle-icon"><i class="bi bi-cloud-check"></i></span>
+                                <h3>Modern infrastructure direction</h3>
+                                <p>Support for cloud-hosted systems, modernization efforts, and environments that are easier to support over time.</p>
+                            </article>
+                        </div>
+                        <div class="col-sm-6">
+                            <article class="about-principle-card">
+                                <span class="about-principle-icon"><i class="bi bi-gear-wide-connected"></i></span>
+                                <h3>Practical automation and clarity</h3>
+                                <p>
+                                    Less process friction, fewer repetitive steps, and more useful visibility into what is happening across the business.
+                                </p>
+                            </article>
                         </div>
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-    </div>
-</section>
-{% endif %}
-
-<section class="py-5 bg-primary text-white">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Let's Work Together</h2>
-        <p class="lead mb-4">Ready to transform your IT? Get in touch with our team today.</p>
-        <a href="{% url 'public:contact' %}" class="btn btn-light btn-lg">Contact Us</a>
-    </div>
-</section>
+    </section>
+    {% if testimonials %}
+        <section class="py-5 public-soft-section">
+            <div class="container">
+                <div class="public-section-header mb-5">
+                    <span class="public-section-label d-inline-block mb-2">Client Feedback</span>
+                    <h2 class="display-6 fw-bold public-section-title mb-3">What clients say about working with MTG</h2>
+                    <p class="public-section-subtitle mb-0">
+                        Testimonials remain driven by your existing content and are presented with the same public-page styling as the homepage.
+                    </p>
+                </div>
+                <div class="row g-4">
+                    {% for testimonial in testimonials %}
+                        <div class="col-md-6">
+                            <article class="testimonial-card-public">
+                                <div class="quote-mark">“</div>
+                                <p class="mb-4">{{ testimonial.testimonial }}</p>
+                                <div class="testimonial-meta">
+                                    <strong>{{ testimonial.client_name }}</strong>
+                                    {% if testimonial.client_title %}
+                                        <span>{{ testimonial.client_title }}
+                                            {% if testimonial.client_company %}, {{ testimonial.client_company }}{% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+    <section class="py-5">
+        <div class="container">
+            <div class="public-final-cta text-center text-lg-start">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
+                        <span class="eyebrow-badge mb-3 text-white border border-light border-opacity-25 bg-white bg-opacity-10">
+                            <i class="bi bi-briefcase"></i>
+                            Start the conversation
+                        </span>
+                        <h2 class="display-6 fw-bold mb-3">Need a technology partner who can think beyond generic IT support?</h2>
+                        <p class="lead mb-0">
+                            Let’s talk through your systems, your bottlenecks, and the kind of business technology foundation you want to build next.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <a href="{% url 'public:contact' %}" class="btn btn-light btn-lg">Contact MTG</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}

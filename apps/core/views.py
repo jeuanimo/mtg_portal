@@ -10,7 +10,7 @@ def portal_home(request):
     return render(request, 'core/portal_home.html')
 
 
-def health_check(request):
+def health_check(_request):
     """
     Health check endpoint for load balancers and monitoring.
     Returns JSON with status of key services.

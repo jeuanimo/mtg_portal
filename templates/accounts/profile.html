@@ -1,114 +1,135 @@
-{% extends 'base_dashboard.html' %}
-
-{% block title %}My Profile - Mitchell Technology Group{% endblock %}
-
+{% extends "base_dashboard.html" %}
+{% block title %}
+    My Profile - Mitchell Technology Group
+{% endblock title %}
 {% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-lg-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 120px; height: 120px; font-size: 3rem;">
-                        {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}"
+                                 alt="Avatar"
+                                 class="rounded-circle mb-3 profile-avatar"
+                                 width="120"
+                                 height="120">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3 profile-avatar-placeholder">
+                                {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                        <h4 class="mb-1">{{ user.get_display_name }}</h4>
+                        <p class="text-muted">{{ user.email }}</p>
+                        {% if user.company %}
+                            <p class="text-muted mb-0">
+                                {{ user.job_title }}
+                                {% if user.company %}at {{ user.company }}{% endif %}
+                            </p>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    <h4 class="mb-1">{{ user.get_display_name }}</h4>
-                    <p class="text-muted">{{ user.email }}</p>
-                    {% if user.company %}
-                    <p class="text-muted mb-0">{{ user.job_title }}{% if user.company %} at {{ user.company }}{% endif %}</p>
-                    {% endif %}
+                </div>
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'accounts:profile_edit' %}"
+                           class="list-group-item list-group-item-action">
+                            <i class="bi bi-pencil me-2"></i>Edit Profile
+                        </a>
+                        <a href="{% url 'accounts:profile_address' %}"
+                           class="list-group-item list-group-item-action">
+                            <i class="bi bi-geo-alt me-2"></i>Update Address
+                        </a>
+                        <a href="{% url 'accounts:notification_settings' %}"
+                           class="list-group-item list-group-item-action">
+                            <i class="bi bi-bell me-2"></i>Notification Settings
+                        </a>
+                        <a href="{% url 'account_change_password' %}"
+                           class="list-group-item list-group-item-action">
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </a>
+                    </div>
                 </div>
             </div>
-            
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{% url 'accounts:profile_edit' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-pencil me-2"></i>Edit Profile
-                    </a>
-                    <a href="{% url 'accounts:profile_address' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-geo-alt me-2"></i>Update Address
-                    </a>
-                    <a href="{% url 'accounts:notification_settings' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-bell me-2"></i>Notification Settings
-                    </a>
-                    <a href="{% url 'account_change_password' %}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-key me-2"></i>Change Password
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Profile Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="text-muted small">First Name</label>
-                            <p class="mb-0">{{ user.first_name|default:"-" }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Last Name</label>
-                            <p class="mb-0">{{ user.last_name|default:"-" }}</p>
-                        </div>
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person me-2"></i>Profile Information
+                        </h5>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="text-muted small">Email</label>
-                            <p class="mb-0">{{ user.email }}</p>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">First Name</span>
+                                <p class="mb-0">{{ user.first_name|default:"-" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">Last Name</span>
+                                <p class="mb-0">{{ user.last_name|default:"-" }}</p>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Phone</label>
-                            <p class="mb-0">{{ user.phone|default:"-" }}</p>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">Email</span>
+                                <p class="mb-0">{{ user.email }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">Phone</span>
+                                <p class="mb-0">{{ user.phone|default:"-" }}</p>
+                            </div>
                         </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">Company</span>
+                                <p class="mb-0">{{ user.company|default:"-" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted small d-block">Job Title</span>
+                                <p class="mb-0">{{ user.job_title|default:"-" }}</p>
+                            </div>
+                        </div>
+                        {% if user.bio %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <span class="text-muted small d-block">Bio</span>
+                                    <p class="mb-0">{{ user.bio }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="text-muted small">Company</label>
-                            <p class="mb-0">{{ user.company|default:"-" }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Job Title</label>
-                            <p class="mb-0">{{ user.job_title|default:"-" }}</p>
-                        </div>
-                    </div>
-                    {% if user.bio %}
-                    <div class="row">
-                        <div class="col-12">
-                            <label class="text-muted small">Bio</label>
-                            <p class="mb-0">{{ user.bio }}</p>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Address</h5>
-                </div>
-                <div class="card-body">
-                    {% if user.profile.address_line1 %}
-                    <p class="mb-0">
-                        {{ user.profile.address_line1 }}<br>
-                        {% if user.profile.address_line2 %}{{ user.profile.address_line2 }}<br>{% endif %}
-                        {{ user.profile.city }}{% if user.profile.state %}, {{ user.profile.state }}{% endif %} {{ user.profile.postal_code }}<br>
-                        {{ user.profile.country }}
-                    </p>
-                    {% else %}
-                    <p class="text-muted mb-0">No address on file. <a href="{% url 'accounts:profile_address' %}">Add one now</a>.</p>
-                    {% endif %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-geo-alt me-2"></i>Address
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user.profile.address_line1 %}
+                            <p class="mb-0">
+                                {{ user.profile.address_line1 }}
+                                <br>
+                                {% if user.profile.address_line2 %}
+                                    {{ user.profile.address_line2 }}
+                                    <br>
+                                {% endif %}
+                                {{ user.profile.city }}
+                                {% if user.profile.state %}, {{ user.profile.state }}{% endif %}
+                                {{ user.profile.postal_code }}
+                                <br>
+                                {{ user.profile.country }}
+                            </p>
+                        {% else %}
+                            <p class="text-muted mb-0">
+                                No address on file. <a href="{% url 'accounts:profile_address' %}">Add one now</a>.
+                            </p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+{% endblock content %}

@@ -1,106 +1,98 @@
-{% extends 'base_dashboard.html' %}
-
+{% extends "base_dashboard.html" %}
 {% block title %}Sales Pipeline - CRM{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Sales Pipeline</h1>
-    <div>
-        <a href="{% url 'crm:lead_list' %}" class="btn btn-outline-secondary me-2">
-            <i class="bi bi-list me-1"></i>List View
-        </a>
-        <a href="{% url 'crm:lead_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus me-1"></i>New Lead
-        </a>
-    </div>
-</div>
-
-<!-- Stats -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h6 class="text-white-50">Pipeline Value</h6>
-                <h3 class="mb-0">${{ stats.total_value|floatformat:0|default:"0" }}</h3>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Sales Pipeline</h1>
+        <div>
+            <a href="{% url 'crm:lead_list' %}"
+               class="btn btn-outline-secondary me-2">
+                <i class="bi bi-list me-1"></i>List View
+            </a>
+            <a href="{% url 'crm:lead_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus me-1"></i>New Lead
+            </a>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h6 class="text-white-50">Weighted Value</h6>
-                <h3 class="mb-0">${{ stats.weighted_value|floatformat:0|default:"0" }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h6 class="text-white-50">Won</h6>
-                <h3 class="mb-0">{{ stats.won_count }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-secondary text-white">
-            <div class="card-body">
-                <h6 class="text-white-50">Lost</h6>
-                <h3 class="mb-0">{{ stats.lost_count }}</h3>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Pipeline Kanban -->
-<div class="pipeline-board">
-    <div class="row g-3">
-        {% for status, label in stages %}
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">{{ label }}</h6>
-                    <span class="badge bg-secondary">{{ pipeline|get_item:status|length }}</span>
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Pipeline Value</h6>
+                    <h3 class="mb-0">${{ stats.total_value|floatformat:0|default:"0" }}</h3>
                 </div>
-                <div class="card-body pipeline-column p-2" data-status="{{ status }}" style="min-height: 400px; overflow-y: auto;">
-                    {% for lead in pipeline|get_item:status %}
-                    <div class="card mb-2 pipeline-card" data-lead-id="{{ lead.pk }}">
-                        <div class="card-body p-2">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <a href="{% url 'crm:lead_detail' lead.pk %}" class="text-decoration-none fw-semibold small">
-                                    {{ lead.title|truncatechars:30 }}
-                                </a>
-                                {% if lead.priority == 'high' or lead.priority == 'urgent' %}
-                                <span class="badge bg-danger">!</span>
-                                {% endif %}
-                            </div>
-                            <div class="small text-muted">
-                                {{ lead.contact.full_name }}
-                            </div>
-                            {% if lead.estimated_value %}
-                            <div class="small text-success fw-semibold">
-                                ${{ lead.estimated_value|floatformat:0 }}
-                            </div>
-                            {% endif %}
-                            {% if lead.assigned_to %}
-                            <div class="small text-muted mt-1">
-                                <i class="bi bi-person"></i> {{ lead.assigned_to.get_display_name|truncatechars:15 }}
-                            </div>
-                            {% endif %}
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Weighted Value</h6>
+                    <h3 class="mb-0">${{ stats.weighted_value|floatformat:0|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Won</h6>
+                    <h3 class="mb-0">{{ stats.won_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h6 class="text-white-50">Lost</h6>
+                    <h3 class="mb-0">{{ stats.lost_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Pipeline Kanban -->
+    <div class="pipeline-board">
+        <div class="row g-3">
+            {% for status, label in stages %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">{{ label }}</h6>
+                            <span class="badge bg-secondary">{{ pipeline|get_item:status|length }}</span>
+                        </div>
+                        <div class="card-body pipeline-column p-2"
+                             data-status="{{ status }}"
+                             style="min-height: 400px;
+                                    overflow-y: auto">
+                            {% for lead in pipeline|get_item:status %}
+                                <div class="card mb-2 pipeline-card" data-lead-id="{{ lead.pk }}">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <a href="{% url 'crm:lead_detail' lead.pk %}"
+                                               class="text-decoration-none fw-semibold small">
+                                                {{ lead.title|truncatechars:30 }}
+                                            </a>
+                                            {% if lead.priority == 'high' or lead.priority == 'urgent' %}<span class="badge bg-danger">!</span>{% endif %}
+                                        </div>
+                                        <div class="small text-muted">{{ lead.contact.full_name }}</div>
+                                        {% if lead.estimated_value %}
+                                            <div class="small text-success fw-semibold">${{ lead.estimated_value|floatformat:0 }}</div>
+                                        {% endif %}
+                                        {% if lead.assigned_to %}
+                                            <div class="small text-muted mt-1">
+                                                <i class="bi bi-person"></i> {{ lead.assigned_to.get_display_name|truncatechars:15 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="text-muted text-center small py-3">No leads</div>
+                            {% endfor %}
                         </div>
                     </div>
-                    {% empty %}
-                    <div class="text-muted text-center small py-3">
-                        No leads
-                    </div>
-                    {% endfor %}
                 </div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
-</div>
-
-<style>
+    <style>
 .pipeline-column {
     max-height: 500px;
 }
@@ -112,5 +104,5 @@
 .pipeline-card:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-</style>
+    </style>
 {% endblock %}

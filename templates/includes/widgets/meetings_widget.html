@@ -5,49 +5,52 @@ Usage: {% include 'includes/widgets/meetings_widget.html' with meetings=upcoming
 {% load humanize %}
 <div class="card border-0 shadow-sm h-100">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0"><i class="bi bi-calendar-event text-info me-2"></i>{{ title|default:'Upcoming Meetings' }}</h6>
-        <a href="{% url 'meetings:meeting_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+        <h6 class="mb-0">
+            <i class="bi bi-calendar-event text-info me-2"></i>{{ title|default:'Upcoming Meetings' }}
+        </h6>
+        <a href="{% url 'meetings:meeting_list' %}"
+           class="btn btn-sm btn-outline-primary">View All</a>
     </div>
     <div class="card-body p-0">
         {% if meetings %}
-        <div class="list-group list-group-flush">
-            {% for meeting in meetings|slice:":5" %}
-            <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="list-group-item list-group-item-action">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="mb-1">{{ meeting.title }}</h6>
-                        <small class="text-muted">
-                            {% if meeting.organization %}
-                            <i class="bi bi-building me-1"></i>{{ meeting.organization.name }}
-                            {% elif meeting.contact %}
-                            <i class="bi bi-person me-1"></i>{{ meeting.contact.full_name }}
-                            {% endif %}
-                        </small>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge bg-light text-dark">
-                            {{ meeting.scheduled_at|date:"M d" }}
-                        </span>
-                        <br>
-                        <small class="text-primary fw-bold">{{ meeting.scheduled_at|time:"g:i A" }}</small>
-                    </div>
-                </div>
-                {% if meeting.video_provider and meeting.video_provider != 'NONE' %}
-                <div class="mt-1">
-                    <span class="badge bg-secondary">
-                        <i class="bi bi-camera-video me-1"></i>{{ meeting.get_video_provider_display }}
-                    </span>
-                </div>
-                {% endif %}
-            </a>
-            {% endfor %}
-        </div>
+            <div class="list-group list-group-flush">
+                {% for meeting in meetings|slice:":5" %}
+                    <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ meeting.title }}</h6>
+                                <small class="text-muted">
+                                    {% if meeting.organization %}
+                                        <i class="bi bi-building me-1"></i>{{ meeting.organization.name }}
+                                    {% elif meeting.contact %}
+                                        <i class="bi bi-person me-1"></i>{{ meeting.contact.full_name }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark">{{ meeting.scheduled_at|date:"M d" }}</span>
+                                <br>
+                                <small class="text-primary fw-bold">{{ meeting.scheduled_at|time:"g:i A" }}</small>
+                            </div>
+                        </div>
+                        {% if meeting.video_provider and meeting.video_provider != 'NONE' %}
+                            <div class="mt-1">
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-camera-video me-1"></i>{{ meeting.get_video_provider_display }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
         {% else %}
-        <div class="text-center py-4">
-            <i class="bi bi-calendar-x text-muted fs-1"></i>
-            <p class="text-muted mb-0 mt-2">No upcoming meetings</p>
-            <a href="{% url 'meetings:meeting_create' %}" class="btn btn-sm btn-primary mt-2">Schedule Meeting</a>
-        </div>
+            <div class="text-center py-4">
+                <i class="bi bi-calendar-x text-muted fs-1"></i>
+                <p class="text-muted mb-0 mt-2">No upcoming meetings</p>
+                <a href="{% url 'meetings:meeting_create' %}"
+                   class="btn btn-sm btn-primary mt-2">Schedule Meeting</a>
+            </div>
         {% endif %}
     </div>
 </div>

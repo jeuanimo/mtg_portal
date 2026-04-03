@@ -1,131 +1,126 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block title %}{{ service.title }} - Mitchell Technology Group{% endblock %}
 {% block meta_description %}{{ service.short_description }}{% endblock %}
-
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-3">
-                <li class="breadcrumb-item"><a href="{% url 'public:home' %}" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'public:services' %}" class="text-white-50">Services</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ service.title }}</li>
-            </ol>
-        </nav>
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <div class="d-flex align-items-center mb-3">
-                    <i class="bi {{ service.icon|default:'bi-gear' }} display-5 me-3"></i>
-                    <h1 class="display-5 fw-bold mb-0">{{ service.title }}</h1>
+    <!-- Hero Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-3">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'public:home' %}" class="text-white-50">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'public:services' %}" class="text-white-50">Services</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">{{ service.title }}</li>
+                </ol>
+            </nav>
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi {{ service.icon|default:'bi-gear' }} display-5 me-3"></i>
+                        <h1 class="display-5 fw-bold mb-0">{{ service.title }}</h1>
+                    </div>
+                    <p class="lead mb-0">{{ service.short_description }}</p>
                 </div>
-                <p class="lead mb-0">{{ service.short_description }}</p>
             </div>
         </div>
-    </div>
-</section>
-
-<!-- Service Details -->
-<section class="py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body p-4 p-lg-5">
-                        <h3 class="mb-4">Overview</h3>
-                        <div class="service-description">
-                            {{ service.description|linebreaks }}
-                        </div>
-                        
-                        {% if service.features %}
-                        <h4 class="mt-5 mb-3">Key Features</h4>
-                        <ul class="list-group list-group-flush">
-                            {% for feature in service.features %}
-                            <li class="list-group-item border-0 ps-0">
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                {{ feature }}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- CTA Card -->
-                <div class="card bg-primary text-white border-0">
-                    <div class="card-body p-4 text-center">
-                        <h4 class="mb-3">Interested in {{ service.title }}?</h4>
-                        <p class="mb-4">Let's discuss how this service can benefit your business.</p>
-                        <a href="{% url 'public:consultation' %}" class="btn btn-light btn-lg">Request a Consultation</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-lg-4">
-                <!-- Service Info Card -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3">Service Details</h5>
-                        
-                        {% if service.category %}
-                        <div class="mb-3">
-                            <small class="text-muted d-block">Category</small>
-                            <span class="badge bg-primary">{{ service.category.name }}</span>
-                        </div>
-                        {% endif %}
-                        
-                        {% if service.starting_price %}
-                        <div class="mb-3">
-                            <small class="text-muted d-block">Starting From</small>
-                            <span class="h4 text-primary">${{ service.starting_price|floatformat:0 }}</span>
-                            {% if service.pricing_model %}
-                            <small class="text-muted">/ {{ service.pricing_model }}</small>
+    </section>
+    <!-- Service Details -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4 p-lg-5">
+                            <h3 class="mb-4">Overview</h3>
+                            <div class="service-description">{{ service.description|linebreaks }}</div>
+                            {% if service.features %}
+                                <h4 class="mt-5 mb-3">Key Features</h4>
+                                <ul class="list-group list-group-flush">
+                                    {% for feature in service.features %}
+                                        <li class="list-group-item border-0 ps-0">
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                            {{ feature }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
                             {% endif %}
                         </div>
-                        {% endif %}
-                        
-                        <hr>
-                        
-                        <h6 class="mb-3">Get Started</h6>
-                        <a href="{% url 'public:consultation' %}" class="btn btn-primary w-100 mb-2">
-                            <i class="bi bi-calendar-check me-2"></i>Schedule Consultation
-                        </a>
-                        <a href="{% url 'public:contact' %}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-envelope me-2"></i>Send Message
-                        </a>
+                    </div>
+                    <!-- CTA Card -->
+                    <div class="card bg-primary text-white border-0">
+                        <div class="card-body p-4 text-center">
+                            <h4 class="mb-3">Interested in {{ service.title }}?</h4>
+                            <p class="mb-4">Let's discuss how this service can benefit your business.</p>
+                            <a href="{% url 'public:consultation' %}" class="btn btn-light btn-lg">Request a Consultation</a>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Contact Card -->
-                <div class="card bg-light border-0 mb-4">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3"><i class="bi bi-telephone text-primary me-2"></i>Questions?</h5>
-                        <p class="mb-2">Call us directly:</p>
-                        <p class="h5"><a href="tel:+15551234567" class="text-decoration-none">(555) 123-4567</a></p>
+                <div class="col-lg-4">
+                    <!-- Service Info Card -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">Service Details</h5>
+                            {% if service.category %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Category</small>
+                                    <span class="badge bg-primary">{{ service.category.name }}</span>
+                                </div>
+                            {% endif %}
+                            {% if service.starting_price %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Starting From</small>
+                                    <span class="h4 text-primary">${{ service.starting_price|floatformat:0 }}</span>
+                                    {% if service.pricing_model %}<small class="text-muted">/ {{ service.pricing_model }}</small>{% endif %}
+                                </div>
+                            {% endif %}
+                            <hr>
+                            <h6 class="mb-3">Get Started</h6>
+                            <a href="{% url 'public:consultation' %}"
+                               class="btn btn-primary w-100 mb-2">
+                                <i class="bi bi-calendar-check me-2"></i>Schedule Consultation
+                            </a>
+                            <a href="{% url 'public:contact' %}"
+                               class="btn btn-outline-primary w-100">
+                                <i class="bi bi-envelope me-2"></i>Send Message
+                            </a>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Related Services -->
-                {% if related_services %}
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="mb-3">Related Services</h5>
-                        <ul class="list-group list-group-flush">
-                            {% for related in related_services %}
-                            <li class="list-group-item border-0 px-0">
-                                <a href="{% url 'public:service_detail' related.slug %}" class="text-decoration-none">
-                                    <i class="bi {{ related.icon|default:'bi-arrow-right' }} text-primary me-2"></i>
-                                    {{ related.title }}
-                                </a>
-                            </li>
-                            {% endfor %}
-                        </ul>
+                    <!-- Contact Card -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="mb-3">
+                                <i class="bi bi-telephone text-primary me-2"></i>Questions?
+                            </h5>
+                            <p class="mb-2">Call us directly:</p>
+                            <p class="h5">
+                                <a href="tel:+16188022133" class="text-decoration-none">(618) 802-2133</a>
+                            </p>
+                        </div>
                     </div>
+                    <!-- Related Services -->
+                    {% if related_services %}
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h5 class="mb-3">Related Services</h5>
+                                <ul class="list-group list-group-flush">
+                                    {% for related in related_services %}
+                                        <li class="list-group-item border-0 px-0">
+                                            <a href="{% url 'public:service_detail' related.slug %}"
+                                               class="text-decoration-none">
+                                                <i class="bi {{ related.icon|default:'bi-arrow-right' }} text-primary me-2"></i>
+                                                {{ related.title }}
+                                            </a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
-    </div>
-</section>
+    </section>
 {% endblock %}

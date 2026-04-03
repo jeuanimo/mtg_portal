@@ -1,0 +1,15 @@
+{% extends "base_dashboard.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Update Address{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Address Details</h1>
+            <p class="text-muted mb-0">Keep your mailing information current.</p>
+        </div>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Back to Profile</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">{% crispy form %}</div>
+    </div>
+{% endblock %}

@@ -1,8 +1,7 @@
 """
 Views for the invoicing app.
 """
-import json
-from decimal import Decimal
+import logging
 from datetime import date
 
 from django.conf import settings
@@ -10,15 +9,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Sum, Q
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 
-from apps.accounts.decorators import finance_required, staff_required
-from apps.crm.models import Organization, Contact
+from apps.accounts.decorators import finance_required
+from apps.crm.models import Contact
 from .models import Invoice, InvoiceItem, Payment, RecurringInvoice
 from .forms import (
     InvoiceForm, InvoiceItemFormSet, QuickInvoiceForm,
@@ -26,6 +25,41 @@ from .forms import (
     InvoiceEmailForm, InvoiceFilterForm,
 )
 from .services import StripeService, process_webhook_event
+
+logger = logging.getLogger(__name__)
+
+# URL name constants
+INVOICE_DETAIL_URL = 'invoicing:invoice_detail'
+INVOICE_LIST_URL = 'invoicing:invoice_list'
+INVOICE_EDIT_URL = 'invoicing:invoice_edit'
+RECURRING_LIST_URL = 'invoicing:recurring_list'
+
+
+def _apply_invoice_filters(invoices, filter_form):
+    """Apply filter form values to invoice queryset."""
+    if not filter_form.is_valid():
+        return invoices
+    
+    data = filter_form.cleaned_data
+    if data.get('status'):
+        invoices = invoices.filter(status=data['status'])
+    if data.get('organization'):
+        invoices = invoices.filter(organization=data['organization'])
+    if data.get('date_from'):
+        invoices = invoices.filter(issue_date__gte=data['date_from'])
+    if data.get('date_to'):
+        invoices = invoices.filter(issue_date__lte=data['date_to'])
+    if data.get('search'):
+        invoices = invoices.filter(invoice_number__icontains=data['search'])
+    return invoices
+
+
+def _get_client_invoices(user):
+    """Get invoices visible to a client user."""
+    return Invoice.objects.filter(
+        Q(organization__contacts__user=user) |
+        Q(contact__user=user)
+    ).select_related('organization', 'contact').distinct()
 
 
 @login_required
@@ -49,12 +83,12 @@ def invoice_dashboard(request):
     paid_this_month = invoices.filter(
         status__in=[Invoice.Status.PAID, Invoice.Status.PARTIAL],
         paid_date__gte=this_month_start,
-    ).aggregate(total=Sum('total_amount'))['total'] or 0
-    
+    ).aggregate(total=Sum('total'))['total'] or 0
+
     # Outstanding balance
     outstanding = invoices.filter(
         status__in=[Invoice.Status.SENT, Invoice.Status.PARTIAL]
-    ).aggregate(total=Sum('total_amount') - Sum('paid_amount'))
+    ).aggregate(total=Sum('balance_due'))
     outstanding_total = (outstanding['total'] or 0)
     
     # Recent invoices
@@ -77,25 +111,9 @@ def invoice_list(request):
     if request.user.is_staff_user:
         invoices = Invoice.objects.select_related('organization', 'contact').all()
         filter_form = InvoiceFilterForm(request.GET)
-        
-        if filter_form.is_valid():
-            data = filter_form.cleaned_data
-            if data.get('status'):
-                invoices = invoices.filter(status=data['status'])
-            if data.get('organization'):
-                invoices = invoices.filter(organization=data['organization'])
-            if data.get('date_from'):
-                invoices = invoices.filter(issue_date__gte=data['date_from'])
-            if data.get('date_to'):
-                invoices = invoices.filter(issue_date__lte=data['date_to'])
-            if data.get('search'):
-                invoices = invoices.filter(invoice_number__icontains=data['search'])
+        invoices = _apply_invoice_filters(invoices, filter_form)
     else:
-        # Clients see invoices for their organization
-        invoices = Invoice.objects.filter(
-            Q(organization__contacts__user=request.user) |
-            Q(contact__user=request.user)
-        ).select_related('organization', 'contact').distinct()
+        invoices = _get_client_invoices(request.user)
         filter_form = None
     
     invoices = invoices.order_by('-issue_date')
@@ -129,7 +147,7 @@ def invoice_create(request):
             formset.save()
             
             messages.success(request, f'Invoice #{invoice.invoice_number} created successfully.')
-            return redirect('invoicing:invoice_detail', pk=invoice.pk)
+            return redirect(INVOICE_DETAIL_URL, pk=invoice.pk)
     else:
         form = InvoiceForm(user=request.user)
         formset = InvoiceItemFormSet()
@@ -150,7 +168,7 @@ def invoice_edit(request, pk):
     
     if invoice.status in [Invoice.Status.PAID]:
         messages.error(request, 'Cannot edit a paid invoice.')
-        return redirect('invoicing:invoice_detail', pk=pk)
+        return redirect(INVOICE_DETAIL_URL, pk=pk)
     
     if request.method == 'POST':
         form = InvoiceForm(request.POST, instance=invoice, user=request.user)
@@ -160,7 +178,7 @@ def invoice_edit(request, pk):
             form.save()
             formset.save()
             messages.success(request, f'Invoice #{invoice.invoice_number} updated.')
-            return redirect('invoicing:invoice_detail', pk=pk)
+            return redirect(INVOICE_DETAIL_URL, pk=pk)
     else:
         form = InvoiceForm(instance=invoice, user=request.user)
         formset = InvoiceItemFormSet(instance=invoice)
@@ -190,7 +208,7 @@ def invoice_detail(request, pk):
         ) or invoice.organization.contacts.filter(user=request.user).exists()
         if not has_access:
             messages.error(request, 'You do not have access to this invoice.')
-            return redirect('invoicing:invoice_list')
+            return redirect(INVOICE_LIST_URL)
     
     context = {
         'invoice': invoice,
@@ -213,15 +231,25 @@ def invoice_send(request, pk):
     else:
         messages.warning(request, 'Invoice has already been sent.')
     
-    return redirect('invoicing:invoice_detail', pk=pk)
+    return redirect(INVOICE_DETAIL_URL, pk=pk)
 
 
 @login_required
 def invoice_view(request, pk, token):
     """Public invoice view for clients (with token)."""
+    import hashlib
+    from django.conf import settings as django_settings
+    
     invoice = get_object_or_404(Invoice, pk=pk)
     
-    # TODO: Implement proper token validation
+    # Validate token using hash of invoice ID and secret key
+    expected_token = hashlib.sha256(
+        f"{invoice.pk}{django_settings.SECRET_KEY}".encode()
+    ).hexdigest()[:32]
+    
+    if token != expected_token:
+        messages.error(request, 'Invalid invoice access token.')
+        return redirect(INVOICE_LIST_URL)
     
     context = {
         'invoice': invoice,
@@ -255,13 +283,13 @@ def invoice_void(request, pk):
     invoice = get_object_or_404(Invoice, pk=pk)
     
     if invoice.status not in [Invoice.Status.PAID]:
-        invoice.status = Invoice.Status.VOID
+        invoice.status = Invoice.Status.CANCELLED
         invoice.save()
-        messages.success(request, f'Invoice #{invoice.invoice_number} has been voided.')
+        messages.success(request, f'Invoice #{invoice.invoice_number} has been cancelled.')
     else:
-        messages.error(request, 'Cannot void a paid invoice.')
+        messages.error(request, 'Cannot cancel a paid invoice.')
     
-    return redirect('invoicing:invoice_detail', pk=pk)
+    return redirect(INVOICE_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -278,7 +306,7 @@ def invoice_duplicate(request, pk):
         issue_date=date.today(),
         due_date=date.today() + (original.due_date - original.issue_date),
         tax_rate=original.tax_rate,
-        discount_amount=original.discount_amount,
+        discount=original.discount,
         discount_description=original.discount_description,
         terms=original.terms,
         notes=original.notes,
@@ -296,7 +324,7 @@ def invoice_duplicate(request, pk):
         )
     
     messages.success(request, f'Invoice duplicated as #{new_invoice.invoice_number}.')
-    return redirect('invoicing:invoice_edit', pk=new_invoice.pk)
+    return redirect(INVOICE_EDIT_URL, pk=new_invoice.pk)
 
 
 @login_required
@@ -305,9 +333,9 @@ def payment_record(request, pk):
     """Record a manual payment for an invoice."""
     invoice = get_object_or_404(Invoice, pk=pk)
     
-    if invoice.status in [Invoice.Status.PAID, Invoice.Status.VOID]:
+    if invoice.status in [Invoice.Status.PAID, Invoice.Status.CANCELLED]:
         messages.error(request, 'Cannot record payment for this invoice.')
-        return redirect('invoicing:invoice_detail', pk=pk)
+        return redirect(INVOICE_DETAIL_URL, pk=pk)
     
     if request.method == 'POST':
         form = PaymentForm(request.POST, invoice=invoice)
@@ -321,7 +349,7 @@ def payment_record(request, pk):
             invoice.record_payment(payment.amount)
             
             messages.success(request, f'Payment of ${payment.amount} recorded.')
-            return redirect('invoicing:invoice_detail', pk=pk)
+            return redirect(INVOICE_DETAIL_URL, pk=pk)
     else:
         form = PaymentForm(invoice=invoice)
     
@@ -362,9 +390,9 @@ def invoice_pay(request, pk):
     """Payment page for an invoice using Stripe."""
     invoice = get_object_or_404(Invoice, pk=pk)
     
-    if invoice.status in [Invoice.Status.PAID, Invoice.Status.VOID, Invoice.Status.DRAFT]:
+    if invoice.status in [Invoice.Status.PAID, Invoice.Status.CANCELLED, Invoice.Status.DRAFT]:
         messages.error(request, 'This invoice cannot be paid online.')
-        return redirect('invoicing:invoice_detail', pk=pk)
+        return redirect(INVOICE_DETAIL_URL, pk=pk)
     
     stripe_service = StripeService()
     return_url = request.build_absolute_uri(
@@ -375,7 +403,7 @@ def invoice_pay(request, pk):
     
     if not result['success']:
         messages.error(request, 'Unable to initialize payment. Please try again.')
-        return redirect('invoicing:invoice_detail', pk=pk)
+        return redirect(INVOICE_DETAIL_URL, pk=pk)
     
     context = {
         'invoice': invoice,
@@ -444,7 +472,7 @@ def recurring_invoice_create(request):
             formset.save()
             
             messages.success(request, f'Recurring invoice "{recurring.name}" created.')
-            return redirect('invoicing:recurring_list')
+            return redirect(RECURRING_LIST_URL)
     else:
         form = RecurringInvoiceForm(user=request.user)
         formset = RecurringInvoiceItemFormSet()
@@ -471,7 +499,7 @@ def recurring_invoice_edit(request, pk):
             form.save()
             formset.save()
             messages.success(request, f'Recurring invoice "{recurring.name}" updated.')
-            return redirect('invoicing:recurring_list')
+            return redirect(RECURRING_LIST_URL)
     else:
         form = RecurringInvoiceForm(instance=recurring, user=request.user)
         formset = RecurringInvoiceItemFormSet(instance=recurring)
@@ -497,7 +525,7 @@ def recurring_invoice_toggle(request, pk):
     status = 'activated' if recurring.is_active else 'deactivated'
     messages.success(request, f'Recurring invoice "{recurring.name}" {status}.')
     
-    return redirect('invoicing:recurring_list')
+    return redirect(RECURRING_LIST_URL)
 
 
 # HTMX endpoints
@@ -515,8 +543,8 @@ def get_organization_contacts(request):
     
     html = '<option value="">Select a contact</option>'
     for contact in contacts:
-        html += f'<option value="{contact.id}">{contact.full_name}</option>'
-    
+        html += f'<option value="{contact.id}">{escape(contact.full_name)}</option>'
+
     return HttpResponse(html)
 
 
@@ -531,7 +559,7 @@ def quick_invoice(request):
         if form.is_valid():
             invoice = form.create_invoice(request.user)
             messages.success(request, f'Invoice #{invoice.invoice_number} created.')
-            return redirect('invoicing:invoice_edit', pk=invoice.pk)
+            return redirect(INVOICE_EDIT_URL, pk=invoice.pk)
     else:
         form = QuickInvoiceForm()
     
@@ -547,17 +575,35 @@ def quick_invoice(request):
 @finance_required
 def invoice_email(request, pk):
     """Email an invoice to client."""
+    from django.core.mail import send_mail
+    
     invoice = get_object_or_404(Invoice, pk=pk)
     
     if request.method == 'POST':
         form = InvoiceEmailForm(invoice=invoice, data=request.POST)
         if form.is_valid():
-            # TODO: Implement actual email sending with Celery
+            # Get email details from form
+            to_email = form.cleaned_data.get('to_email')
+            subject = form.cleaned_data.get('subject')
+            message = form.cleaned_data.get('message')
+            
+            # Send email synchronously (use Celery in production for async)
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[to_email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                logger.error('Failed to send invoice email for invoice #%s: %s', invoice.invoice_number, e)
+            
             if invoice.status == Invoice.Status.DRAFT:
                 invoice.mark_as_sent()
             
             messages.success(request, f'Invoice #{invoice.invoice_number} email queued.')
-            return redirect('invoicing:invoice_detail', pk=pk)
+            return redirect(INVOICE_DETAIL_URL, pk=pk)
     else:
         form = InvoiceEmailForm(invoice=invoice)
     

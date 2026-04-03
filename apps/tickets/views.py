@@ -1,27 +1,90 @@
 """
 Views for the tickets app.
 """
+from urllib.parse import urlparse
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Count
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Q
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from apps.accounts.decorators import staff_required
 from .models import (
-    Ticket, TicketComment, TicketAttachment,
-    ConsultingProject, ProjectMilestone, Deliverable,
+    Ticket, TicketAttachment,
+    ConsultingProject, Deliverable,
     ChangeRequest, TimeEntry
 )
 from .forms import (
-    TicketForm, TicketStaffForm, TicketCommentForm, TicketAttachmentForm,
-    TicketFilterForm, QuickTicketStatusForm,
-    ConsultingProjectForm, ProjectIntakeForm, MilestoneFormSet,
-    DeliverableForm, ChangeRequestForm, TimeEntryForm,
+    TicketForm, TicketStaffForm, TicketCommentForm, TicketFilterForm, QuickTicketStatusForm,
+    ConsultingProjectForm, ProjectIntakeForm, DeliverableForm, ChangeRequestForm, TimeEntryForm,
 )
+
+# URL name constants
+TICKET_LIST_URL = 'tickets:ticket_list'
+TICKET_DETAIL_URL = 'tickets:ticket_detail'
+PROJECT_DETAIL_URL = 'tickets:project_detail'
+
+# Message constants
+ACCESS_DENIED_MSG = 'Access denied.'
+
+
+def _apply_staff_ticket_filters(tickets, filter_form):
+    """Apply filters for staff ticket list."""
+    if not filter_form.is_valid():
+        return tickets
+    
+    data = filter_form.cleaned_data
+    if data.get('status'):
+        tickets = tickets.filter(status=data['status'])
+    if data.get('priority'):
+        tickets = tickets.filter(priority=data['priority'])
+    if data.get('category'):
+        tickets = tickets.filter(category=data['category'])
+    if data.get('assigned_to'):
+        tickets = tickets.filter(assigned_to=data['assigned_to'])
+    if data.get('search'):
+        tickets = tickets.filter(
+            Q(ticket_number__icontains=data['search']) |
+            Q(subject__icontains=data['search'])
+        )
+    return tickets
+
+
+def _get_client_tickets(user, status_filter=None):
+    """Get tickets for a client user."""
+    tickets = Ticket.objects.filter(
+        Q(created_by=user) |
+        Q(organization=user.organization)
+    ).select_related('created_by', 'assigned_to')
+    
+    if status_filter:
+        tickets = tickets.filter(status=status_filter)
+    return tickets
+
+
+def _get_ticket_form(request, is_post=False):
+    """Get the appropriate ticket form based on user type."""
+    if is_post:
+        if request.user.is_staff_user:
+            return TicketStaffForm(request.POST)
+        return TicketForm(request.POST, user=request.user)
+    if request.user.is_staff_user:
+        return TicketStaffForm()
+    return TicketForm(user=request.user)
+
+
+def _handle_ticket_attachment(request, ticket):
+    """Handle file attachment for a ticket."""
+    if request.FILES.get('attachment'):
+        TicketAttachment.objects.create(
+            ticket=ticket,
+            uploaded_by=request.user,
+            file=request.FILES['attachment'],
+        )
 
 
 # ============ Ticket Views ============
@@ -64,33 +127,11 @@ def ticket_list(request):
     if request.user.is_staff_user:
         tickets = Ticket.objects.select_related('created_by', 'assigned_to', 'organization').all()
         filter_form = TicketFilterForm(request.GET)
-        
-        if filter_form.is_valid():
-            data = filter_form.cleaned_data
-            if data.get('status'):
-                tickets = tickets.filter(status=data['status'])
-            if data.get('priority'):
-                tickets = tickets.filter(priority=data['priority'])
-            if data.get('category'):
-                tickets = tickets.filter(category=data['category'])
-            if data.get('assigned_to'):
-                tickets = tickets.filter(assigned_to=data['assigned_to'])
-            if data.get('search'):
-                tickets = tickets.filter(
-                    Q(ticket_number__icontains=data['search']) |
-                    Q(subject__icontains=data['search'])
-                )
+        tickets = _apply_staff_ticket_filters(tickets, filter_form)
     else:
-        tickets = Ticket.objects.filter(
-            Q(created_by=request.user) |
-            Q(organization=request.user.organization)
-        ).select_related('created_by', 'assigned_to')
         filter_form = None
-        
-        # Simple filtering for clients
-        status = request.GET.get('status')
-        if status:
-            tickets = tickets.filter(status=status)
+        status_filter = request.GET.get('status')
+        tickets = _get_client_tickets(request.user, status_filter)
     
     tickets = tickets.order_by('-created_at')
     
@@ -119,7 +160,7 @@ def ticket_detail(request, pk):
     if not request.user.is_staff_user:
         if ticket.created_by != request.user and ticket.organization != request.user.organization:
             messages.error(request, 'You do not have access to this ticket.')
-            return redirect('tickets:ticket_list')
+            return redirect(TICKET_LIST_URL)
     
     # Get comments (hide internal for clients)
     if request.user.is_staff_user:
@@ -146,10 +187,7 @@ def ticket_detail(request, pk):
 def ticket_create(request):
     """Create a new support ticket."""
     if request.method == 'POST':
-        if request.user.is_staff_user:
-            form = TicketStaffForm(request.POST)
-        else:
-            form = TicketForm(request.POST, user=request.user)
+        form = _get_ticket_form(request, is_post=True)
         
         if form.is_valid():
             ticket = form.save(commit=False)
@@ -158,21 +196,12 @@ def ticket_create(request):
                 ticket.organization = request.user.organization
             ticket.save()
             
-            # Handle file upload
-            if request.FILES.get('attachment'):
-                TicketAttachment.objects.create(
-                    ticket=ticket,
-                    uploaded_by=request.user,
-                    file=request.FILES['attachment'],
-                )
+            _handle_ticket_attachment(request, ticket)
             
             messages.success(request, f'Ticket #{ticket.ticket_number} created successfully.')
-            return redirect('tickets:ticket_detail', pk=ticket.pk)
+            return redirect(TICKET_DETAIL_URL, pk=ticket.pk)
     else:
-        if request.user.is_staff_user:
-            form = TicketStaffForm()
-        else:
-            form = TicketForm(user=request.user)
+        form = _get_ticket_form(request, is_post=False)
     
     context = {
         'form': form,
@@ -192,7 +221,7 @@ def ticket_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Ticket updated.')
-            return redirect('tickets:ticket_detail', pk=pk)
+            return redirect(TICKET_DETAIL_URL, pk=pk)
     else:
         form = TicketStaffForm(instance=ticket)
     
@@ -213,8 +242,8 @@ def ticket_add_comment(request, pk):
     # Check permission
     if not request.user.is_staff_user:
         if ticket.created_by != request.user and ticket.organization != request.user.organization:
-            messages.error(request, 'Access denied.')
-            return redirect('tickets:ticket_list')
+            messages.error(request, ACCESS_DENIED_MSG)
+            return redirect(TICKET_LIST_URL)
     
     form = TicketCommentForm(request.POST, is_staff=request.user.is_staff_user)
     if form.is_valid():
@@ -229,7 +258,7 @@ def ticket_add_comment(request, pk):
         
         messages.success(request, 'Comment added.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -246,7 +275,7 @@ def ticket_add_attachment(request, pk):
         )
         messages.success(request, 'File uploaded.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -256,15 +285,15 @@ def ticket_update_status(request, pk):
     ticket = get_object_or_404(Ticket, pk=pk)
     
     if not request.user.is_staff_user:
-        messages.error(request, 'Access denied.')
-        return redirect('tickets:ticket_detail', pk=pk)
+        messages.error(request, ACCESS_DENIED_MSG)
+        return redirect(TICKET_DETAIL_URL, pk=pk)
     
     form = QuickTicketStatusForm(request.POST, instance=ticket)
     if form.is_valid():
         form.save()
         messages.success(request, 'Ticket updated.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -277,7 +306,7 @@ def ticket_resolve(request, pk):
         ticket.resolve()
         messages.success(request, 'Ticket resolved.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -290,7 +319,7 @@ def ticket_close(request, pk):
         ticket.close()
         messages.success(request, 'Ticket closed.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 @login_required
@@ -303,7 +332,7 @@ def ticket_reopen(request, pk):
         ticket.reopen()
         messages.success(request, 'Ticket reopened.')
     
-    return redirect('tickets:ticket_detail', pk=pk)
+    return redirect(TICKET_DETAIL_URL, pk=pk)
 
 
 # ============ Consulting Project Views ============
@@ -336,7 +365,7 @@ def project_create(request):
         if form.is_valid():
             project = form.save()
             messages.success(request, f'Project {project.project_number} created.')
-            return redirect('tickets:project_detail', pk=project.pk)
+            return redirect(PROJECT_DETAIL_URL, pk=project.pk)
     else:
         form = ConsultingProjectForm()
     
@@ -359,8 +388,8 @@ def project_detail(request, pk):
     # Permission check for clients
     if not request.user.is_staff_user:
         if project.organization != request.user.organization:
-            messages.error(request, 'Access denied.')
-            return redirect('tickets:ticket_list')
+            messages.error(request, ACCESS_DENIED_MSG)
+            return redirect(TICKET_LIST_URL)
     
     context = {
         'project': project,
@@ -383,7 +412,7 @@ def project_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Project updated.')
-            return redirect('tickets:project_detail', pk=pk)
+            return redirect(PROJECT_DETAIL_URL, pk=pk)
     else:
         form = ConsultingProjectForm(instance=project)
     
@@ -407,11 +436,11 @@ def project_intake(request, pk=None):
                 project.intake_responses = form.cleaned_data
                 project.save()
                 messages.success(request, 'Intake form submitted.')
-                return redirect('tickets:project_detail', pk=pk)
+                return redirect(PROJECT_DETAIL_URL, pk=pk)
             else:
                 # Create new project from intake
                 messages.success(request, 'Thank you! We will be in touch shortly.')
-                return redirect('tickets:ticket_list')
+                return redirect(TICKET_LIST_URL)
     else:
         initial = project.intake_responses if project else {}
         form = ProjectIntakeForm(initial=initial)
@@ -452,7 +481,7 @@ def deliverable_create(request, project_pk):
             deliverable.project = project
             deliverable.save()
             messages.success(request, 'Deliverable created.')
-            return redirect('tickets:project_detail', pk=project_pk)
+            return redirect(PROJECT_DETAIL_URL, pk=project_pk)
     else:
         form = DeliverableForm()
         form.fields['milestone'].queryset = project.milestones.all()
@@ -490,8 +519,8 @@ def change_request_create(request, project_pk):
     # Permission check
     if not request.user.is_staff_user:
         if project.organization != request.user.organization:
-            messages.error(request, 'Access denied.')
-            return redirect('tickets:ticket_list')
+            messages.error(request, ACCESS_DENIED_MSG)
+            return redirect(TICKET_LIST_URL)
     
     if request.method == 'POST':
         form = ChangeRequestForm(request.POST)
@@ -501,7 +530,7 @@ def change_request_create(request, project_pk):
             cr.requested_by = request.user
             cr.save()
             messages.success(request, 'Change request submitted.')
-            return redirect('tickets:project_detail', pk=project_pk)
+            return redirect(PROJECT_DETAIL_URL, pk=project_pk)
     else:
         form = ChangeRequestForm()
     
@@ -531,7 +560,7 @@ def change_request_review(request, pk):
     cr.save()
     
     messages.success(request, f'Change request {action}d.')
-    return redirect('tickets:project_detail', pk=cr.project.pk)
+    return redirect(PROJECT_DETAIL_URL, pk=cr.project.pk)
 
 
 # ============ Time Entry Views ============
@@ -577,9 +606,11 @@ def time_entry_create(request):
             
             messages.success(request, 'Time logged.')
             
-            # Return to where they came from
+            # Return to where they came from (validate to prevent open redirect)
             next_url = request.POST.get('next') or request.GET.get('next')
-            if next_url:
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+            ):
                 return redirect(next_url)
             return redirect('tickets:time_entry_list')
     else:

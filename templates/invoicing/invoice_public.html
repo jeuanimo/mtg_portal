@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+    <div class="container py-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-lg-5">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                    <div>
+                        <h1 class="h3 mb-1">Invoice {{ invoice.invoice_number }}</h1>
+                        <p class="text-muted mb-0">{{ invoice.organization.name }}</p>
+                    </div>
+                    <span class="badge bg-secondary">{{ invoice.get_status_display }}</span>
+                </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Issue Date</small>
+                        <strong>{{ invoice.issue_date|date:"M j, Y" }}</strong>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Due Date</small>
+                        <strong>{{ invoice.due_date|date:"M j, Y" }}</strong>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Contact</small>
+                        <strong>{{ invoice.contact.full_name|default:"Not specified" }}</strong>
+                    </div>
+                </div>
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Line Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in invoice.items.all %}
+                                <tr>
+                                    <td>{{ item.description }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.unit_price|floatformat:2 }}</td>
+                                    <td class="text-end">${{ item.line_total|floatformat:2 }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No line items available.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-5 col-lg-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span>${{ invoice.subtotal|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tax</span>
+                            <span>${{ invoice.tax_amount|floatformat:2|intcomma }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Paid</span>
+                            <span>${{ invoice.amount_paid|floatformat:2|intcomma }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Balance Due</span>
+                            <span>${{ invoice.balance_due|floatformat:2|intcomma }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% if invoice.terms %}
+                    <div class="mt-4">
+                        <h6>Terms</h6>
+                        <p class="text-muted mb-0">{{ invoice.terms|linebreaks }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

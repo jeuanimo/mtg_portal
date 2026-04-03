@@ -8,26 +8,22 @@ Usage: {% include 'includes/kpi_card.html' with title='Revenue' value='$50,000' 
             <div>
                 <p class="text-muted text-uppercase small mb-1 kpi-label">{{ title }}</p>
                 <h3 class="mb-0 kpi-value">{{ value }}</h3>
-                {% if subtitle %}
-                <small class="text-muted">{{ subtitle }}</small>
-                {% endif %}
+                {% if subtitle %}<small class="text-muted">{{ subtitle }}</small>{% endif %}
             </div>
             <div class="kpi-icon bg-{{ variant|default:'primary' }}-subtle rounded-circle p-3">
                 <i class="bi {{ icon|default:'bi-graph-up' }} text-{{ variant|default:'primary' }} fs-4"></i>
             </div>
         </div>
         {% if trend %}
-        <div class="mt-2">
-            {% if trend_positive %}
-            <span class="text-success small"><i class="bi bi-arrow-up"></i> {{ trend }}</span>
-            {% else %}
-            <span class="text-danger small"><i class="bi bi-arrow-down"></i> {{ trend }}</span>
-            {% endif %}
-            {% if trend_label %}<span class="text-muted small ms-1">{{ trend_label }}</span>{% endif %}
-        </div>
+            <div class="mt-2">
+                {% if trend_positive %}
+                    <span class="text-success small"><i class="bi bi-arrow-up"></i> {{ trend }}</span>
+                {% else %}
+                    <span class="text-danger small"><i class="bi bi-arrow-down"></i> {{ trend }}</span>
+                {% endif %}
+                {% if trend_label %}<span class="text-muted small ms-1">{{ trend_label }}</span>{% endif %}
+            </div>
         {% endif %}
     </div>
-    {% if link %}
-    <a href="{{ link }}" class="stretched-link"></a>
-    {% endif %}
+    {% if link %}<a href="{{ link }}" class="stretched-link"></a>{% endif %}
 </div>

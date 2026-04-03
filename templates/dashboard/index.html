@@ -1,262 +1,276 @@
-{% extends 'base_dashboard.html' %}
-
-{% block title %}Dashboard - Mitchell Technology Group{% endblock %}
-
+{% extends "base_dashboard.html" %}
+{% block title %}
+    Dashboard - Mitchell Technology Group
+{% endblock title %}
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="h3">Welcome, {{ user.get_display_name }}</h1>
-            <p class="text-muted">Here's what's happening today</p>
-        </div>
-    </div>
-    
-    {% if is_staff_dashboard %}
-    <!-- Staff Dashboard -->
-    <div class="row g-4 mb-4">
-        <!-- Stats Cards -->
-        <div class="col-md-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="stat-label">New Leads</div>
-                    <div class="stat-number">{{ leads_new }}</div>
-                    <small class="text-muted">{{ leads_total }} total</small>
-                </div>
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h3">Welcome, {{ user.get_display_name }}</h1>
+                <p class="text-muted">Here's what's happening today</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card success">
-                <div class="card-body">
-                    <div class="stat-label">Pipeline Value</div>
-                    <div class="stat-number">${{ leads_pipeline_value|floatformat:0|default:"0" }}</div>
+        {% if is_staff_dashboard %}
+            <!-- Staff Dashboard -->
+            <div class="row g-4 mb-4">
+                <!-- Stats Cards -->
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">New Leads</div>
+                            <div class="stat-number">{{ leads_new }}</div>
+                            <small class="text-muted">{{ leads_total }} total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card success">
+                        <div class="card-body">
+                            <div class="stat-label">Pipeline Value</div>
+                            <div class="stat-number">${{ leads_pipeline_value|floatformat:0|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card warning">
+                        <div class="card-body">
+                            <div class="stat-label">Outstanding Invoices</div>
+                            <div class="stat-number">${{ invoices_outstanding|floatformat:0|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card {% if tickets_urgent > 0 %}danger{% else %}info{% endif %}">
+                        <div class="card-body">
+                            <div class="stat-label">Open Tickets</div>
+                            <div class="stat-number">{{ tickets_open }}</div>
+                            {% if tickets_urgent > 0 %}<small class="text-danger">{{ tickets_urgent }} urgent</small>{% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card warning">
-                <div class="card-body">
-                    <div class="stat-label">Outstanding Invoices</div>
-                    <div class="stat-number">${{ invoices_outstanding|floatformat:0|default:"0" }}</div>
+            <div class="row g-4">
+                <!-- Recent Leads -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-people me-2"></i>Recent Leads
+                            </h5>
+                            <a href="{% url 'crm:lead_list' %}"
+                               class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_leads %}
+                                <div class="list-group list-group-flush">
+                                    {% for lead in recent_leads %}
+                                        <a href="{% url 'crm:lead_detail' lead.pk %}"
+                                           class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ lead.title }}</h6>
+                                                <span class="badge bg-{% if lead.status == 'new' %}primary{% elif lead.status == 'won' %}success{% elif lead.status == 'lost' %}danger{% else %}secondary{% endif %}">
+                                                    {{ lead.get_status_display }}
+                                                </span>
+                                            </div>
+                                            <small class="text-muted">{{ lead.contact.full_name }} • {{ lead.created_at|timesince }} ago</small>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No leads yet</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Tickets -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-ticket me-2"></i>Recent Tickets
+                            </h5>
+                            <a href="{% url 'tickets:ticket_list' %}"
+                               class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_tickets %}
+                                <div class="list-group list-group-flush">
+                                    {% for ticket in recent_tickets %}
+                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}"
+                                           class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">#{{ ticket.ticket_number }}: {{ ticket.subject|truncatewords:8 }}</h6>
+                                                <span class="badge bg-{% if ticket.priority == 'urgent' %}danger{% elif ticket.priority == 'high' %}warning{% else %}secondary{% endif %}">
+                                                    {{ ticket.get_priority_display }}
+                                                </span>
+                                            </div>
+                                            <small class="text-muted">{{ ticket.created_by.get_display_name }} • {{ ticket.created_at|timesince }} ago</small>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No tickets yet</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card {% if tickets_urgent > 0 %}danger{% else %}info{% endif %}">
-                <div class="card-body">
-                    <div class="stat-label">Open Tickets</div>
-                    <div class="stat-number">{{ tickets_open }}</div>
-                    {% if tickets_urgent > 0 %}
-                    <small class="text-danger">{{ tickets_urgent }} urgent</small>
-                    {% endif %}
+        {% else %}
+            <!-- Client Dashboard -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">Open Tickets</div>
+                            <div class="stat-number">{{ tickets_open }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card warning">
+                        <div class="card-body">
+                            <div class="stat-label">Balance Due</div>
+                            <div class="stat-number">${{ balance_due|floatformat:0|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card info">
+                        <div class="card-body">
+                            <div class="stat-label">Active Projects</div>
+                            <div class="stat-number">{{ active_projects }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card success">
+                        <div class="card-body">
+                            <div class="stat-label">Upcoming Meetings</div>
+                            <div class="stat-number">{{ upcoming_meetings|length }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="row g-4">
-        <!-- Recent Leads -->
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Recent Leads</h5>
-                    <a href="{% url 'crm:lead_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            <div class="row g-4">
+                <!-- My Tickets -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-ticket me-2"></i>My Tickets
+                            </h5>
+                            <a href="{% url 'tickets:ticket_create' %}"
+                               class="btn btn-sm btn-primary">New Ticket</a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_tickets %}
+                                <div class="list-group list-group-flush">
+                                    {% for ticket in recent_tickets %}
+                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}"
+                                           class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">#{{ ticket.ticket_number }}: {{ ticket.subject|truncatewords:8 }}</h6>
+                                                <span class="badge bg-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
+                                            </div>
+                                            <small class="text-muted">{{ ticket.created_at|timesince }} ago</small>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No tickets yet</p>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    {% if recent_leads %}
-                    <div class="list-group list-group-flush">
-                        {% for lead in recent_leads %}
-                        <a href="{% url 'crm:lead_detail' lead.pk %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ lead.title }}</h6>
-                                <span class="badge bg-{% if lead.status == 'new' %}primary{% elif lead.status == 'won' %}success{% elif lead.status == 'lost' %}danger{% else %}secondary{% endif %}">
-                                    {{ lead.get_status_display }}
-                                </span>
+                <!-- My Tasks -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-check2-square me-2"></i>My Tasks
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if my_tasks %}
+                                <div class="list-group list-group-flush">
+                                    {% for task in my_tasks %}
+                                        <a href="{% url 'projects:task_detail' task.pk %}"
+                                           class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ task.title }}</h6>
+                                                <span class="badge bg-{% if task.priority == 'high' %}danger{% else %}secondary{% endif %}">
+                                                    {{ task.get_priority_display }}
+                                                </span>
+                                            </div>
+                                            <small class="text-muted">{{ task.project.name }}
+                                                {% if task.due_date %}• Due {{ task.due_date }}{% endif %}
+                                            </small>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted text-center py-3">No tasks assigned</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Upcoming Meetings (shared) -->
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-event me-2"></i>Upcoming Meetings
+                        </h5>
+                        <a href="{% url 'meetings:meeting_list' %}"
+                           class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_meetings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Meeting</th>
+                                            <th>Date & Time</th>
+                                            <th>Type</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for meeting in upcoming_meetings %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ meeting.title }}</strong>
+                                                </td>
+                                                <td>{{ meeting.start_time|date:"M d, Y" }} at {{ meeting.start_time|time:"g:i A" }}</td>
+                                                <td>
+                                                    <span class="badge bg-{% if meeting.meeting_type == 'video' %}primary{% elif meeting.meeting_type == 'phone' %}info{% else %}secondary{% endif %}">
+                                                        {{ meeting.get_meeting_type_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
+                                                       class="btn btn-sm btn-outline-primary">Details</a>
+                                                    {% if meeting.meeting_url %}
+                                                        <a href="{{ meeting.meeting_url }}"
+                                                           target="_blank"
+                                                           class="btn btn-sm btn-success">Join</a>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
-                            <small class="text-muted">{{ lead.contact.full_name }} • {{ lead.created_at|timesince }} ago</small>
-                        </a>
-                        {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center py-3">No upcoming meetings scheduled</p>
+                        {% endif %}
                     </div>
-                    {% else %}
-                    <p class="text-muted text-center py-3">No leads yet</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- Recent Tickets -->
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-ticket me-2"></i>Recent Tickets</h5>
-                    <a href="{% url 'tickets:ticket_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body">
-                    {% if recent_tickets %}
-                    <div class="list-group list-group-flush">
-                        {% for ticket in recent_tickets %}
-                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">#{{ ticket.ticket_number }}: {{ ticket.subject|truncatewords:8 }}</h6>
-                                <span class="badge bg-{% if ticket.priority == 'urgent' %}danger{% elif ticket.priority == 'high' %}warning{% else %}secondary{% endif %}">
-                                    {{ ticket.get_priority_display }}
-                                </span>
-                            </div>
-                            <small class="text-muted">{{ ticket.created_by.get_display_name }} • {{ ticket.created_at|timesince }} ago</small>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted text-center py-3">No tickets yet</p>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-    
-    {% else %}
-    <!-- Client Dashboard -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="stat-label">Open Tickets</div>
-                    <div class="stat-number">{{ tickets_open }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card warning">
-                <div class="card-body">
-                    <div class="stat-label">Balance Due</div>
-                    <div class="stat-number">${{ balance_due|floatformat:0|default:"0" }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card info">
-                <div class="card-body">
-                    <div class="stat-label">Active Projects</div>
-                    <div class="stat-number">{{ active_projects }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card stat-card success">
-                <div class="card-body">
-                    <div class="stat-label">Upcoming Meetings</div>
-                    <div class="stat-number">{{ upcoming_meetings|length }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="row g-4">
-        <!-- My Tickets -->
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-ticket me-2"></i>My Tickets</h5>
-                    <a href="{% url 'tickets:ticket_create' %}" class="btn btn-sm btn-primary">New Ticket</a>
-                </div>
-                <div class="card-body">
-                    {% if recent_tickets %}
-                    <div class="list-group list-group-flush">
-                        {% for ticket in recent_tickets %}
-                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">#{{ ticket.ticket_number }}: {{ ticket.subject|truncatewords:8 }}</h6>
-                                <span class="badge bg-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span>
-                            </div>
-                            <small class="text-muted">{{ ticket.created_at|timesince }} ago</small>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted text-center py-3">No tickets yet</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <!-- My Tasks -->
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-check2-square me-2"></i>My Tasks</h5>
-                </div>
-                <div class="card-body">
-                    {% if my_tasks %}
-                    <div class="list-group list-group-flush">
-                        {% for task in my_tasks %}
-                        <a href="{% url 'projects:task_detail' task.pk %}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{ task.title }}</h6>
-                                <span class="badge bg-{% if task.priority == 'high' %}danger{% else %}secondary{% endif %}">
-                                    {{ task.get_priority_display }}
-                                </span>
-                            </div>
-                            <small class="text-muted">{{ task.project.name }} {% if task.due_date %}• Due {{ task.due_date }}{% endif %}</small>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="text-muted text-center py-3">No tasks assigned</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Upcoming Meetings (shared) -->
-    <div class="row g-4 mt-2">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Upcoming Meetings</h5>
-                    <a href="{% url 'meetings:meeting_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
-                </div>
-                <div class="card-body">
-                    {% if upcoming_meetings %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Meeting</th>
-                                    <th>Date & Time</th>
-                                    <th>Type</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for meeting in upcoming_meetings %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ meeting.title }}</strong>
-                                    </td>
-                                    <td>{{ meeting.start_time|date:"M d, Y" }} at {{ meeting.start_time|time:"g:i A" }}</td>
-                                    <td>
-                                        <span class="badge bg-{% if meeting.meeting_type == 'video' %}primary{% elif meeting.meeting_type == 'phone' %}info{% else %}secondary{% endif %}">
-                                            {{ meeting.get_meeting_type_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'meetings:meeting_detail' meeting.pk %}" class="btn btn-sm btn-outline-primary">Details</a>
-                                        {% if meeting.meeting_url %}
-                                        <a href="{{ meeting.meeting_url }}" target="_blank" class="btn btn-sm btn-success">Join</a>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <p class="text-muted text-center py-3">No upcoming meetings scheduled</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+{% endblock content %}

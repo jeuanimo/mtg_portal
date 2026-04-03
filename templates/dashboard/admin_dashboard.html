@@ -1,99 +1,89 @@
-{% extends 'base_dashboard.html' %}
+{% extends "base_dashboard.html" %}
 {% load humanize %}
-
 {% block title %}Admin Dashboard - Mitchell Technology Group{% endblock %}
-
 {% block dashboard_content %}
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1">Welcome back, {{ user.first_name|default:user.email }}</h1>
-            <p class="text-muted mb-0">Here's what's happening across your business</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'crm:lead_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-lg me-1"></i> New Lead
-            </a>
-            <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-outline-primary">
-                <i class="bi bi-receipt me-1"></i> Create Invoice
-            </a>
-        </div>
-    </div>
-
-    <!-- KPI Cards Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6 col-xl-3">
-            {% include 'includes/kpi_card.html' with title='Pipeline Value' value='$'|add:leads_pipeline_value|floatformat:0|intcomma icon='bi-currency-dollar' variant='success' subtitle=leads_new|add:' new leads' %}
-        </div>
-        <div class="col-md-6 col-xl-3">
-            {% include 'includes/kpi_card.html' with title='Outstanding Invoices' value='$'|add:invoices_outstanding|floatformat:0|intcomma icon='bi-receipt' variant='warning' subtitle=invoices_overdue|add:' overdue' %}
-        </div>
-        <div class="col-md-6 col-xl-3">
-            {% include 'includes/kpi_card.html' with title='Open Tickets' value=tickets_open icon='bi-ticket-detailed' variant='info' subtitle=tickets_urgent|add:' urgent' %}
-        </div>
-        <div class="col-md-6 col-xl-3">
-            {% include 'includes/kpi_card.html' with title='Meetings Today' value=meetings_today icon='bi-calendar-event' variant='primary' subtitle='Scheduled' %}
-        </div>
-    </div>
-
-    <!-- Main Content Row -->
-    <div class="row g-4">
-        <!-- Left Column -->
-        <div class="col-lg-8">
-            <!-- Pipeline Widget -->
-            <div class="mb-4">
-                {% include 'includes/widgets/pipeline_widget.html' with leads=recent_leads pipeline_stages=pipeline_stages %}
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">Welcome back, {{ user.first_name|default:user.email }}</h1>
+                <p class="text-muted mb-0">Here's what's happening across your business</p>
             </div>
-            
-            <!-- Tickets Widget -->
-            <div class="mb-4">
-                {% include 'includes/widgets/tickets_widget.html' with tickets=open_tickets title='Open Tickets' %}
-            </div>
-            
-            <!-- Invoices Due Widget -->
-            <div class="mb-4">
-                {% include 'includes/widgets/invoices_widget.html' with invoices=invoices_due title='Invoices Due' %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'crm:lead_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> New Lead
+                </a>
+                <a href="{% url 'invoicing:invoice_create' %}"
+                   class="btn btn-outline-primary">
+                    <i class="bi bi-receipt me-1"></i> Create Invoice
+                </a>
             </div>
         </div>
-        
-        <!-- Right Column -->
-        <div class="col-lg-4">
-            <!-- Upcoming Meetings -->
-            <div class="mb-4">
-                {% include 'includes/widgets/meetings_widget.html' with meetings=upcoming_meetings %}
+        <!-- KPI Cards Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-3">
+                {% include 'includes/kpi_card.html' with title='Pipeline Value' value='$'|add:leads_pipeline_value|floatformat:0|intcomma icon='bi-currency-dollar' variant='success' subtitle=leads_new|add:' new leads' %}
             </div>
-            
-            <!-- Recent Activity -->
-            <div class="mb-4">
-                {% include 'includes/widgets/activity_widget.html' with activities=recent_activities %}
+            <div class="col-md-6 col-xl-3">
+                {% include 'includes/kpi_card.html' with title='Outstanding Invoices' value='$'|add:invoices_outstanding|floatformat:0|intcomma icon='bi-receipt' variant='warning' subtitle=invoices_overdue|add:' overdue' %}
             </div>
-            
-            <!-- Quick Stats Card -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>This Month</h6>
+            <div class="col-md-6 col-xl-3">
+                {% include 'includes/kpi_card.html' with title='Open Tickets' value=tickets_open icon='bi-ticket-detailed' variant='info' subtitle=tickets_urgent|add:' urgent' %}
+            </div>
+            <div class="col-md-6 col-xl-3">
+                {% include 'includes/kpi_card.html' with title='Meetings Today' value=meetings_today icon='bi-calendar-event' variant='primary' subtitle='Scheduled' %}
+            </div>
+        </div>
+        <!-- Main Content Row -->
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Pipeline Widget -->
+                <div class="mb-4">
+                    {% include 'includes/widgets/pipeline_widget.html' with leads=recent_leads pipeline_stages=pipeline_stages %}
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Revenue</span>
-                        <span class="fw-bold text-success">${{ payments_this_month|floatformat:0|intcomma }}</span>
+                <!-- Tickets Widget -->
+                <div class="mb-4">
+                    {% include 'includes/widgets/tickets_widget.html' with tickets=open_tickets title='Open Tickets' %}
+                </div>
+                <!-- Invoices Due Widget -->
+                <div class="mb-4">
+                    {% include 'includes/widgets/invoices_widget.html' with invoices=invoices_due title='Invoices Due' %}
+                </div>
+            </div>
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Upcoming Meetings -->
+                <div class="mb-4">{% include 'includes/widgets/meetings_widget.html' with meetings=upcoming_meetings %}</div>
+                <!-- Recent Activity -->
+                <div class="mb-4">{% include 'includes/widgets/activity_widget.html' with activities=recent_activities %}</div>
+                <!-- Quick Stats Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>This Month
+                        </h6>
                     </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">New Leads</span>
-                        <span class="fw-bold">{{ leads_new }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Tickets Resolved</span>
-                        <span class="fw-bold">--</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="text-muted">Meetings Held</span>
-                        <span class="fw-bold">--</span>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Revenue</span>
+                            <span class="fw-bold text-success">${{ payments_this_month|floatformat:0|intcomma }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">New Leads</span>
+                            <span class="fw-bold">{{ leads_new }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tickets Resolved</span>
+                            <span class="fw-bold">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Meetings Held</span>
+                            <span class="fw-bold">--</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

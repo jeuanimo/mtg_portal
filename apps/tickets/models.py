@@ -4,6 +4,9 @@ from django.utils import timezone
 from apps.core.models import TimeStampedModel
 from apps.crm.models import Organization, Contact
 
+# Common status labels used across models
+STATUS_IN_PROGRESS = 'In Progress'
+
 
 class Ticket(TimeStampedModel):
     """Support tickets."""
@@ -16,7 +19,7 @@ class Ticket(TimeStampedModel):
     
     class Status(models.TextChoices):
         NEW = 'new', 'New'
-        IN_PROGRESS = 'in_progress', 'In Progress'
+        IN_PROGRESS = 'in_progress', STATUS_IN_PROGRESS
         WAITING = 'waiting', 'Waiting on Client'
         ESCALATED = 'escalated', 'Escalated'
         RESOLVED = 'resolved', 'Resolved'
@@ -82,6 +85,13 @@ class Ticket(TimeStampedModel):
             models.Index(fields=['assigned_to', 'status']),
             models.Index(fields=['priority', 'status']),
         ]
+
+    OPEN_STATUSES = (
+        Status.NEW,
+        Status.IN_PROGRESS,
+        Status.WAITING,
+        Status.ESCALATED,
+    )
     
     def __str__(self):
         return f"#{self.ticket_number}: {self.subject}"
@@ -95,7 +105,7 @@ class Ticket(TimeStampedModel):
     
     @property
     def is_open(self):
-        return self.status not in [self.Status.RESOLVED, self.Status.CLOSED]
+        return self.status in self.OPEN_STATUSES
     
     @property
     def is_overdue(self):
@@ -176,7 +186,7 @@ class ConsultingProject(TimeStampedModel):
         INTAKE = 'intake', 'Intake'
         DISCOVERY = 'discovery', 'Discovery'
         PROPOSAL = 'proposal', 'Proposal'
-        IN_PROGRESS = 'in_progress', 'In Progress'
+        IN_PROGRESS = 'in_progress', STATUS_IN_PROGRESS
         ON_HOLD = 'on_hold', 'On Hold'
         COMPLETED = 'completed', 'Completed'
         CANCELLED = 'cancelled', 'Cancelled'
@@ -234,6 +244,8 @@ class ConsultingProject(TimeStampedModel):
         verbose_name = 'Consulting Project'
         verbose_name_plural = 'Consulting Projects'
         ordering = ['-created_at']
+
+    ACTIVE_STATUSES = (Status.DISCOVERY, Status.IN_PROGRESS)
     
     def __str__(self):
         return f"{self.project_number}: {self.name}"
@@ -247,7 +259,7 @@ class ConsultingProject(TimeStampedModel):
     
     @property
     def is_active(self):
-        return self.status in [self.Status.DISCOVERY, self.Status.IN_PROGRESS]
+        return self.status in self.ACTIVE_STATUSES
     
     @property
     def hours_remaining(self):
@@ -261,7 +273,7 @@ class ProjectMilestone(TimeStampedModel):
     
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
-        IN_PROGRESS = 'in_progress', 'In Progress'
+        IN_PROGRESS = 'in_progress', STATUS_IN_PROGRESS
         COMPLETED = 'completed', 'Completed'
         BLOCKED = 'blocked', 'Blocked'
     
@@ -291,7 +303,7 @@ class Deliverable(TimeStampedModel):
     
     class Status(models.TextChoices):
         NOT_STARTED = 'not_started', 'Not Started'
-        IN_PROGRESS = 'in_progress', 'In Progress'
+        IN_PROGRESS = 'in_progress', STATUS_IN_PROGRESS
         IN_REVIEW = 'in_review', 'In Review'
         APPROVED = 'approved', 'Approved'
         REJECTED = 'rejected', 'Rejected'

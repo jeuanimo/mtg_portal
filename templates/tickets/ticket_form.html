@@ -1,36 +1,54 @@
-{% extends 'base_dashboard.html' %}
+{% extends "base_dashboard.html" %}
 {% load static crispy_forms_tags %}
-
-{% block title %}{% if ticket %}Edit Ticket{% else %}New Ticket{% endif %} - MTG Portal{% endblock %}
-
-{% block page_title %}{% if ticket %}Edit Ticket #{{ ticket.pk }}{% else %}Create New Ticket{% endif %}{% endblock %}
-{% block page_subtitle %}{% if ticket %}Update ticket details{% else %}Submit a support request{% endif %}{% endblock %}
-
-{% block page_actions %}
-<a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">
-    <i class="bi bi-arrow-left me-1"></i>Back to Tickets
-</a>
+{% block title %}
+    {% if ticket %}
+        Edit Ticket
+    {% else %}
+        New Ticket
+    {% endif %}
+    - MTG Portal
 {% endblock %}
-
+{% block page_title %}
+    {% if ticket %}
+        Edit Ticket #{{ ticket.pk }}
+    {% else %}
+        Create New Ticket
+    {% endif %}
+{% endblock %}
+{% block page_subtitle %}
+    {% if ticket %}
+        Update ticket details
+    {% else %}
+        Submit a support request
+    {% endif %}
+{% endblock %}
+{% block page_actions %}
+    <a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Tickets
+    </a>
+{% endblock %}
 {% block dashboard_content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body p-4">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-1"></i>
-                            {% if ticket %}Update Ticket{% else %}Create Ticket{% endif %}
-                        </button>
-                    </div>
-                </form>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>
+                                {% if ticket %}
+                                    Update Ticket
+                                {% else %}
+                                    Create Ticket
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}

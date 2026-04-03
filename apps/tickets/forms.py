@@ -5,9 +5,9 @@ from django import forms
 from django.forms import inlineformset_factory
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Div, HTML, Submit, Field
+from crispy_forms.layout import Layout, Row, Column, HTML, Submit
 
-from apps.crm.models import Organization, Contact
+from apps.crm.models import Contact
 from .models import (
     Ticket, TicketComment, TicketAttachment,
     ConsultingProject, ProjectMilestone, Deliverable,

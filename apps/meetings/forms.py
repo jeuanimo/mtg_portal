@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Fieldset, Submit, HTML
+from crispy_forms.layout import Layout, Row, Column, Fieldset
 from .models import Meeting, MeetingAttendee, AvailabilitySlot
 
 
@@ -50,23 +50,23 @@ class MeetingForm(forms.ModelForm):
             self.fields['start_time_field'].initial = '10:00'
             self.fields['end_time_field'].initial = '11:00'
         
-        # Limit host choices to staff
+        # Limit hosts to internal users with active portal access.
         from apps.accounts.models import User
-        self.fields['host'].queryset = User.objects.filter(is_staff=True, is_active=True)
+        self.fields['host'].queryset = User.internal_users().order_by('first_name', 'last_name', 'email')
         self.fields['host'].required = False
         
         # Organization and contact
         from apps.crm.models import Organization, Contact
-        self.fields['organization'].queryset = Organization.objects.filter(is_active=True)
-        self.fields['contact'].queryset = Contact.objects.filter(is_active=True)
+        self.fields['organization'].queryset = Organization.objects.order_by('name')
+        self.fields['contact'].queryset = Contact.objects.select_related('organization').order_by('last_name', 'first_name')
         
         # Project and ticket
         from apps.tickets.models import ConsultingProject, Ticket
         self.fields['project'].queryset = ConsultingProject.objects.exclude(
-            status__in=['COMPLETED', 'CANCELLED']
+            status__in=[ConsultingProject.Status.COMPLETED, ConsultingProject.Status.CANCELLED]
         )
         self.fields['ticket'].queryset = Ticket.objects.filter(
-            status__in=['NEW', 'OPEN', 'IN_PROGRESS', 'PENDING']
+            status__in=Ticket.OPEN_STATUSES
         )
         
         self.helper = FormHelper()
@@ -175,7 +175,7 @@ class QuickMeetingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         from apps.crm.models import Organization
-        self.fields['organization'].queryset = Organization.objects.filter(is_active=True)
+        self.fields['organization'].queryset = Organization.objects.order_by('name')
         self.fields['organization'].required = False
         
         self.helper = FormHelper()
@@ -220,7 +220,7 @@ class MeetingAttendeeForm(forms.ModelForm):
         self.fields['user'].required = False
         
         from apps.crm.models import Contact
-        self.fields['contact'].queryset = Contact.objects.filter(is_active=True)
+        self.fields['contact'].queryset = Contact.objects.select_related('organization').order_by('last_name', 'first_name')
         self.fields['contact'].required = False
         
         self.fields['email'].required = False

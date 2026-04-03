@@ -1,7 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Service, ServiceCategory, ServiceRequest, Testimonial
+from .models import Service, ServiceCategory, Testimonial
 from .forms import ContactForm, ConsultationRequestForm
+
+
+def _get_client_ip(request):
+    """Return the best-effort client IP address from the current request."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR', '')
 
 
 def home(request):
@@ -58,14 +66,10 @@ def consultation_request(request):
         form = ConsultationRequestForm(request.POST)
         if form.is_valid():
             service_request = form.save(commit=False)
-            # Capture metadata
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                service_request.ip_address = x_forwarded_for.split(',')[0]
-            else:
-                service_request.ip_address = request.META.get('REMOTE_ADDR', '')
+            service_request.ip_address = _get_client_ip(request)
+            if not service_request.source:
+                service_request.source = 'public_consultation'
             service_request.save()
-            form.save_m2m()  # Save services many-to-many
             
             messages.success(
                 request, 
@@ -94,12 +98,7 @@ def contact(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             submission = form.save(commit=False)
-            # Capture IP and user agent
-            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-            if x_forwarded_for:
-                submission.ip_address = x_forwarded_for.split(',')[0]
-            else:
-                submission.ip_address = request.META.get('REMOTE_ADDR')
+            submission.ip_address = _get_client_ip(request)
             submission.user_agent = request.META.get('HTTP_USER_AGENT', '')
             submission.save()
             

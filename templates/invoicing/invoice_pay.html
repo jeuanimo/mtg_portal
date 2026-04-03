@@ -1,9 +1,7 @@
 {% extends "base.html" %}
-
 {% block title %}Pay Invoice #{{ invoice.invoice_number }}{% endblock %}
-
 {% block extra_css %}
-<style>
+    <style>
     .payment-container {
         max-width: 500px;
         margin: 2rem auto;
@@ -40,80 +38,78 @@
     .processing-overlay.active {
         display: flex;
     }
-</style>
+    </style>
 {% endblock %}
-
 {% block content %}
-<div class="container py-5">
-    <div class="payment-container">
-        <h2 class="text-center mb-4">Pay Invoice</h2>
-        
-        <!-- Invoice Summary -->
-        <div class="payment-summary">
-            <div class="d-flex justify-content-between mb-2">
-                <span>Invoice Number:</span>
-                <strong>{{ invoice.invoice_number }}</strong>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-                <span>Client:</span>
-                <span>{{ invoice.organization.name }}</span>
-            </div>
-            <div class="d-flex justify-content-between mb-2">
-                <span>Due Date:</span>
-                <span>{{ invoice.due_date|date:"M d, Y" }}</span>
-            </div>
-            <hr>
-            <div class="d-flex justify-content-between">
-                <strong>Amount Due:</strong>
-                <strong class="fs-4 text-primary">${{ invoice.balance_due|floatformat:2 }}</strong>
-            </div>
-        </div>
-
-        <!-- Payment Form -->
-        <div class="card">
-            <div class="card-body">
-                <form id="payment-form">
-                    <div class="mb-3">
-                        <label for="card-element" class="form-label">Credit or Debit Card</label>
-                        <div id="card-element"></div>
-                        <div id="card-errors" role="alert"></div>
-                    </div>
-                    
-                    <button id="submit-button" type="submit" class="btn btn-primary btn-lg w-100">
-                        <span id="button-text">Pay ${{ invoice.balance_due|floatformat:2 }}</span>
-                        <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
-                    </button>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        <i class="bi bi-lock-fill"></i> Payments are securely processed by Stripe
-                    </small>
+    <div class="container py-5">
+        <div class="payment-container">
+            <h2 class="text-center mb-4">Pay Invoice</h2>
+            <!-- Invoice Summary -->
+            <div class="payment-summary">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Invoice Number:</span>
+                    <strong>{{ invoice.invoice_number }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Client:</span>
+                    <span>{{ invoice.organization.name }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Due Date:</span>
+                    <span>{{ invoice.due_date|date:"M d, Y" }}</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Amount Due:</strong>
+                    <strong class="fs-4 text-primary">${{ invoice.balance_due|floatformat:2 }}</strong>
                 </div>
             </div>
-        </div>
-
-        <div class="text-center mt-3">
-            <a href="{% url 'invoicing:invoice_detail' invoice.pk %}" class="btn btn-link">Cancel and return to invoice</a>
+            <!-- Payment Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form id="payment-form">
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Credit or Debit Card</label>
+                            <div id="card-element"></div>
+                            <div id="card-errors" role="alert"></div>
+                        </div>
+                        <button id="submit-button" type="submit" class="btn btn-primary btn-lg w-100">
+                            <span id="button-text">Pay ${{ invoice.balance_due|floatformat:2 }}</span>
+                            <span id="spinner"
+                                  class="spinner-border spinner-border-sm d-none"
+                                  role="status"></span>
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-lock-fill"></i> Payments are securely processed by Stripe
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'invoicing:invoice_detail' invoice.pk %}"
+                   class="btn btn-link">Cancel and return to invoice</a>
+            </div>
         </div>
     </div>
-</div>
-
-<!-- Processing Overlay -->
-<div class="processing-overlay" id="processing-overlay">
-    <div class="text-center">
-        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">Processing...</span>
+    <!-- Processing Overlay -->
+    <div class="processing-overlay" id="processing-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3"
+                 role="status"
+                 style="width: 3rem;
+                        height: 3rem">
+                <span class="visually-hidden">Processing...</span>
+            </div>
+            <h4>Processing Payment...</h4>
+            <p class="text-muted">Please do not close this page.</p>
         </div>
-        <h4>Processing Payment...</h4>
-        <p class="text-muted">Please do not close this page.</p>
     </div>
-</div>
 {% endblock %}
-
 {% block extra_js %}
-<script src="https://js.stripe.com/v3/"></script>
-<script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     const stripe = Stripe('{{ stripe_publishable_key }}');
     const elements = stripe.elements();
@@ -188,5 +184,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-</script>
+    </script>
 {% endblock %}

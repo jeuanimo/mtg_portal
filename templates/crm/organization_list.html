@@ -1,0 +1,61 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Organizations{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Organizations</h1>
+            <p class="text-muted mb-0">Browse client and prospect companies.</p>
+        </div>
+        <a href="{% url 'crm:organization_create' %}" class="btn btn-primary">New Organization</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body border-bottom">
+            <form method="get" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text"
+                           name="q"
+                           value="{{ request.GET.q }}"
+                           class="form-control"
+                           placeholder="Search organizations">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Industry</th>
+                        <th>Website</th>
+                        <th>Contacts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for organization in organizations %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'crm:organization_detail' organization.pk %}">{{ organization.name }}</a>
+                            </td>
+                            <td>{{ organization.industry|default:"-" }}</td>
+                            <td>
+                                {% if organization.website %}
+                                    <a href="{{ organization.website }}" target="_blank" rel="noreferrer">{{ organization.website }}</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ organization.contact_count|default:organization.contacts.count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No organizations found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -4,7 +4,6 @@ Tests for CRM models - Lead, Contact, Organization.
 
 import pytest
 from decimal import Decimal
-from django.utils import timezone
 from apps.crm.models import Lead, Contact, Organization
 
 

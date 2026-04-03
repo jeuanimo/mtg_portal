@@ -1,95 +1,94 @@
-{% extends 'base.html' %}
-
-{% block title %}Our Services - Mitchell Technology Group{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}
+    Our Services - Mitchell Technology Group
+{% endblock title %}
 {% block content %}
-<section class="hero-section py-5">
-    <div class="container text-center">
-        <h1 class="display-4 fw-bold">Our Services</h1>
-        <p class="lead">Comprehensive IT solutions to power your business</p>
-    </div>
-</section>
-
-<section class="py-5">
-    <div class="container">
-        <div class="row g-4">
-            {% for service in services %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi {{ service.icon|default:'bi-gear' }} display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">{{ service.title }}</h4>
-                        <p class="card-text text-muted">{{ service.short_description }}</p>
-                        <a href="{% url 'public:service_detail' service.slug %}" class="btn btn-outline-primary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <!-- Default services if none exist -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-pc-display display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">IT Consulting</h4>
-                        <p class="card-text text-muted">Strategic technology planning and roadmap development for your organization.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-hdd-network display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">Network Solutions</h4>
-                        <p class="card-text text-muted">Design, implementation, and management of enterprise network infrastructure.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-cloud display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">Cloud Services</h4>
-                        <p class="card-text text-muted">Cloud migration, optimization, and ongoing management services.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-shield-check display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">Cybersecurity</h4>
-                        <p class="card-text text-muted">Comprehensive security assessments, implementation, and monitoring.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-headset display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">Managed IT Support</h4>
-                        <p class="card-text text-muted">24/7 help desk and proactive IT support for your team.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-database display-4 text-primary mb-3"></i>
-                        <h4 class="card-title">Data Management</h4>
-                        <p class="card-text text-muted">Backup, disaster recovery, and data lifecycle management solutions.</p>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+    <section class="hero-section py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold">Our Services</h1>
+            <p class="lead">Comprehensive IT solutions to power your business</p>
         </div>
-    </div>
-</section>
-
-<section class="py-5 bg-primary text-white">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Ready to Get Started?</h2>
-        <p class="lead mb-4">Contact us for a free consultation and custom quote.</p>
-        <a href="{% url 'public:contact' %}" class="btn btn-light btn-lg">Contact Us Today</a>
-    </div>
-</section>
-{% endblock %}
+    </section>
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                {% for service in services %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi {{ service.icon|default:'bi-gear' }} display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">{{ service.title }}</h4>
+                                <p class="card-text text-muted">{{ service.short_description }}</p>
+                                <a href="{% url 'public:service_detail' service.slug %}"
+                                   class="btn btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Default services if none exist -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-pc-display display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">IT Consulting</h4>
+                                <p class="card-text text-muted">Strategic technology planning and roadmap development for your organization.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-hdd-network display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">Network Solutions</h4>
+                                <p class="card-text text-muted">Design, implementation, and management of enterprise network infrastructure.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-cloud display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">Cloud Services</h4>
+                                <p class="card-text text-muted">Cloud migration, optimization, and ongoing management services.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-shield-check display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">Cybersecurity</h4>
+                                <p class="card-text text-muted">Comprehensive security assessments, implementation, and monitoring.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-headset display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">Managed IT Support</h4>
+                                <p class="card-text text-muted">24/7 help desk and proactive IT support for your team.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center p-4">
+                                <i class="bi bi-database display-4 text-primary mb-3"></i>
+                                <h4 class="card-title">Data Management</h4>
+                                <p class="card-text text-muted">Backup, disaster recovery, and data lifecycle management solutions.</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <section class="py-5 bg-primary text-white">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-4">Ready to Get Started?</h2>
+            <p class="lead mb-4">Contact us for a free consultation and custom quote.</p>
+            <a href="{% url 'public:contact' %}" class="btn btn-light btn-lg">Contact Us Today</a>
+        </div>
+    </section>
+{% endblock content %}

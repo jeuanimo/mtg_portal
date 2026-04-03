@@ -1,139 +1,145 @@
-{% extends 'base.html' %}
-
-{% block title %}Industries We Serve - Mitchell Technology Group{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}
+    Industries We Serve - Mitchell Technology Group
+{% endblock title %}
 {% block content %}
-<!-- Hero Section -->
-<section class="py-5 bg-primary text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h1 class="display-5 fw-bold">Industries We Serve</h1>
-                <p class="lead mb-0">Specialized IT solutions for every sector, tailored to meet unique industry challenges.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Industries Grid -->
-<section class="py-5">
-    <div class="container">
-        <div class="row g-4">
-            {% for category in categories %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi {{ category.icon|default:'bi-building' }} text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">{{ category.name }}</h4>
-                        </div>
-                        <p class="card-text text-muted">{{ category.description }}</p>
-                        <a href="{% url 'public:services' %}?category={{ category.slug }}" class="btn btn-outline-primary">
-                            View Services <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <!-- Default industries if none in database -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-heart-pulse text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Healthcare</h4>
-                        </div>
-                        <p class="card-text text-muted">HIPAA-compliant solutions for medical practices, hospitals, and healthcare organizations.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-bank text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Finance</h4>
-                        </div>
-                        <p class="card-text text-muted">Secure and compliant IT infrastructure for banks, credit unions, and financial services.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-basket text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Retail</h4>
-                        </div>
-                        <p class="card-text text-muted">POS systems, e-commerce platforms, and inventory management solutions.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-mortarboard text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Education</h4>
-                        </div>
-                        <p class="card-text text-muted">Learning management systems and campus-wide technology infrastructure.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-gear text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Manufacturing</h4>
-                        </div>
-                        <p class="card-text text-muted">Industrial IoT, automation systems, and production monitoring solutions.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
-                                <i class="bi bi-briefcase text-primary fs-3"></i>
-                            </div>
-                            <h4 class="card-title mb-0">Professional Services</h4>
-                        </div>
-                        <p class="card-text text-muted">Cloud solutions and collaboration tools for law firms, accounting, and consulting.</p>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="py-5 bg-light">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h2 class="fw-bold mb-3">Don't See Your Industry?</h2>
-                <p class="lead text-muted mb-4">We work with businesses across all sectors. Contact us to discuss your specific technology needs.</p>
-                <div class="d-flex gap-3 justify-content-center">
-                    <a href="{% url 'public:consultation' %}" class="btn btn-primary btn-lg">Request Consultation</a>
-                    <a href="{% url 'public:contact' %}" class="btn btn-outline-primary btn-lg">Contact Us</a>
+    <!-- Hero Section -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold">Industries We Serve</h1>
+                    <p class="lead mb-0">Specialized IT solutions for every sector, tailored to meet unique industry challenges.</p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-{% endblock %}
+    </section>
+    <!-- Industries Grid -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                {% for category in categories %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi {{ category.icon|default:'bi-building' }} text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">{{ category.name }}</h4>
+                                </div>
+                                <p class="card-text text-muted">{{ category.description }}</p>
+                                <a href="{% url 'public:services' %}?category={{ category.slug }}"
+                                   class="btn btn-outline-primary">
+                                    View Services <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Default industries if none in database -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-heart-pulse text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Healthcare</h4>
+                                </div>
+                                <p class="card-text text-muted">
+                                    HIPAA-compliant solutions for medical practices, hospitals, and healthcare organizations.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-bank text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Finance</h4>
+                                </div>
+                                <p class="card-text text-muted">
+                                    Secure and compliant IT infrastructure for banks, credit unions, and financial services.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-basket text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Retail</h4>
+                                </div>
+                                <p class="card-text text-muted">POS systems, e-commerce platforms, and inventory management solutions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-mortarboard text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Education</h4>
+                                </div>
+                                <p class="card-text text-muted">Learning management systems and campus-wide technology infrastructure.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-gear text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Manufacturing</h4>
+                                </div>
+                                <p class="card-text text-muted">Industrial IoT, automation systems, and production monitoring solutions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                        <i class="bi bi-briefcase text-primary fs-3"></i>
+                                    </div>
+                                    <h4 class="card-title mb-0">Professional Services</h4>
+                                </div>
+                                <p class="card-text text-muted">Cloud solutions and collaboration tools for law firms, accounting, and consulting.</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <!-- CTA Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="fw-bold mb-3">Don't See Your Industry?</h2>
+                    <p class="lead text-muted mb-4">
+                        We work with businesses across all sectors. Contact us to discuss your specific technology needs.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{% url 'public:consultation' %}" class="btn btn-primary btn-lg">Request Consultation</a>
+                        <a href="{% url 'public:contact' %}"
+                           class="btn btn-outline-primary btn-lg">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock content %}

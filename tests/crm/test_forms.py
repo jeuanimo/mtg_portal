@@ -4,7 +4,6 @@ Tests for CRM forms - Lead intake and contact forms.
 
 import pytest
 from apps.crm.forms import LeadForm, ContactForm, OrganizationForm
-from apps.crm.models import Contact, Organization
 
 
 class TestLeadForm:

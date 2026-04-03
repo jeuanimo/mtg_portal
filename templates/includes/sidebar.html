@@ -7,136 +7,154 @@ Used in base_dashboard.html
         <!-- Main Navigation -->
         <ul class="nav flex-column mb-4">
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:index' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}"
+                   href="{% url 'dashboard:index' %}">
                     <i class="bi bi-speedometer2"></i>
                     Dashboard
                 </a>
             </li>
         </ul>
-        
-        <!-- CRM Section (Staff Only) -->
-        {% if user.is_staff or user.role == 'admin' or user.role == 'sales' %}
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-            <span>CRM</span>
-        </h6>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'lead' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'crm:lead_list' %}">
-                    <i class="bi bi-person-lines-fill"></i>
-                    Leads
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'org' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'crm:organization_list' %}">
-                    <i class="bi bi-building"></i>
-                    Organizations
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'contact' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'crm:contact_list' %}">
-                    <i class="bi bi-people"></i>
-                    Contacts
-                </a>
-            </li>
-        </ul>
+        <!-- CRM Section (Internal Staff Only) -->
+        {% if user.is_staff_user %}
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>CRM</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'lead' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'crm:lead_list' %}">
+                        <i class="bi bi-person-lines-fill"></i>
+                        Leads
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'org' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'crm:organization_list' %}">
+                        <i class="bi bi-building"></i>
+                        Organizations
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'crm' and 'contact' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'crm:contact_list' %}">
+                        <i class="bi bi-people"></i>
+                        Contacts
+                    </a>
+                </li>
+            </ul>
         {% endif %}
-        
         <!-- Projects & Work -->
         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
             <span>Work</span>
         </h6>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'projects' %}active{% endif %}" href="{% url 'projects:project_list' %}">
+                <a class="nav-link {% if request.resolver_match.namespace == 'projects' %}active{% endif %}"
+                   href="{% url 'projects:project_list' %}">
                     <i class="bi bi-kanban"></i>
                     Projects
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'tickets' and 'consulting' not in request.resolver_match.url_name %}active{% endif %}" href="{% url 'tickets:ticket_list' %}">
+                <a class="nav-link {% if request.resolver_match.namespace == 'tickets' and 'consulting' not in request.resolver_match.url_name %}active{% endif %}"
+                   href="{% url 'tickets:ticket_list' %}">
                     <i class="bi bi-ticket-detailed"></i>
                     Support Tickets
                 </a>
             </li>
-            {% if user.is_staff or user.role == 'consultant' %}
-            <li class="nav-item">
-                <a class="nav-link {% if 'consulting' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'tickets:consulting_list' %}">
-                    <i class="bi bi-briefcase"></i>
-                    Consulting
-                </a>
-            </li>
+            {% if user.is_staff_user %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'tickets' and 'project' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'tickets:project_list' %}">
+                        <i class="bi bi-briefcase"></i>
+                        Consulting
+                    </a>
+                </li>
             {% endif %}
         </ul>
-        
         <!-- Meetings -->
         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
             <span>Meetings</span>
         </h6>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'meetings' and request.resolver_match.url_name == 'meeting_list' %}active{% endif %}" href="{% url 'meetings:meeting_list' %}">
+                <a class="nav-link {% if request.resolver_match.namespace == 'meetings' and request.resolver_match.url_name == 'meeting_list' %}active{% endif %}"
+                   href="{% url 'meetings:meeting_list' %}">
                     <i class="bi bi-calendar-event"></i>
                     All Meetings
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'meeting_calendar' %}active{% endif %}" href="{% url 'meetings:meeting_calendar' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'meeting_calendar' %}active{% endif %}"
+                   href="{% url 'meetings:meeting_calendar' %}">
                     <i class="bi bi-calendar3"></i>
                     Calendar
                 </a>
             </li>
-            {% if user.is_staff %}
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'availability_list' %}active{% endif %}" href="{% url 'meetings:availability_list' %}">
-                    <i class="bi bi-clock-history"></i>
-                    Availability
-                </a>
-            </li>
+            {% if user.is_staff_user %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'availability_list' %}active{% endif %}"
+                       href="{% url 'meetings:availability_list' %}">
+                        <i class="bi bi-clock-history"></i>
+                        Availability
+                    </a>
+                </li>
             {% endif %}
         </ul>
-        
-        <!-- Finance (Staff/Finance Only) -->
-        {% if user.is_staff or user.role == 'finance' or user.role == 'admin' %}
-        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-            <span>Finance</span>
-        </h6>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.namespace == 'invoicing' and 'invoice' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'invoicing:invoice_list' %}">
-                    <i class="bi bi-receipt"></i>
-                    Invoices
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'payment_list' %}active{% endif %}" href="{% url 'invoicing:payment_list' %}">
-                    <i class="bi bi-credit-card"></i>
-                    Payments
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if 'recurring' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'invoicing:recurring_list' %}">
-                    <i class="bi bi-arrow-repeat"></i>
-                    Recurring
-                </a>
-            </li>
-        </ul>
+        <!-- Finance (Finance/Admin Only) -->
+        {% if user.is_finance_user %}
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Finance</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'invoicing' and 'invoice' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'invoicing:invoice_list' %}">
+                        <i class="bi bi-receipt"></i>
+                        Invoices
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'payment_list' %}active{% endif %}"
+                       href="{% url 'invoicing:payment_list' %}">
+                        <i class="bi bi-credit-card"></i>
+                        Payments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'recurring' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'invoicing:recurring_list' %}">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Recurring
+                    </a>
+                </li>
+            </ul>
         {% endif %}
-        
         <!-- Quick Actions -->
         <hr class="my-3">
         <div class="px-3">
             <div class="dropdown w-100">
-                <button class="btn btn-primary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <button class="btn btn-primary w-100 dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
                     <i class="bi bi-plus-lg me-1"></i> Quick Add
                 </button>
                 <ul class="dropdown-menu w-100">
-                    {% if user.is_staff %}
-                    <li><a class="dropdown-item" href="{% url 'crm:lead_create' %}"><i class="bi bi-person-plus me-2"></i>New Lead</a></li>
+                    {% if user.is_staff_user %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'crm:lead_create' %}"><i class="bi bi-person-plus me-2"></i>New Lead</a>
+                        </li>
                     {% endif %}
-                    <li><a class="dropdown-item" href="{% url 'tickets:ticket_create' %}"><i class="bi bi-ticket me-2"></i>New Ticket</a></li>
-                    <li><a class="dropdown-item" href="{% url 'meetings:meeting_create' %}"><i class="bi bi-calendar-plus me-2"></i>New Meeting</a></li>
-                    {% if user.is_staff %}
-                    <li><a class="dropdown-item" href="{% url 'invoicing:invoice_create' %}"><i class="bi bi-receipt me-2"></i>New Invoice</a></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'tickets:ticket_create' %}"><i class="bi bi-ticket me-2"></i>New Ticket</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'meetings:meeting_create' %}"><i class="bi bi-calendar-plus me-2"></i>New Meeting</a>
+                    </li>
+                    {% if user.is_finance_user %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'invoicing:invoice_create' %}"><i class="bi bi-receipt me-2"></i>New Invoice</a>
+                        </li>
                     {% endif %}
                 </ul>
             </div>

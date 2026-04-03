@@ -137,7 +137,7 @@
                                 </td>
                                 <td>{{ deliverable.due_date|date:"M d, Y"|default:"-" }}</td>
                                 <td>
-                                    {% if deliverable.status == 'SUBMITTED' and request.user.is_staff %}
+                                    {% if deliverable.status == 'in_review' and request.user.is_staff_user %}
                                     <form method="post" action="{% url 'tickets:deliverable_approve' deliverable.pk %}" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-sm btn-success">Approve</button>
@@ -190,7 +190,7 @@
                                 </td>
                                 <td>{{ cr.created_at|date:"M d, Y" }}</td>
                                 <td>
-                                    {% if cr.status == 'PENDING' and request.user.is_staff %}
+                                    {% if cr.status == 'submitted' and request.user.is_staff_user %}
                                     <a href="{% url 'tickets:change_request_review' cr.pk %}" class="btn btn-sm btn-outline-primary">Review</a>
                                     {% endif %}
                                 </td>

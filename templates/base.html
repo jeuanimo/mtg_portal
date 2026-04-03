@@ -1,156 +1,205 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}Mitchell Technology Group - IT Consulting & Solutions{% endblock %}">
-    <title>{% block title %}Mitchell Technology Group{% endblock %}</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="{% static 'css/main.css' %}" rel="stylesheet">
-    
-    {% block extra_css %}{% endblock %}
-</head>
-<body class="{% block body_class %}{% endblock %}">
-    {% block navbar %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'public:home' %}">
-                <i class="bi bi-cpu me-2"></i>Mitchell Technology Group
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'public:home' %}">Home</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Services
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'public:services' %}">All Services</a></li>
-                            <li><a class="dropdown-item" href="{% url 'public:industries' %}">Industries Served</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'public:consultation' %}"><i class="bi bi-calendar-check me-2"></i>Request Consultation</a></li>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description"
+              content="{% block meta_description %}Mitchell Technology Group - IT Consulting & Solutions{% endblock meta_description %}">
+        <meta name="keywords"
+              content="{% block meta_keywords %}IT consulting, technology solutions, network solutions, cloud services, cybersecurity{% endblock meta_keywords %}">
+        <title>
+            {% block title %}
+                Mitchell Technology Group
+            {% endblock title %}
+        </title>
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <!-- Bootstrap Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              rel="stylesheet">
+        <!-- Custom CSS -->
+        <link href="{% static 'css/main.css' %}" rel="stylesheet">
+        {% block extra_css %}
+        {% endblock extra_css %}
+    </head>
+    <body class="{% block body_class %}{% endblock body_class %}">
+        {% block navbar %}
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                <div class="container">
+                    <a class="navbar-brand fw-bold" href="{% url 'public:home' %}">
+                        <i class="bi bi-cpu me-2"></i>Mitchell Technology Group
+                    </a>
+                    <button class="navbar-toggler"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'public:home' %}">Home</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <button class="nav-link dropdown-toggle btn btn-link"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">Services</button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'public:services' %}">All Services</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'public:industries' %}">Industries Served</a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'public:consultation' %}"><i class="bi bi-calendar-check me-2"></i>Request Consultation</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'public:about' %}">About</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'public:blog' %}">Blog</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'public:contact' %}">Contact</a>
+                            </li>
                         </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'public:about' %}">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'public:blog' %}">Blog</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'public:contact' %}">Contact</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-1"></i>{{ user.email }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <ul class="navbar-nav">
+                            {% if user.is_authenticated %}
+                                <li class="nav-item dropdown">
+                                    <button class="nav-link dropdown-toggle btn btn-link"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        <i class="bi bi-person-circle me-1"></i>{{ user.email }}
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'account_logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="btn btn-light ms-2" href="{% url 'account_signup' %}">Get Started</a>
+                                </li>
+                            {% endif %}
                         </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-light ms-2" href="{% url 'account_signup' %}">Get Started</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    {% endblock %}
-    
-    {% block messages %}
-    {% if messages %}
-    <div class="container mt-3">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endblock %}
-    
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-    
-    {% block footer %}
-    <footer class="bg-dark text-light py-5 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h5><i class="bi bi-cpu me-2"></i>Mitchell Technology Group</h5>
-                    <p class="text-muted">Professional IT consulting and technology solutions for businesses of all sizes.</p>
+                    </div>
                 </div>
-                <div class="col-md-2 mb-4">
-                    <h6>Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="{% url 'public:home' %}" class="text-muted text-decoration-none">Home</a></li>
-                        <li><a href="{% url 'public:services' %}" class="text-muted text-decoration-none">Services</a></li>
-                        <li><a href="{% url 'public:about' %}" class="text-muted text-decoration-none">About</a></li>
-                        <li><a href="{% url 'public:contact' %}" class="text-muted text-decoration-none">Contact</a></li>
-                    </ul>
+            </nav>
+        {% endblock navbar %}
+        {% block messages %}
+            {% if messages %}
+                <div class="container mt-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="col-md-3 mb-4">
-                    <h6>Services</h6>
-                    <ul class="list-unstyled text-muted">
-                        <li>IT Consulting</li>
-                        <li>Network Solutions</li>
-                        <li>Cloud Services</li>
-                        <li>Cybersecurity</li>
-                    </ul>
+            {% endif %}
+        {% endblock messages %}
+        <main>
+            {% block content %}
+            {% endblock content %}
+        </main>
+        {% block footer %}
+            <footer class="bg-dark text-light py-5 mt-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <h5>
+                                <i class="bi bi-cpu me-2"></i>Mitchell Technology Group
+                            </h5>
+                            <p class="text-muted">Professional IT consulting and technology solutions for businesses of all sizes.</p>
+                        </div>
+                        <div class="col-md-2 mb-4">
+                            <h6>Quick Links</h6>
+                            <ul class="list-unstyled">
+                                <li>
+                                    <a href="{% url 'public:home' %}"
+                                       class="text-muted text-decoration-none">Home</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'public:services' %}"
+                                       class="text-muted text-decoration-none">Services</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'public:about' %}"
+                                       class="text-muted text-decoration-none">About</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'public:contact' %}"
+                                       class="text-muted text-decoration-none">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <h6>Services</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li>IT Consulting</li>
+                                <li>Network Solutions</li>
+                                <li>Cloud Services</li>
+                                <li>Cybersecurity</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3 mb-4">
+                            <h6>Contact</h6>
+                            <ul class="list-unstyled text-muted">
+                                <li>
+                                    <i class="bi bi-envelope me-2"></i>contact@mitchelltechgroup.com
+                                </li>
+                                <li>
+                                    <i class="bi bi-telephone me-2"></i>(618) 802-2133
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start">
+                            <small class="text-muted">© {% now "Y" %} Mitchell Technology Group. All rights reserved.</small>
+                        </div>
+                        <div class="col-md-6 text-center text-md-end">
+                            <a href="{% url 'public:privacy' %}"
+                               class="text-muted text-decoration-none small me-3">Privacy Policy</a>
+                            <a href="{% url 'public:terms' %}"
+                               class="text-muted text-decoration-none small">Terms of Service</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <h6>Contact</h6>
-                    <ul class="list-unstyled text-muted">
-                        <li><i class="bi bi-envelope me-2"></i>info@mitchelltechgroup.com</li>
-                        <li><i class="bi bi-telephone me-2"></i>(555) 123-4567</li>
-                    </ul>
-                </div>
-            </div>
-            <hr class="my-4">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <small class="text-muted">&copy; {% now "Y" %} Mitchell Technology Group. All rights reserved.</small>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="{% url 'public:privacy' %}" class="text-muted text-decoration-none small me-3">Privacy Policy</a>
-                    <a href="{% url 'public:terms' %}" class="text-muted text-decoration-none small">Terms of Service</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-    {% endblock %}
-    
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <!-- Custom JS -->
-    <script src="{% static 'js/main.js' %}"></script>
-    
-    {% block extra_js %}{% endblock %}
-</body>
+            </footer>
+        {% endblock footer %}
+        <!-- Bootstrap 5 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- HTMX -->
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <!-- Custom JS -->
+        <script src="{% static 'js/main.js' %}"></script>
+        {% block extra_js %}
+        {% endblock extra_js %}
+    </body>
 </html>

@@ -1,6 +1,10 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+# URL name constants
+DASHBOARD_INDEX_URL = 'dashboard:index'
+INVOICING_LIST_URL = 'invoicing:invoice_list'
+
 
 class UserManager(BaseUserManager):
     """Custom user manager for email-based authentication."""
@@ -76,6 +80,11 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.email
+
+    ADMIN_ROLES = (Role.SUPER_ADMIN,)
+    FINANCE_ROLES = (Role.SUPER_ADMIN, Role.FINANCE_ADMIN)
+    INTERNAL_ROLES = (Role.SUPER_ADMIN, Role.FINANCE_ADMIN, Role.CONSULTANT, Role.STAFF)
+    SUPPORT_ROLES = (Role.SUPER_ADMIN, Role.CONSULTANT, Role.STAFF)
     
     def get_display_name(self):
         """Return full name or email if name not set."""
@@ -84,38 +93,63 @@ class User(AbstractUser):
         elif self.first_name:
             return self.first_name
         return self.email.split('@')[0]
+
+    def has_any_role(self, *roles):
+        """Return True when the user matches any provided portal roles."""
+        return self.is_superuser or self.role in roles
+
+    @classmethod
+    def internal_users(cls):
+        """Queryset of internal portal users allowed into staff workflows."""
+        return cls.objects.filter(
+            models.Q(role__in=cls.INTERNAL_ROLES) |
+            models.Q(is_staff=True) |
+            models.Q(is_superuser=True),
+            is_active=True,
+        ).distinct()
+
+    @classmethod
+    def support_users(cls):
+        """Queryset of users that can be assigned support/project work."""
+        return cls.objects.filter(
+            models.Q(role__in=cls.SUPPORT_ROLES) |
+            models.Q(is_staff=True) |
+            models.Q(is_superuser=True),
+            is_active=True,
+        ).distinct()
     
     def get_dashboard_url(self):
         """Return appropriate dashboard URL based on role."""
         from django.urls import reverse
         if self.is_admin_user:
-            return reverse('dashboard:index')
+            return reverse(DASHBOARD_INDEX_URL)
         elif self.is_finance_user:
-            return reverse('invoicing:invoice_list')
+            return reverse(INVOICING_LIST_URL)
         elif self.is_staff_user:
-            return reverse('dashboard:index')
+            return reverse(DASHBOARD_INDEX_URL)
         else:
-            return reverse('dashboard:index')
+            return reverse(DASHBOARD_INDEX_URL)
     
     # Role check properties
     @property
     def is_admin_user(self):
-        return self.role == self.Role.SUPER_ADMIN or self.is_superuser
+        return self.has_any_role(*self.ADMIN_ROLES)
     
     @property
     def is_finance_user(self):
-        return self.role in [self.Role.SUPER_ADMIN, self.Role.FINANCE_ADMIN] or self.is_superuser
+        return self.has_any_role(*self.FINANCE_ROLES)
     
     @property
     def is_staff_user(self):
-        return self.role in [
-            self.Role.SUPER_ADMIN, self.Role.FINANCE_ADMIN, 
-            self.Role.CONSULTANT, self.Role.STAFF
-        ] or self.is_staff
+        return self.has_any_role(*self.INTERNAL_ROLES) or self.is_staff
     
     @property
     def is_consultant(self):
-        return self.role == self.Role.CONSULTANT or self.is_staff_user
+        return self.role == self.Role.CONSULTANT
+
+    @property
+    def is_consultant_user(self):
+        return self.is_consultant
     
     @property
     def is_client_user(self):
