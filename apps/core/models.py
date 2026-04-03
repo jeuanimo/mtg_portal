@@ -15,8 +15,8 @@ class SiteSettings(models.Model):
     """Site-wide settings (singleton model)."""
     site_name = models.CharField(max_length=200, default='Mitchell Technology Group')
     tagline = models.CharField(max_length=500, blank=True)
-    contact_email = models.EmailField(default='info@mitchelltechgroup.com')
-    contact_phone = models.CharField(max_length=20, blank=True)
+    contact_email = models.EmailField(default='contact@mitchelltechgroup.com')
+    contact_phone = models.CharField(max_length=20, default='618-802-2133')
     address = models.TextField(blank=True)
     
     # Social links
