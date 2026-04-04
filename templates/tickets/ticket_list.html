@@ -4,7 +4,7 @@
 {% block page_title %}All Tickets{% endblock %}
 {% block page_subtitle %}Manage support requests{% endblock %}
 {% block page_actions %}
-    <a href="{% url 'tickets:create' %}" class="btn btn-primary">
+    <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Ticket
     </a>
 {% endblock %}
@@ -79,10 +79,10 @@
                             {% for ticket in tickets %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'tickets:detail' ticket.pk %}" class="fw-medium">#{{ ticket.pk }}</a>
+                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}" class="fw-medium">#{{ ticket.pk }}</a>
                                     </td>
                                     <td>
-                                        <a href="{% url 'tickets:detail' ticket.pk %}">{{ ticket.subject|truncatechars:50 }}</a>
+                                        <a href="{% url 'tickets:ticket_detail' ticket.pk %}">{{ ticket.subject|truncatechars:50 }}</a>
                                     </td>
                                     <td>
                                         {% if ticket.organization %}
@@ -125,12 +125,12 @@
                                     <td>{{ ticket.created_at|date:"M d, Y" }}</td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{% url 'tickets:detail' ticket.pk %}"
+                                            <a href="{% url 'tickets:ticket_detail' ticket.pk %}"
                                                class="btn btn-outline-primary"
                                                title="View">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{% url 'tickets:edit' ticket.pk %}"
+                                            <a href="{% url 'tickets:ticket_edit' ticket.pk %}"
                                                class="btn btn-outline-secondary"
                                                title="Edit">
                                                 <i class="bi bi-pencil"></i>
@@ -174,7 +174,7 @@
                 <div class="text-center py-5">
                     <i class="bi bi-ticket fs-1 text-muted"></i>
                     <p class="text-muted mt-3">No tickets found</p>
-                    <a href="{% url 'tickets:create' %}" class="btn btn-primary">
+                    <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i>Create a Ticket
                     </a>
                 </div>

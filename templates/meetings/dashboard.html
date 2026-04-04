@@ -4,10 +4,10 @@
 {% block page_title %}Meetings{% endblock %}
 {% block page_subtitle %}Schedule and manage meetings{% endblock %}
 {% block page_actions %}
-    <a href="{% url 'meetings:create' %}" class="btn btn-primary">
+    <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Meeting
     </a>
-    <a href="{% url 'meetings:calendar' %}"
+    <a href="{% url 'meetings:meeting_calendar' %}"
        class="btn btn-outline-secondary">
         <i class="bi bi-calendar3 me-1"></i>Calendar
     </a>
@@ -69,7 +69,7 @@
                     {% if todays_meetings %}
                         <div class="list-group list-group-flush">
                             {% for meeting in todays_meetings %}
-                                <a href="{% url 'meetings:detail' meeting.pk %}"
+                                <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
                                    class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ meeting.title }}</h6>
@@ -97,14 +97,14 @@
                     <h5 class="mb-0">
                         <i class="bi bi-calendar-event me-2"></i>Upcoming Meetings
                     </h5>
-                    <a href="{% url 'meetings:list' %}"
+                    <a href="{% url 'meetings:meeting_list' %}"
                        class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="card-body">
                     {% if upcoming_meetings %}
                         <div class="list-group list-group-flush">
                             {% for meeting in upcoming_meetings %}
-                                <a href="{% url 'meetings:detail' meeting.pk %}"
+                                <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
                                    class="list-group-item list-group-item-action">
                                     <div class="d-flex w-100 justify-content-between">
                                         <h6 class="mb-1">{{ meeting.title }}</h6>
@@ -145,7 +145,7 @@
                             {% for meeting in past_meetings %}
                                 <tr>
                                     <td>
-                                        <a href="{% url 'meetings:detail' meeting.pk %}">{{ meeting.title }}</a>
+                                        <a href="{% url 'meetings:meeting_detail' meeting.pk %}">{{ meeting.title }}</a>
                                     </td>
                                     <td>{{ meeting.start_time|date:"M d, Y" }}</td>
                                     <td>{{ meeting.duration }} min</td>
@@ -153,7 +153,7 @@
                                         <span class="badge bg-success">{{ meeting.get_status_display }}</span>
                                     </td>
                                     <td>
-                                        <a href="{% url 'meetings:detail' meeting.pk %}"
+                                        <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
                                            class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i>
                                         </a>

@@ -326,7 +326,7 @@ def contact_edit(request, pk):
 @staff_required
 def organization_list(request):
     """List all organizations."""
-    organizations = Organization.objects.annotate(contact_count=Count('contacts')).all()
+    organizations = Organization.objects.annotate(contact_count=Count('contacts')).order_by('name')
     
     search = request.GET.get('q')
     if search:

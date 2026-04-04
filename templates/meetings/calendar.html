@@ -4,10 +4,10 @@
 {% block page_title %}Meeting Calendar{% endblock %}
 {% block page_subtitle %}View and manage your schedule{% endblock %}
 {% block page_actions %}
-    <a href="{% url 'meetings:create' %}" class="btn btn-primary">
+    <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Meeting
     </a>
-    <a href="{% url 'meetings:list' %}" class="btn btn-outline-secondary">
+    <a href="{% url 'meetings:meeting_list' %}" class="btn btn-outline-secondary">
         <i class="bi bi-list me-1"></i>List View
     </a>
 {% endblock %}
@@ -110,7 +110,7 @@
                             <div class="calendar-day {% if day.other_month %}other-month{% endif %} {% if day.is_today %}today{% endif %}">
                                 <div class="calendar-day-number">{{ day.day }}</div>
                                 {% for meeting in day.meetings %}
-                                    <a href="{% url 'meetings:detail' meeting.pk %}"
+                                    <a href="{% url 'meetings:meeting_detail' meeting.pk %}"
                                        class="calendar-event {% if meeting.status == 'CONFIRMED' %}meeting-confirmed{% elif meeting.status == 'SCHEDULED' %}meeting-pending{% endif %}"
                                        title="{{ meeting.title }}">
                                         {{ meeting.start_time|time:"g:i A" }} {{ meeting.title|truncatechars:15 }}
