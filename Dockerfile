@@ -7,8 +7,8 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Create app user for security
-RUN groupadd -r mtgportal && useradd -r -g mtgportal mtgportal
+# Create app user for security (with home directory for gunicorn)
+RUN groupadd -r mtgportal && useradd -r -g mtgportal -d /home/mtgportal -m mtgportal
 
 WORKDIR /app
 
