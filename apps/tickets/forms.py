@@ -358,6 +358,16 @@ class MilestoneForm(forms.ModelForm):
             'due_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
+    def has_changed(self):
+        """Treat forms with no name as empty (unchanged) so formset skips them."""
+        name_field = self.fields['name']
+        name_value = name_field.widget.value_from_datadict(
+            self.data, self.files, self.add_prefix('name')
+        )
+        if not name_value:
+            return False
+        return super().has_changed()
+
 
 MilestoneFormSet = inlineformset_factory(
     ConsultingProject,
