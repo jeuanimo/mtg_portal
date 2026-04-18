@@ -35,6 +35,9 @@ INVOICE_LIST_URL = 'invoicing:invoice_list'
 INVOICE_EDIT_URL = 'invoicing:invoice_edit'
 RECURRING_LIST_URL = 'invoicing:recurring_list'
 
+# HTML constants
+SELECT_CONTACT_OPTION = '<option value="">Select a contact</option>'
+
 
 def _apply_invoice_filters(invoices, filter_form):
     """Apply filter form values to invoice queryset."""
@@ -545,15 +548,21 @@ def get_organization_contacts(request):
     org_id = request.GET.get('organization_id')
     
     if not org_id:
-        return HttpResponse('<option value="">Select a contact</option>')
+        return HttpResponse(SELECT_CONTACT_OPTION)
+    
+    # Validate org_id is a valid integer to prevent injection
+    try:
+        org_id = int(org_id)
+    except (ValueError, TypeError):
+        return HttpResponse(SELECT_CONTACT_OPTION)
     
     contacts = Contact.objects.filter(organization_id=org_id)
     
-    html = '<option value="">Select a contact</option>'
+    html = SELECT_CONTACT_OPTION
     for contact in contacts:
         html += f'<option value="{contact.id}">{escape(contact.full_name)}</option>'
 
-    return HttpResponse(html)
+    return HttpResponse(html, content_type='text/html')
 
 
 # Quick invoice

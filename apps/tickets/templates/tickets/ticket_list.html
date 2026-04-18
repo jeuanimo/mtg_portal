@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Tickets{% endblock %}
+{% block title %}Tickets{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -17,23 +17,23 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-2">
-                    <label class="form-label">Status</label>
+                    <label class="form-label" for="id_status">Status</label>
                     {{ filter_form.status }}
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Priority</label>
+                    <label class="form-label" for="id_priority">Priority</label>
                     {{ filter_form.priority }}
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Category</label>
+                    <label class="form-label" for="id_category">Category</label>
                     {{ filter_form.category }}
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Assigned To</label>
+                    <label class="form-label" for="id_assigned_to">Assigned To</label>
                     {{ filter_form.assigned_to }}
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Search</label>
+                    <label class="form-label" for="id_search">Search</label>
                     {{ filter_form.search }}
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
@@ -185,4 +185,4 @@
     </nav>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}

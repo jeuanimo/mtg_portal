@@ -1,8 +1,8 @@
 {% extends "base_dashboard.html" %}
 {% load static %}
-{% block title %}Meetings Dashboard - MTG Portal{% endblock %}
-{% block page_title %}Meetings{% endblock %}
-{% block page_subtitle %}Schedule and manage meetings{% endblock %}
+{% block title %}Meetings Dashboard - MTG Portal{% endblock title %}
+{% block page_title %}Meetings{% endblock page_title %}
+{% block page_subtitle %}Schedule and manage meetings{% endblock page_subtitle %}
 {% block page_actions %}
     <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Meeting
@@ -11,7 +11,7 @@
        class="btn btn-outline-secondary">
         <i class="bi bi-calendar3 me-1"></i>Calendar
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block dashboard_content %}
     <!-- Stats Row -->
     <div class="row mb-4">
@@ -166,4 +166,4 @@
             </div>
         </div>
     {% endif %}
-{% endblock %}
+{% endblock dashboard_content %}

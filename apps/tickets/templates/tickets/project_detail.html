@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ project.name }}{% endblock %}
+{% block title %}{{ project.name }}{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -40,11 +40,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h6 class="text-muted mb-2">Overall Progress</h6>
-                            <div class="progress mb-2" style="height: 20px;">
-                                <div class="progress-bar" role="progressbar" style="width: {{ project.progress_percentage|default:0 }}%">
-                                    {{ project.progress_percentage|default:0 }}%
-                                </div>
-                            </div>
+                            <progress class="w-100 progress-lg mb-2" value="{{ project.progress_percentage|default:0 }}" max="100">{{ project.progress_percentage|default:0 }}%</progress>
                         </div>
                         <div class="col-md-4 text-md-end">
                             <small class="text-muted">
@@ -316,7 +312,7 @@
                     <ul class="list-unstyled mb-0">
                         {% for member in project.team_members.all %}
                         <li class="d-flex align-items-center mb-2">
-                            <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                            <div class="avatar avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
                                 {{ member.first_name|slice:":1"|upper }}{{ member.last_name|slice:":1"|upper }}
                             </div>
                             {{ member.get_full_name|default:member.email }}
@@ -370,4 +366,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

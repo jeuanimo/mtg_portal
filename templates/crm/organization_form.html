@@ -1,6 +1,6 @@
 {% extends "base_dashboard.html" %}
 {% load crispy_forms_tags %}
-{% block title %}{{ action }} Organization{% endblock %}
+{% block title %}{{ action }} Organization{% endblock title %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -13,4 +13,4 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">{% crispy form %}</div>
     </div>
-{% endblock %}
+{% endblock content %}

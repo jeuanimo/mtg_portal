@@ -1,13 +1,13 @@
 {% extends "base_dashboard.html" %}
 {% load static %}
-{% block title %}Support Dashboard - MTG Portal{% endblock %}
-{% block page_title %}Support Dashboard{% endblock %}
-{% block page_subtitle %}Tickets and support requests{% endblock %}
+{% block title %}Support Dashboard - MTG Portal{% endblock title %}
+{% block page_title %}Support Dashboard{% endblock page_title %}
+{% block page_subtitle %}Tickets and support requests{% endblock page_subtitle %}
 {% block page_actions %}
     <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Ticket
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block dashboard_content %}
     <!-- Stats Row -->
     <div class="row mb-4">
@@ -145,7 +145,7 @@
                             <span class="text-danger">Critical</span>
                             <span>{{ stats.critical }}</span>
                         </div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress progress-sm">
                             <div class="progress-bar bg-danger"
                                  style="width: {% widthratio stats.critical stats.total 100 %}%"></div>
                         </div>
@@ -155,7 +155,7 @@
                             <span class="text-warning">High</span>
                             <span>{{ stats.high }}</span>
                         </div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress progress-sm">
                             <div class="progress-bar bg-warning"
                                  style="width: {% widthratio stats.high stats.total 100 %}%"></div>
                         </div>
@@ -165,7 +165,7 @@
                             <span class="text-info">Medium</span>
                             <span>{{ stats.medium }}</span>
                         </div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress progress-sm">
                             <div class="progress-bar bg-info"
                                  style="width: {% widthratio stats.medium stats.total 100 %}%"></div>
                         </div>
@@ -175,7 +175,7 @@
                             <span class="text-secondary">Low</span>
                             <span>{{ stats.low }}</span>
                         </div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress progress-sm">
                             <div class="progress-bar bg-secondary"
                                  style="width: {% widthratio stats.low stats.total 100 %}%"></div>
                         </div>
@@ -184,4 +184,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock dashboard_content %}

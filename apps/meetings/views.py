@@ -20,11 +20,14 @@ TRUSTED_MEETING_DOMAINS = frozenset({
 
 
 def _is_trusted_meeting_url(url):
-    """Validate that a meeting URL is from a trusted video conferencing domain."""
+    """Validate that a meeting URL is from a trusted video conferencing domain with safe scheme."""
     if not url:
         return False
     try:
         parsed = urlparse(url)
+        # Only allow https (and http for local dev)
+        if parsed.scheme not in ('https', 'http'):
+            return False
         host = parsed.netloc.lower()
         # Check if host matches or is a subdomain of a trusted domain
         return any(
@@ -276,7 +279,7 @@ def meeting_start(request, pk):
         validated_url = meeting.meeting_url  # noqa: S310
     
     if validated_url:
-        return redirect(validated_url)
+        return redirect(validated_url)  # NOSONAR - URL validated by _is_trusted_meeting_url
     
     return redirect(MEETING_DETAIL_URL, pk=pk)
 

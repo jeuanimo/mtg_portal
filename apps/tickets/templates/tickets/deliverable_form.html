@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{% if deliverable %}Edit Deliverable{% else %}New Deliverable{% endif %}{% endblock %}
+{% block title %}{% if deliverable %}Edit Deliverable{% else %}New Deliverable{% endif %}{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -40,4 +40,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

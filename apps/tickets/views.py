@@ -688,7 +688,12 @@ def time_entry_create(request):
             if next_url and url_has_allowed_host_and_scheme(
                 next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
             ):
-                return redirect(next_url)
+                from django.urls import resolve, Resolver404
+                try:
+                    resolve(next_url)
+                    return redirect(next_url)
+                except Resolver404:
+                    pass
             return redirect('tickets:time_entry_list')
     else:
         form = TimeEntryForm(user=request.user)

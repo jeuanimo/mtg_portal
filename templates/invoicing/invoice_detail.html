@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Invoice #{{ invoice.invoice_number }}{% endblock %}
+{% block title %}Invoice #{{ invoice.invoice_number }}{% endblock title %}
 {% block content %}
     <div class="container-fluid py-4">
         <!-- Header -->
@@ -131,9 +131,9 @@
                                 <thead>
                                     <tr>
                                         <th>Description</th>
-                                        <th class="text-center" style="width: 100px;">Qty</th>
-                                        <th class="text-end" style="width: 120px;">Rate</th>
-                                        <th class="text-end" style="width: 120px;">Amount</th>
+                                        <th class="text-center col-w-100px">Qty</th>
+                                        <th class="text-end col-w-120px">Rate</th>
+                                        <th class="text-end col-w-120px">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -303,4 +303,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}

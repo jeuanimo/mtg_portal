@@ -7,26 +7,26 @@
         New Meeting
     {% endif %}
     - MTG Portal
-{% endblock %}
+{% endblock title %}
 {% block page_title %}
     {% if meeting %}
         Edit Meeting
     {% else %}
         Schedule New Meeting
     {% endif %}
-{% endblock %}
+{% endblock page_title %}
 {% block page_subtitle %}
     {% if meeting %}
         Update meeting details
     {% else %}
         Create a new meeting
     {% endif %}
-{% endblock %}
+{% endblock page_subtitle %}
 {% block page_actions %}
     <a href="{% url 'meetings:meeting_list' %}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Back to Meetings
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block dashboard_content %}
     <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -51,4 +51,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock dashboard_content %}

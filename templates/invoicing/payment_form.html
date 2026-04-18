@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-{% block title %}Record Payment - Invoice #{{ invoice.invoice_number }}{% endblock %}
+{% block title %}Record Payment - Invoice #{{ invoice.invoice_number }}{% endblock title %}
 {% block content %}
     <div class="container py-4">
         <div class="row justify-content-center">
@@ -50,4 +50,4 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}

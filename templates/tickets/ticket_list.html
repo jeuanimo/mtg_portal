@@ -1,21 +1,21 @@
 {% extends "base_dashboard.html" %}
 {% load static %}
-{% block title %}Tickets - MTG Portal{% endblock %}
-{% block page_title %}All Tickets{% endblock %}
-{% block page_subtitle %}Manage support requests{% endblock %}
+{% block title %}Tickets - MTG Portal{% endblock title %}
+{% block page_title %}All Tickets{% endblock page_title %}
+{% block page_subtitle %}Manage support requests{% endblock page_subtitle %}
 {% block page_actions %}
     <a href="{% url 'tickets:ticket_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Ticket
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block dashboard_content %}
     <!-- Filter Form -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <label class="form-label" for="id_status">Status</label>
+                    <select name="status" id="id_status" class="form-select">
                         <option value="">All Statuses</option>
                         <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>New</option>
                         <option value="in_progress"
@@ -29,8 +29,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Priority</label>
-                    <select name="priority" class="form-select">
+                    <label class="form-label" for="id_priority">Priority</label>
+                    <select name="priority" id="id_priority" class="form-select">
                         <option value="">All Priorities</option>
                         <option value="urgent"
                                 {% if request.GET.priority == 'urgent' %}selected{% endif %}>Urgent</option>
@@ -42,9 +42,10 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Search</label>
+                    <label class="form-label" for="id_q">Search</label>
                     <input type="text"
                            name="q"
+                           id="id_q"
                            class="form-control"
                            placeholder="Search tickets..."
                            value="{{ request.GET.q }}">
@@ -181,4 +182,4 @@
             {% endif %}
         </div>
     </div>
-{% endblock %}
+{% endblock dashboard_content %}

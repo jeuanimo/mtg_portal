@@ -1,6 +1,6 @@
 {% extends "base_dashboard.html" %}
 {% load crispy_forms_tags crm_tags %}
-{% block title %}{{ lead.title }} - CRM{% endblock %}
+{% block title %}{{ lead.title }} - CRM{% endblock title %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -177,8 +177,8 @@
                             </select>
                         </div>
                         <div class="mb-3 d-none" id="lostReasonDiv">
-                            <label class="form-label">Reason for Loss</label>
-                            <textarea name="lost_reason" class="form-control" rows="2"></textarea>
+                            <label class="form-label" for="id_lost_reason">Reason for Loss</label>
+                            <textarea name="lost_reason" id="id_lost_reason" class="form-control" rows="2"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Update Status</button>
                     </form>
@@ -300,4 +300,4 @@ document.getElementById('statusSelect').addEventListener('change', function() {
     }
 });
     </script>
-{% endblock %}
+{% endblock content %}

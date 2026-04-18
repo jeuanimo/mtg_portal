@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ ticket.ticket_number }} - {{ ticket.subject }}{% endblock %}
+{% block title %}{{ ticket.ticket_number }} - {{ ticket.subject }}{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -125,7 +125,7 @@
                         {% for comment in comments %}
                         <div class="d-flex mb-3 {% if comment.is_internal %}bg-warning bg-opacity-10 p-3 rounded{% endif %}">
                             <div class="flex-shrink-0">
-                                <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <div class="avatar avatar-md bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
                                     {{ comment.author.first_name|slice:":1"|upper }}{{ comment.author.last_name|slice:":1"|upper }}
                                 </div>
                             </div>
@@ -284,4 +284,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

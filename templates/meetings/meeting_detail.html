@@ -1,10 +1,10 @@
 {% extends "base_dashboard.html" %}
 {% load static %}
-{% block title %}{{ meeting.title }} - MTG Portal{% endblock %}
-{% block page_title %}{{ meeting.title }}{% endblock %}
+{% block title %}{{ meeting.title }} - MTG Portal{% endblock title %}
+{% block page_title %}{{ meeting.title }}{% endblock page_title %}
 {% block page_subtitle %}
     {{ meeting.start_time|date:"l, F d, Y" }} at {{ meeting.start_time|time:"g:i A" }}
-{% endblock %}
+{% endblock page_subtitle %}
 {% block page_actions %}
     {% if meeting.status == 'SCHEDULED' or meeting.status == 'CONFIRMED' %}
         <a href="{% url 'meetings:meeting_edit' meeting.pk %}"
@@ -18,7 +18,7 @@
     <a href="{% url 'meetings:meeting_list' %}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Back
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block dashboard_content %}
     <div class="row">
         <!-- Meeting Details -->
@@ -32,7 +32,7 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="text-muted small">Date & Time</label>
+                            <span class="text-muted small d-block">Date & Time</span>
                             <p class="mb-0">
                                 {{ meeting.start_time|date:"F d, Y" }}
                                 <br>
@@ -40,13 +40,13 @@
                             </p>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small">Duration</label>
+                            <span class="text-muted small d-block">Duration</span>
                             <p class="mb-0">{{ meeting.duration }} minutes</p>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="text-muted small">Status</label>
+                            <span class="text-muted small d-block">Status</span>
                             <p class="mb-0">
                                 {% if meeting.status == 'SCHEDULED' %}
                                     <span class="badge bg-primary">Scheduled</span>
@@ -64,7 +64,7 @@
                             </p>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small">Type</label>
+                            <span class="text-muted small d-block">Type</span>
                             <p class="mb-0">
                                 {% if meeting.meeting_type %}
                                     {{ meeting.meeting_type }}
@@ -76,13 +76,13 @@
                     </div>
                     {% if meeting.description %}
                         <div class="mb-3">
-                            <label class="text-muted small">Description</label>
+                            <span class="text-muted small d-block">Description</span>
                             <p class="mb-0">{{ meeting.description|linebreaks }}</p>
                         </div>
                     {% endif %}
                     {% if meeting.meeting_link %}
                         <div class="mb-3">
-                            <label class="text-muted small">Meeting Link</label>
+                            <span class="text-muted small d-block">Meeting Link</span>
                             <p class="mb-0">
                                 <a href="{{ meeting.meeting_link }}"
                                    target="_blank"
@@ -249,4 +249,4 @@
     font-size: 0.75rem;
 }
     </style>
-{% endblock %}
+{% endblock dashboard_content %}

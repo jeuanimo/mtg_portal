@@ -62,8 +62,8 @@ class TestInvoiceDetailView:
         """Test client cannot view other's invoices."""
         # Create another client
         from django.contrib.auth import get_user_model
-        User = get_user_model()
-        other_client = User.objects.create_user(
+        user_model = get_user_model()
+        other_client = user_model.objects.create_user(
             email='other@client.com',
             password=password,
             role='client',

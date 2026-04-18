@@ -15,6 +15,8 @@ from .models import (
     ChangeRequest, TimeEntry
 )
 
+BTN_PRIMARY = 'btn btn-primary'
+
 
 class TicketForm(forms.ModelForm):
     """Form for creating/editing tickets."""
@@ -54,7 +56,7 @@ class TicketForm(forms.ModelForm):
                 Column('organization', css_class='col-md-6'),
                 Column('contact', css_class='col-md-6'),
             ),
-            Submit('submit', 'Submit Ticket', css_class='btn btn-primary'),
+            Submit('submit', 'Submit Ticket', css_class=BTN_PRIMARY),
         )
 
 
@@ -99,7 +101,7 @@ class TicketStaffForm(forms.ModelForm):
                 Column('due_date', css_class='col-md-4'),
                 Column('project', css_class='col-md-4'),
             ),
-            Submit('submit', 'Save Ticket', css_class='btn btn-primary'),
+            Submit('submit', 'Save Ticket', css_class=BTN_PRIMARY),
         )
 
 
@@ -244,7 +246,7 @@ class ConsultingProjectForm(forms.ModelForm):
                 Column('estimated_hours', css_class='col-md-6'),
                 Column('budget', css_class='col-md-6'),
             ),
-            Submit('submit', 'Save Project', css_class='btn btn-primary'),
+            Submit('submit', 'Save Project', css_class=BTN_PRIMARY),
         )
 
 
@@ -343,7 +345,7 @@ class ProjectIntakeForm(forms.Form):
                 Column('budget_range', css_class='col-md-4'),
             ),
             'additional_info',
-            Submit('submit', 'Submit Intake Form', css_class='btn btn-primary btn-lg'),
+            Submit('submit', 'Submit Intake Form', css_class=BTN_PRIMARY + ' btn-lg'),
         )
 
 
@@ -416,7 +418,7 @@ class ChangeRequestForm(forms.ModelForm):
                 Column('budget_impact', css_class='col-md-4'),
                 Column('schedule_impact_days', css_class='col-md-4'),
             ),
-            Submit('submit', 'Submit Change Request', css_class='btn btn-primary'),
+            Submit('submit', 'Submit Change Request', css_class=BTN_PRIMARY),
         )
 
 
@@ -451,5 +453,5 @@ class TimeEntryForm(forms.ModelForm):
                 Column('billable', css_class='col-md-4 pt-4'),
             ),
             'description',
-            Submit('submit', 'Log Time', css_class='btn btn-primary'),
+            Submit('submit', 'Log Time', css_class=BTN_PRIMARY),
         )

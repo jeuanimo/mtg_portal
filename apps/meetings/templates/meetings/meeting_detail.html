@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags meetings_tags %}
 
-{% block title %}{{ meeting.title }}{% endblock %}
+{% block title %}{{ meeting.title }}{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -381,8 +381,8 @@
                 <div class="modal-body">
                     <p>Are you sure you want to cancel this meeting?</p>
                     <div class="mb-3">
-                        <label class="form-label">Reason (optional)</label>
-                        <textarea name="reason" class="form-control" rows="3"></textarea>
+                        <label class="form-label" for="id_cancel_reason">Reason (optional)</label>
+                        <textarea name="reason" id="id_cancel_reason" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -393,4 +393,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

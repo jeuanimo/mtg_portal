@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Support Dashboard{% endblock %}
+{% block title %}Support Dashboard{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -243,9 +243,7 @@
                                 </span>
                             </div>
                             <p class="mb-1 text-muted small">{{ project.organization.name }}</p>
-                            <div class="progress" style="height: 4px;">
-                                <div class="progress-bar" role="progressbar" style="width: {{ project.progress_percentage }}%"></div>
-                            </div>
+                            <progress class="w-100 progress-xs" value="{{ project.progress_percentage }}" max="100">{{ project.progress_percentage }}%</progress>
                         </a>
                         {% empty %}
                         <div class="list-group-item text-center text-muted py-4">No active projects</div>
@@ -262,4 +260,4 @@
         {% endif %}
     </div>
 </div>
-{% endblock %}
+{% endblock content %}

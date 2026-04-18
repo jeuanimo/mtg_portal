@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}{{ service.title }} - Mitchell Technology Group{% endblock %}
-{% block meta_description %}{{ service.short_description }}{% endblock %}
+{% block title %}{{ service.title }} - Mitchell Technology Group{% endblock title %}
+{% block meta_description %}{{ service.short_description }}{% endblock meta_description %}
 {% block content %}
     <!-- Hero Section -->
     <section class="py-5 bg-primary text-white">
@@ -123,4 +123,4 @@
             </div>
         </div>
     </section>
-{% endblock %}
+{% endblock content %}

@@ -1,8 +1,8 @@
 {% extends "base_dashboard.html" %}
 {% load static %}
-{% block title %}Calendar - MTG Portal{% endblock %}
-{% block page_title %}Meeting Calendar{% endblock %}
-{% block page_subtitle %}View and manage your schedule{% endblock %}
+{% block title %}Calendar - MTG Portal{% endblock title %}
+{% block page_title %}Meeting Calendar{% endblock page_title %}
+{% block page_subtitle %}View and manage your schedule{% endblock page_subtitle %}
 {% block page_actions %}
     <a href="{% url 'meetings:meeting_create' %}" class="btn btn-primary">
         <i class="bi bi-plus-lg me-1"></i>New Meeting
@@ -10,7 +10,7 @@
     <a href="{% url 'meetings:meeting_list' %}" class="btn btn-outline-secondary">
         <i class="bi bi-list me-1"></i>List View
     </a>
-{% endblock %}
+{% endblock page_actions %}
 {% block extra_css %}
     <style>
 .calendar-container {
@@ -79,7 +79,7 @@
     color: #212529;
 }
     </style>
-{% endblock %}
+{% endblock extra_css %}
 {% block dashboard_content %}
     <div class="card">
         <div class="card-body">
@@ -129,4 +129,4 @@
         <span class="me-3"><span class="badge" style="background: #198754;">&nbsp;</span> Confirmed</span>
         <span><span class="badge" style="background: #ffc107;">&nbsp;</span> Pending</span>
     </div>
-{% endblock %}
+{% endblock dashboard_content %}

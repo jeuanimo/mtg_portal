@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Consulting Projects{% endblock %}
+{% block title %}Consulting Projects{% endblock title %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -52,8 +52,8 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <label class="form-label" for="id_status">Status</label>
+                    <select name="status" id="id_status" class="form-select">
                         <option value="">All Statuses</option>
                         <option value="discovery" {% if request.GET.status == 'discovery' %}selected{% endif %}>Discovery</option>
                         <option value="proposal" {% if request.GET.status == 'proposal' %}selected{% endif %}>Proposal</option>
@@ -65,8 +65,8 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Type</label>
-                    <select name="type" class="form-select">
+                    <label class="form-label" for="id_type">Type</label>
+                    <select name="type" id="id_type" class="form-select">
                         <option value="">All Types</option>
                         {% for type_val in type_choices %}
                         <option value="{{ type_val }}" {% if request.GET.type == type_val %}selected{% endif %}>{{ type_val }}</option>
@@ -74,8 +74,8 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="q" class="form-control" placeholder="Search projects..." value="{{ request.GET.q }}">
+                    <label class="form-label" for="id_search">Search</label>
+                    <input type="text" name="q" id="id_search" class="form-control" placeholder="Search projects..." value="{{ request.GET.q }}">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">Filter</button>
@@ -110,8 +110,8 @@
                             <span>Progress</span>
                             <span>{{ project.progress_percentage|default:0 }}%</span>
                         </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar" role="progressbar" style="width: {{ project.progress_percentage|default:0 }}%"></div>
+                        <div class="progress progress-thin">
+                            <progress class="progress-bar" max="100" value="{{ project.progress_percentage|default:0 }}"></progress>
                         </div>
                     </div>
 
@@ -172,4 +172,4 @@
     </nav>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock content %}

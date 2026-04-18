@@ -1,5 +1,5 @@
 {% extends "base_dashboard.html" %}
-{% block title %}{{ task.title }}{% endblock %}
+{% block title %}{{ task.title }}{% endblock title %}
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -36,4 +36,4 @@
             {% endif %}
         </div>
     </div>
-{% endblock %}
+{% endblock content %}

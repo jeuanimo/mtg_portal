@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Sign Out - Mitchell Technology Group{% endblock %}
-{% block body_class %}auth-page{% endblock %}
-{% block navbar %}{% endblock %}
+{% block title %}Sign Out - Mitchell Technology Group{% endblock title %}
+{% block body_class %}auth-page{% endblock body_class %}
+{% block navbar %}{% endblock navbar %}
 {% block content %}
     <div class="auth-container">
         <div class="container">
@@ -45,7 +45,7 @@
             </div>
         </div>
     </div>
-{% endblock %}
+{% endblock content %}
 {% block extra_css %}
     <style>
     .auth-page {
@@ -58,4 +58,4 @@
         border-radius: 1rem;
     }
     </style>
-{% endblock %}
+{% endblock extra_css %}

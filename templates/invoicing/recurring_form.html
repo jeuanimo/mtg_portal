@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ title }}{% endblock title %}
 {% block content %}
     <div class="container-fluid py-4">
         <nav aria-label="breadcrumb">
@@ -121,7 +121,7 @@
             </td>
         </tr>
     </template>
-{% endblock %}
+{% endblock content %}
 {% block extra_js %}
     <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -154,4 +154,4 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.formset-row').forEach(attachDeleteListener);
 });
     </script>
-{% endblock %}
+{% endblock extra_js %}
