@@ -164,10 +164,9 @@ class LeadForm(forms.ModelForm):
         org = None
         org_name = self.cleaned_data.get('organization_name', '').strip()
         if org_name:
-            org, _created = Organization.objects.get_or_create(
-                name__iexact=org_name,
-                defaults={'name': org_name},
-            )
+            org = Organization.objects.filter(name__iexact=org_name).first()
+            if org is None:
+                org = Organization.objects.create(name=org_name)
 
         email = self.cleaned_data['contact_email'].strip()
         name_parts = self.cleaned_data['contact_name'].strip().split(' ', 1)
@@ -175,18 +174,17 @@ class LeadForm(forms.ModelForm):
         last_name = name_parts[1] if len(name_parts) > 1 else ''
         phone = self.cleaned_data.get('contact_phone', '').strip()
 
-        contact, created = Contact.objects.get_or_create(
-            email__iexact=email,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'email': email,
-                'phone': phone,
-                'organization': org,
-            },
-        )
-        # Update existing contact's org if it was blank and user provided one
-        if not created and org and not contact.organization:
+        contact = Contact.objects.filter(email__iexact=email).first()
+        if contact is None:
+            contact = Contact.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone=phone,
+                organization=org,
+            )
+        elif org and not contact.organization:
+            # Update existing contact's org if it was blank and user provided one
             contact.organization = org
             contact.save(update_fields=['organization'])
 
