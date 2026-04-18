@@ -69,9 +69,42 @@ class ContactForm(forms.ModelForm):
 
 
 class LeadForm(forms.ModelForm):
+    # Combo fields: allow selecting existing or typing new values
+    contact_name = forms.CharField(
+        max_length=200, required=True,
+        help_text='Type to search existing contacts or enter a new name (First Last)',
+        widget=forms.TextInput(attrs={
+            'list': 'contact-datalist',
+            'autocomplete': 'off',
+            'placeholder': 'e.g. John Smith',
+        }),
+    )
+    contact_email = forms.EmailField(
+        required=True,
+        help_text='Email for new contact, or to match an existing one',
+        widget=forms.EmailInput(attrs={
+            'list': 'contact-email-datalist',
+            'autocomplete': 'off',
+            'placeholder': 'e.g. john@example.com',
+        }),
+    )
+    contact_phone = forms.CharField(
+        max_length=20, required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'e.g. 555-123-4567'}),
+    )
+    organization_name = forms.CharField(
+        max_length=200, required=False,
+        help_text='Type to search existing organizations or enter a new name',
+        widget=forms.TextInput(attrs={
+            'list': 'organization-datalist',
+            'autocomplete': 'off',
+            'placeholder': 'e.g. Acme Corp',
+        }),
+    )
+
     class Meta:
         model = Lead
-        fields = ['title', 'contact', 'organization', 'status', 'source', 'priority',
+        fields = ['title', 'status', 'source', 'priority',
                   'estimated_value', 'probability', 'expected_close_date', 'next_followup',
                   'assigned_to', 'notes', 'lost_reason']
         widgets = {
@@ -85,11 +118,27 @@ class LeadForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.fields['lost_reason'].required = False
+
+        # Pre-populate combo fields when editing an existing lead
+        if self.instance and self.instance.pk:
+            if self.instance.contact:
+                self.fields['contact_name'].initial = self.instance.contact.full_name
+                self.fields['contact_email'].initial = self.instance.contact.email
+                self.fields['contact_phone'].initial = self.instance.contact.phone
+            if self.instance.organization:
+                self.fields['organization_name'].initial = self.instance.organization.name
+
         self.helper.layout = Layout(
             'title',
-            Row(
-                Column('contact', css_class='col-md-6'),
-                Column('organization', css_class='col-md-6'),
+            Fieldset('Contact',
+                Row(
+                    Column('contact_name', css_class='col-md-4'),
+                    Column('contact_email', css_class='col-md-4'),
+                    Column('contact_phone', css_class='col-md-4'),
+                ),
+            ),
+            Fieldset('Organization',
+                'organization_name',
             ),
             Row(
                 Column('status', css_class='col-md-4'),
@@ -109,6 +158,39 @@ class LeadForm(forms.ModelForm):
             'lost_reason',
             Submit('submit', 'Save Lead', css_class='btn-primary')
         )
+
+    def resolve_contact_and_organization(self):
+        """Look up or create Contact and Organization from the combo fields."""
+        org = None
+        org_name = self.cleaned_data.get('organization_name', '').strip()
+        if org_name:
+            org, _created = Organization.objects.get_or_create(
+                name__iexact=org_name,
+                defaults={'name': org_name},
+            )
+
+        email = self.cleaned_data['contact_email'].strip()
+        name_parts = self.cleaned_data['contact_name'].strip().split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        phone = self.cleaned_data.get('contact_phone', '').strip()
+
+        contact, created = Contact.objects.get_or_create(
+            email__iexact=email,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'phone': phone,
+                'organization': org,
+            },
+        )
+        # Update existing contact's org if it was blank and user provided one
+        if not created and org and not contact.organization:
+            contact.organization = org
+            contact.save(update_fields=['organization'])
+
+        return contact, org
 
 
 class LeadStatusForm(forms.ModelForm):

@@ -150,13 +150,24 @@ def lead_create(request):
     if request.method == 'POST':
         form = LeadForm(request.POST)
         if form.is_valid():
-            lead = form.save()
+            contact, organization = form.resolve_contact_and_organization()
+            lead = form.save(commit=False)
+            lead.contact = contact
+            lead.organization = organization
+            lead.save()
             messages.success(request, f'Lead "{lead.title}" created.')
             return redirect(LEAD_DETAIL_URL, pk=lead.pk)
     else:
         form = LeadForm()
     
-    return render(request, 'crm/lead_form.html', {'form': form, 'action': 'Create'})
+    contacts = Contact.objects.all().order_by('last_name', 'first_name')
+    organizations = Organization.objects.all().order_by('name')
+    return render(request, 'crm/lead_form.html', {
+        'form': form,
+        'action': 'Create',
+        'contacts': contacts,
+        'organizations': organizations,
+    })
 
 
 @login_required
@@ -169,7 +180,11 @@ def lead_edit(request, pk):
     if request.method == 'POST':
         form = LeadForm(request.POST, instance=lead)
         if form.is_valid():
-            lead = form.save()
+            contact, organization = form.resolve_contact_and_organization()
+            lead = form.save(commit=False)
+            lead.contact = contact
+            lead.organization = organization
+            lead.save()
             
             # Log status change if applicable
             if lead.status != old_status:
@@ -185,7 +200,15 @@ def lead_edit(request, pk):
     else:
         form = LeadForm(instance=lead)
     
-    return render(request, 'crm/lead_form.html', {'form': form, 'lead': lead, 'action': 'Edit'})
+    contacts = Contact.objects.all().order_by('last_name', 'first_name')
+    organizations = Organization.objects.all().order_by('name')
+    return render(request, 'crm/lead_form.html', {
+        'form': form,
+        'lead': lead,
+        'action': 'Edit',
+        'contacts': contacts,
+        'organizations': organizations,
+    })
 
 
 @login_required

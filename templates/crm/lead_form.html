@@ -13,4 +13,51 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">{% crispy form %}</div>
     </div>
+
+    {# Datalists for combo-box autocomplete on Contact and Organization fields #}
+    <datalist id="contact-datalist">
+        {% for c in contacts %}
+            <option value="{{ c.first_name }} {{ c.last_name }}">
+        {% endfor %}
+    </datalist>
+    <datalist id="contact-email-datalist">
+        {% for c in contacts %}
+            <option value="{{ c.email }}">
+        {% endfor %}
+    </datalist>
+    <datalist id="organization-datalist">
+        {% for org in organizations %}
+            <option value="{{ org.name }}">
+        {% endfor %}
+    </datalist>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Build a lookup from contact name → {email, phone} for auto-fill convenience
+        const contactData = {
+            {% for c in contacts %}
+            "{{ c.first_name|escapejs }} {{ c.last_name|escapejs }}": {
+                "email": "{{ c.email|escapejs }}",
+                "phone": "{{ c.phone|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+        const nameField = document.getElementById('id_contact_name');
+        const emailField = document.getElementById('id_contact_email');
+        const phoneField = document.getElementById('id_contact_phone');
+
+        if (nameField) {
+            nameField.addEventListener('change', function () {
+                const data = contactData[this.value];
+                if (data) {
+                    if (emailField && !emailField.value) emailField.value = data.email;
+                    if (phoneField && !phoneField.value) phoneField.value = data.phone;
+                }
+            });
+        }
+    });
+    </script>
 {% endblock %}
