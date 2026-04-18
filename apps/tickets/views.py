@@ -21,6 +21,7 @@ from .models import (
 from .forms import (
     TicketForm, TicketStaffForm, TicketCommentForm, TicketFilterForm, QuickTicketStatusForm,
     ConsultingProjectForm, ProjectIntakeForm, DeliverableForm, ChangeRequestForm, TimeEntryForm,
+    MilestoneFormSet,
 )
 
 # URL name constants
@@ -362,15 +363,20 @@ def project_create(request):
     """Create a new consulting project."""
     if request.method == 'POST':
         form = ConsultingProjectForm(request.POST)
-        if form.is_valid():
+        milestone_formset = MilestoneFormSet(request.POST, prefix='milestones')
+        if form.is_valid() and milestone_formset.is_valid():
             project = form.save()
+            milestone_formset.instance = project
+            milestone_formset.save()
             messages.success(request, f'Project {project.project_number} created.')
             return redirect(PROJECT_DETAIL_URL, pk=project.pk)
     else:
         form = ConsultingProjectForm()
+        milestone_formset = MilestoneFormSet(prefix='milestones')
     
     context = {
         'form': form,
+        'milestone_formset': milestone_formset,
         'title': 'Create Project',
     }
     return render(request, 'tickets/project_form.html', context)
@@ -409,15 +415,19 @@ def project_edit(request, pk):
     
     if request.method == 'POST':
         form = ConsultingProjectForm(request.POST, instance=project)
-        if form.is_valid():
+        milestone_formset = MilestoneFormSet(request.POST, instance=project, prefix='milestones')
+        if form.is_valid() and milestone_formset.is_valid():
             form.save()
+            milestone_formset.save()
             messages.success(request, 'Project updated.')
             return redirect(PROJECT_DETAIL_URL, pk=pk)
     else:
         form = ConsultingProjectForm(instance=project)
+        milestone_formset = MilestoneFormSet(instance=project, prefix='milestones')
     
     context = {
         'form': form,
+        'milestone_formset': milestone_formset,
         'project': project,
         'title': f'Edit Project {project.project_number}',
     }

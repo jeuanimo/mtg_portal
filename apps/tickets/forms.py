@@ -197,12 +197,15 @@ class ConsultingProjectForm(forms.ModelForm):
         fields = [
             'name', 'description', 'project_type', 'status',
             'organization', 'primary_contact', 'project_manager',
-            'start_date', 'target_end_date', 'estimated_hours', 'budget',
+            'start_date', 'target_end_date', 'actual_end_date',
+            'estimated_hours', 'actual_hours', 'budget',
+            'team_members',
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'target_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'actual_end_date': forms.DateInput(attrs={'type': 'date'}),
         }
     
     def __init__(self, *args, **kwargs):
