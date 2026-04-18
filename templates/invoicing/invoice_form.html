@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
             subtotal += lineTotal;
         });
         
-        const discountEl = document.getElementById('id_discount_amount');
+        const discountEl = document.getElementById('id_discount');
         const taxRateEl = document.getElementById('id_tax_rate');
         
         const discount = parseFloat(discountEl?.value) || 0;
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.formset-row').forEach(attachRowListeners);
     
     // Watch discount and tax fields
-    const discountEl = document.getElementById('id_discount_amount');
+    const discountEl = document.getElementById('id_discount');
     const taxRateEl = document.getElementById('id_tax_rate');
     
     if (discountEl) discountEl.addEventListener('change', calculateTotals);

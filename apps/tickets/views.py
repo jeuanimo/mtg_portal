@@ -102,21 +102,38 @@ def ticket_dashboard(request):
         )
     
     # Stats
-    open_count = tickets.filter(status__in=[Ticket.Status.NEW, Ticket.Status.IN_PROGRESS]).count()
+    now = timezone.now()
+    open_count = tickets.filter(status=Ticket.Status.NEW).count()
+    in_progress_count = tickets.filter(status=Ticket.Status.IN_PROGRESS).count()
     waiting_count = tickets.filter(status=Ticket.Status.WAITING).count()
-    escalated_count = tickets.filter(status=Ticket.Status.ESCALATED).count()
-    resolved_this_month = tickets.filter(
-        resolved_at__month=timezone.now().month,
-        resolved_at__year=timezone.now().year,
+    resolved_today = tickets.filter(
+        resolved_at__date=now.date(),
     ).count()
+    
+    # Priority breakdown (active tickets only)
+    active = tickets.exclude(status__in=[Ticket.Status.RESOLVED, Ticket.Status.CLOSED])
+    urgent_count = active.filter(priority=Ticket.Priority.URGENT).count()
+    high_count = active.filter(priority=Ticket.Priority.HIGH).count()
+    medium_count = active.filter(priority=Ticket.Priority.MEDIUM).count()
+    low_count = active.filter(priority=Ticket.Priority.LOW).count()
+    total_active = urgent_count + high_count + medium_count + low_count
     
     recent_tickets = tickets.select_related('created_by', 'assigned_to')[:10]
     
+    stats = {
+        'open': open_count,
+        'in_progress': in_progress_count,
+        'pending': waiting_count,
+        'resolved_today': resolved_today,
+        'critical': urgent_count,
+        'high': high_count,
+        'medium': medium_count,
+        'low': low_count,
+        'total': total_active or 1,  # Avoid division by zero in widthratio
+    }
+    
     context = {
-        'open_count': open_count,
-        'waiting_count': waiting_count,
-        'escalated_count': escalated_count,
-        'resolved_this_month': resolved_this_month,
+        'stats': stats,
         'recent_tickets': recent_tickets,
     }
     return render(request, 'tickets/dashboard.html', context)
@@ -350,9 +367,29 @@ def project_list(request):
     if status:
         projects = projects.filter(status=status)
     
+    project_type = request.GET.get('type')
+    if project_type:
+        projects = projects.filter(project_type=project_type)
+    
+    # Stats for the dashboard cards
+    all_projects = ConsultingProject.objects.all()
+    stats = {
+        'total': all_projects.count(),
+        'in_progress': all_projects.filter(status=ConsultingProject.Status.IN_PROGRESS).count(),
+        'on_hold': all_projects.filter(status=ConsultingProject.Status.ON_HOLD).count(),
+        'completed': all_projects.filter(status=ConsultingProject.Status.COMPLETED).count(),
+    }
+    
+    # Distinct project types in use (for filter dropdown)
+    type_choices = ConsultingProject.objects.values_list(
+        'project_type', flat=True
+    ).distinct().order_by('project_type')
+    
     context = {
         'projects': projects,
+        'stats': stats,
         'status_choices': ConsultingProject.Status.choices,
+        'type_choices': type_choices,
     }
     return render(request, 'tickets/project_list.html', context)
 
@@ -401,8 +438,9 @@ def project_detail(request, pk):
         'project': project,
         'milestones': project.milestones.all(),
         'deliverables': project.deliverables.all(),
-        'tickets': project.tickets.all()[:5],
+        'related_tickets': project.tickets.all()[:5],
         'change_requests': project.change_requests.all()[:5],
+        'notes': [],  # Placeholder — ProjectNote model not yet implemented
     }
     return render(request, 'tickets/project_detail.html', context)
 
@@ -591,9 +629,38 @@ def time_entry_list(request):
     if user_id:
         entries = entries.filter(user_id=user_id)
     
+    # Filter by date range
+    from_date = request.GET.get('from_date')
+    if from_date:
+        entries = entries.filter(date__gte=from_date)
+    to_date = request.GET.get('to_date')
+    if to_date:
+        entries = entries.filter(date__lte=to_date)
+    
+    # Filter by billable
+    billable = request.GET.get('billable')
+    if billable == '1':
+        entries = entries.filter(billable=True)
+    elif billable == '0':
+        entries = entries.filter(billable=False)
+    
+    # Summary stats
+    from django.db.models import Sum
+    agg = entries.aggregate(
+        total_hours=Sum('hours'),
+    )
+    total_hours = agg['total_hours'] or 0
+    billable_qs = entries.filter(billable=True)
+    billable_hours = billable_qs.aggregate(h=Sum('hours'))['h'] or 0
+    unbilled_hours = billable_qs.filter(billed=False).aggregate(h=Sum('hours'))['h'] or 0
+    
     context = {
-        'entries': entries,
+        'time_entries': entries,
         'projects': ConsultingProject.objects.all(),
+        'total_hours': total_hours,
+        'billable_hours': billable_hours,
+        'unbilled_hours': unbilled_hours,
+        'entry_count': entries.count(),
     }
     return render(request, 'tickets/time_entry_list.html', context)
 

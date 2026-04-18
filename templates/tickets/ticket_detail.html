@@ -8,12 +8,12 @@
        class="btn btn-outline-primary">
         <i class="bi bi-pencil me-1"></i>Edit
     </a>
-    {% if ticket.status == 'OPEN' or ticket.status == 'IN_PROGRESS' %}
+    {% if ticket.status == 'new' or ticket.status == 'in_progress' %}
         <a href="{% url 'tickets:ticket_resolve' ticket.pk %}" class="btn btn-success">
             <i class="bi bi-check-lg me-1"></i>Resolve
         </a>
     {% endif %}
-    <a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">
+    <a href="{% url 'tickets:ticket_list' %}" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Back
     </a>
 {% endblock %}
@@ -66,7 +66,7 @@
                     {% endif %}
                     <!-- Add Comment Form -->
                     <hr>
-                    <form method="post" action="{% url 'tickets:add_comment' ticket.pk %}">
+                    <form method="post" action="{% url 'tickets:ticket_add_comment' ticket.pk %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label">Add a Comment</label>
@@ -140,13 +140,13 @@
                     <dl class="row mb-0">
                         <dt class="col-sm-5">Status</dt>
                         <dd class="col-sm-7">
-                            {% if ticket.status == 'OPEN' %}
-                                <span class="badge bg-danger">Open</span>
-                            {% elif ticket.status == 'IN_PROGRESS' %}
+                            {% if ticket.status == 'new' %}
+                                <span class="badge bg-danger">New</span>
+                            {% elif ticket.status == 'in_progress' %}
                                 <span class="badge bg-warning text-dark">In Progress</span>
-                            {% elif ticket.status == 'PENDING' %}
-                                <span class="badge bg-info">Pending</span>
-                            {% elif ticket.status == 'RESOLVED' %}
+                            {% elif ticket.status == 'waiting' %}
+                                <span class="badge bg-info">Waiting</span>
+                            {% elif ticket.status == 'resolved' %}
                                 <span class="badge bg-success">Resolved</span>
                             {% else %}
                                 <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>
@@ -154,11 +154,11 @@
                         </dd>
                         <dt class="col-sm-5">Priority</dt>
                         <dd class="col-sm-7">
-                            {% if ticket.priority == 'CRITICAL' %}
-                                <span class="badge bg-danger">Critical</span>
-                            {% elif ticket.priority == 'HIGH' %}
+                            {% if ticket.priority == 'urgent' %}
+                                <span class="badge bg-danger">Urgent</span>
+                            {% elif ticket.priority == 'high' %}
                                 <span class="badge bg-warning text-dark">High</span>
-                            {% elif ticket.priority == 'MEDIUM' %}
+                            {% elif ticket.priority == 'medium' %}
                                 <span class="badge bg-info">Medium</span>
                             {% else %}
                                 <span class="badge bg-secondary">Low</span>
@@ -166,7 +166,7 @@
                         </dd>
                         <dt class="col-sm-5">Type</dt>
                         <dd class="col-sm-7">
-                            {{ ticket.get_ticket_type_display|default:"-" }}
+                            {{ ticket.category|default:"-" }}
                         </dd>
                         <dt class="col-sm-5">Created</dt>
                         <dd class="col-sm-7">
@@ -223,23 +223,23 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        {% if ticket.status == 'OPEN' %}
-                            <form method="post" action="{% url 'tickets:update_status' ticket.pk %}">
+                        {% if ticket.status == 'new' %}
+                            <form method="post" action="{% url 'tickets:ticket_update_status' ticket.pk %}">
                                 {% csrf_token %}
-                                <input type="hidden" name="status" value="IN_PROGRESS">
+                                <input type="hidden" name="status" value="in_progress">
                                 <button type="submit" class="btn btn-warning w-100">
                                     <i class="bi bi-play me-1"></i>Start Working
                                 </button>
                             </form>
                         {% endif %}
-                        {% if ticket.status == 'RESOLVED' %}
+                        {% if ticket.status == 'resolved' %}
                             <form method="post" action="{% url 'tickets:ticket_close' ticket.pk %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-secondary w-100">
                                     <i class="bi bi-archive me-1"></i>Close Ticket
                                 </button>
                             </form>
-                            <form method="post" action="{% url 'tickets:reopen' ticket.pk %}">
+                            <form method="post" action="{% url 'tickets:ticket_reopen' ticket.pk %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-outline-warning w-100">
                                     <i class="bi bi-arrow-counterclockwise me-1"></i>Reopen
@@ -256,7 +256,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form method="post"
-                      action="{% url 'tickets:add_attachment' ticket.pk %}"
+                      action="{% url 'tickets:ticket_add_attachment' ticket.pk %}"
                       enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="modal-header">

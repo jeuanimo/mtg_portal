@@ -67,7 +67,7 @@
                                     </td>
                                     <td>{{ meeting.duration }} min</td>
                                     <td>
-                                        {% if meeting.meeting_type %}<span class="badge bg-info">{{ meeting.get_meeting_type_display }}</span>{% endif %}
+                                        {% if meeting.meeting_type %}<span class="badge bg-info">{{ meeting.meeting_type }}</span>{% endif %}
                                     </td>
                                     <td>
                                         {% if meeting.status == 'SCHEDULED' %}

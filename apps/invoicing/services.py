@@ -249,8 +249,16 @@ def handle_payment_succeeded(data: dict) -> dict:
             stripe_charge_id=data.get('latest_charge', ''),
         )
         
-        # Update invoice status
-        invoice.record_payment(payment.amount)
+        # Update invoice totals directly (don't call record_payment — it creates a duplicate)
+        invoice.amount_paid += payment.amount
+        invoice.balance_due = invoice.total - invoice.amount_paid
+        if invoice.balance_due <= 0:
+            invoice.status = invoice.Status.PAID
+            from django.utils import timezone as tz
+            invoice.paid_date = tz.now().date()
+        elif invoice.amount_paid > 0:
+            invoice.status = invoice.Status.PARTIAL
+        invoice.save()
         
         return {'success': True, 'payment_id': str(payment.id)}
     except Invoice.DoesNotExist:

@@ -2,6 +2,7 @@ from django import forms
 from django.utils import timezone
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Fieldset
+from apps.core.widgets import DatalistTextInput
 from .models import Meeting, MeetingAttendee, AvailabilitySlot
 
 
@@ -32,6 +33,8 @@ class MeetingForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'agenda': forms.Textarea(attrs={'rows': 4}),
+            'meeting_type': DatalistTextInput(choices=Meeting.MeetingType.choices),
+            'video_provider': DatalistTextInput(choices=Meeting.Provider.choices),
         }
     
     def __init__(self, *args, **kwargs):
@@ -170,6 +173,10 @@ class QuickMeetingForm(forms.ModelForm):
     class Meta:
         model = Meeting
         fields = ['title', 'meeting_type', 'organization', 'video_provider']
+        widgets = {
+            'meeting_type': DatalistTextInput(choices=Meeting.MeetingType.choices),
+            'video_provider': DatalistTextInput(choices=Meeting.Provider.choices),
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

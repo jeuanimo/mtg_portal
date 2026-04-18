@@ -19,9 +19,9 @@
                 <span class="badge bg-{% if meeting.status == 'SCHEDULED' %}secondary{% elif meeting.status == 'CONFIRMED' %}primary{% elif meeting.status == 'IN_PROGRESS' %}success{% elif meeting.status == 'COMPLETED' %}info{% elif meeting.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
                     {{ meeting.get_status_display }}
                 </span>
-                <span class="badge bg-light text-dark ms-1">{{ meeting.get_meeting_type_display }}</span>
+                <span class="badge bg-light text-dark ms-1">{{ meeting.meeting_type }}</span>
                 {% if meeting.video_provider != 'NONE' %}
-                <span class="badge bg-light text-dark ms-1">{{ meeting.get_video_provider_display }}</span>
+                <span class="badge bg-light text-dark ms-1">{{ meeting.video_provider }}</span>
                 {% endif %}
             </p>
         </div>

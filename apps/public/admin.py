@@ -36,6 +36,13 @@ class ServiceAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     list_editable = ['order', 'is_featured', 'is_active']
 
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'billing_type':
+            from apps.core.widgets import DatalistTextInput
+            from .models import Service
+            kwargs['widget'] = DatalistTextInput(choices=Service.BillingType.choices)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):

@@ -256,7 +256,7 @@
                                         <div>
                                             <strong>${{ payment.amount|floatformat:2 }}</strong>
                                             <br>
-                                            <small class="text-muted">{{ payment.get_method_display }} - {{ payment.payment_date|date:"M d, Y" }}</small>
+                                            <small class="text-muted">{{ payment.method }} - {{ payment.payment_date|date:"M d, Y" }}</small>
                                             {% if payment.reference_number %}
                                                 <br>
                                                 <small class="text-muted">Ref: {{ payment.reference_number }}</small>

@@ -30,7 +30,7 @@ def admin_user(db, password):
         password=password,
         first_name='Admin',
         last_name='User',
-        role='admin',
+        role='super_admin',
         is_staff=True,
         is_superuser=True,
     )
@@ -73,7 +73,7 @@ def finance_user(db, password):
         password=password,
         first_name='Finance',
         last_name='User',
-        role='finance',
+        role='finance_admin',
         is_staff=True,
     )
     return user
@@ -114,6 +114,13 @@ def client_user_client(client, client_user, password):
     return client
 
 
+@pytest.fixture
+def finance_client(client, finance_user, password):
+    """Return a client logged in as finance user."""
+    client.login(email=finance_user.email, password=password)
+    return client
+
+
 # =====================================================
 # CRM Fixtures
 # =====================================================
@@ -126,10 +133,11 @@ def organization(db):
         email='info@testcompany.com',
         phone='555-123-4567',
         website='https://testcompany.com',
-        address='123 Test St',
+        address_line1='123 Test St',
         city='Test City',
         state='TX',
-        zip_code='75001',
+        postal_code='75001',
+        country='United States',
     )
 
 
@@ -142,7 +150,7 @@ def contact(db, organization):
         last_name='Doe',
         email='john.doe@testcompany.com',
         phone='555-123-4568',
-        title='CEO',
+        job_title='CEO',
         is_primary=True,
     )
 
@@ -170,6 +178,7 @@ def lead(db, contact, organization, staff_user):
 def invoice(db, organization, contact):
     """Create a test invoice."""
     from datetime import date, timedelta
+    from decimal import Decimal
     inv = Invoice.objects.create(
         invoice_number='INV-TEST-001',
         organization=organization,
@@ -177,11 +186,11 @@ def invoice(db, organization, contact):
         status='draft',
         issue_date=date.today(),
         due_date=date.today() + timedelta(days=30),
-        subtotal=1000.00,
-        tax_rate=8.25,
-        tax_amount=82.50,
-        total=1082.50,
-        balance_due=1082.50,
+        subtotal=Decimal('1000.00'),
+        tax_rate=Decimal('8.25'),
+        tax_amount=Decimal('82.50'),
+        total=Decimal('1082.50'),
+        balance_due=Decimal('1082.50'),
     )
     return inv
 
@@ -189,12 +198,13 @@ def invoice(db, organization, contact):
 @pytest.fixture
 def invoice_with_items(invoice):
     """Create an invoice with line items."""
+    from decimal import Decimal
     InvoiceItem.objects.create(
         invoice=invoice,
         description='Web Development Services',
         quantity=10,
-        unit_price=100.00,
-        line_total=1000.00,
+        unit_price=Decimal('100.00'),
+        line_total=Decimal('1000.00'),
     )
     invoice.calculate_totals()
     return invoice
@@ -216,9 +226,9 @@ def ticket(db, client_user, organization):
         description='This is a test ticket that needs resolution.',
         organization=organization,
         created_by=client_user,
-        priority='MEDIUM',
-        status='OPEN',
-        category='SUPPORT',
+        priority='medium',
+        status='new',
+        category='technical',
     )
 
 
@@ -231,7 +241,7 @@ def urgent_ticket(db, client_user, organization, consultant_user):
         organization=organization,
         created_by=client_user,
         assigned_to=consultant_user,
-        priority='URGENT',
-        status='IN_PROGRESS',
-        category='SUPPORT',
+        priority='urgent',
+        status='in_progress',
+        category='technical',
     )

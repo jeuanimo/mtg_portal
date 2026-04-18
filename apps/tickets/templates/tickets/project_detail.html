@@ -20,7 +20,7 @@
                 <span class="badge bg-{% if project.status == 'IN_PROGRESS' %}primary{% elif project.status == 'COMPLETED' %}success{% elif project.status == 'ON_HOLD' %}warning{% elif project.status == 'CANCELLED' %}danger{% else %}secondary{% endif %}">
                     {{ project.get_status_display }}
                 </span>
-                <span class="badge bg-light text-dark ms-1">{{ project.get_project_type_display }}</span>
+                <span class="badge bg-light text-dark ms-1">{{ project.project_type }}</span>
                 <span class="ms-2">{{ project.project_number }}</span>
             </p>
         </div>

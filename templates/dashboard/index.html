@@ -248,7 +248,7 @@
                                                 <td>{{ meeting.start_time|date:"M d, Y" }} at {{ meeting.start_time|time:"g:i A" }}</td>
                                                 <td>
                                                     <span class="badge bg-{% if meeting.meeting_type == 'video' %}primary{% elif meeting.meeting_type == 'phone' %}info{% else %}secondary{% endif %}">
-                                                        {{ meeting.get_meeting_type_display }}
+                                                        {{ meeting.meeting_type }}
                                                     </span>
                                                 </td>
                                                 <td>

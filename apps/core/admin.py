@@ -1,4 +1,5 @@
 from django.contrib import admin
+from apps.core.widgets import DatalistTextInput
 from .models import SiteSettings, Notification, Document
 
 
@@ -29,3 +30,8 @@ class DocumentAdmin(admin.ModelAdmin):
     list_filter = ['document_type', 'is_client_visible', 'created_at']
     search_fields = ['name', 'description']
     readonly_fields = ['file_size', 'created_at', 'updated_at']
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == 'document_type':
+            kwargs['widget'] = DatalistTextInput(choices=Document.DocumentType.choices)
+        return super().formfield_for_dbfield(db_field, request, **kwargs)

@@ -99,7 +99,7 @@
                                 {{ ticket.get_status_display }}
                             </span>
                         </td>
-                        <td>{{ ticket.get_category_display }}</td>
+                        <td>{{ ticket.category }}</td>
                         <td>
                             {% if ticket.organization %}
                                 {{ ticket.organization.name|truncatechars:20 }}

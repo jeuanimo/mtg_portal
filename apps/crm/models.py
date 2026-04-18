@@ -131,7 +131,7 @@ class Lead(TimeStampedModel):
     
     # Status and tracking
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
-    source = models.CharField(max_length=20, choices=Source.choices, default=Source.WEBSITE)
+    source = models.CharField(max_length=100, default='website')
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
     estimated_value = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     probability = models.PositiveSmallIntegerField(default=50, help_text='Win probability %')
@@ -237,7 +237,7 @@ class Activity(TimeStampedModel):
         null=True, blank=True, related_name='activities'
     )
     
-    activity_type = models.CharField(max_length=20, choices=ActivityType.choices)
+    activity_type = models.CharField(max_length=100)
     subject = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     

@@ -44,7 +44,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Source:</strong> {{ lead.get_source_display }}
+                            <strong>Source:</strong> {{ lead.source }}
                         </div>
                         <div class="col-md-6">
                             <strong>Days in Pipeline:</strong> {{ lead.days_in_pipeline }}
@@ -145,7 +145,7 @@
                         <div class="list-group-item">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <span class="badge bg-secondary me-2">{{ activity.get_activity_type_display }}</span>
+                                    <span class="badge bg-secondary me-2">{{ activity.activity_type }}</span>
                                     <strong>{{ activity.subject }}</strong>
                                 </div>
                                 <small class="text-muted">{{ activity.performed_at|date:"M j, Y g:i A" }}</small>

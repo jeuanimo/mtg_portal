@@ -7,6 +7,7 @@ from django.forms import inlineformset_factory
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, HTML, Submit
 
+from apps.core.widgets import DatalistTextInput
 from apps.crm.models import Contact
 from .models import (
     Ticket, TicketComment, TicketAttachment,
@@ -26,6 +27,7 @@ class TicketForm(forms.ModelForm):
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),
+            'category': DatalistTextInput(choices=Ticket.Category.choices),
         }
     
     def __init__(self, *args, **kwargs):
@@ -68,6 +70,7 @@ class TicketStaffForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 5}),
             'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'category': DatalistTextInput(choices=Ticket.Category.choices),
         }
     
     def __init__(self, *args, **kwargs):
@@ -146,7 +149,7 @@ class TicketFilterForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     category = forms.ChoiceField(
-        choices=[('', 'All Categories')] + list(Ticket.Category.choices),
+        choices=[('', 'All Categories')],
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
@@ -170,6 +173,9 @@ class TicketFilterForm(forms.Form):
         self.fields['assigned_to'].queryset = User.objects.filter(
             role__in=[User.Role.SUPER_ADMIN, User.Role.CONSULTANT, User.Role.STAFF]
         )
+        # Populate category choices dynamically from DB
+        categories = Ticket.objects.values_list('category', flat=True).distinct().order_by('category')
+        self.fields['category'].choices = [('', 'All Categories')] + [(c, c) for c in categories if c]
 
 
 class QuickTicketStatusForm(forms.ModelForm):
@@ -206,6 +212,7 @@ class ConsultingProjectForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'target_end_date': forms.DateInput(attrs={'type': 'date'}),
             'actual_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'project_type': DatalistTextInput(choices=ConsultingProject.ProjectType.choices),
         }
     
     def __init__(self, *args, **kwargs):

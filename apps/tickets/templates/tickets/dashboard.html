@@ -174,7 +174,7 @@
                                             {{ ticket.get_priority_display }}
                                         </span>
                                     </td>
-                                    <td>{{ ticket.get_category_display }}</td>
+                                    <td>{{ ticket.category }}</td>
                                     <td>{{ ticket.created_at|date:"M d, g:i a" }}</td>
                                 </tr>
                                 {% empty %}

@@ -220,7 +220,7 @@ class Payment(TimeStampedModel):
     
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    method = models.CharField(max_length=20, choices=Method.choices)
+    method = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     
     # Stripe fields

@@ -12,6 +12,7 @@ from django.db.models import Sum, Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
@@ -166,8 +167,8 @@ def invoice_edit(request, pk):
     """Edit an existing invoice."""
     invoice = get_object_or_404(Invoice, pk=pk)
     
-    if invoice.status in [Invoice.Status.PAID]:
-        messages.error(request, 'Cannot edit a paid invoice.')
+    if invoice.status in [Invoice.Status.PAID, Invoice.Status.CANCELLED]:
+        messages.error(request, 'Cannot edit a paid or cancelled invoice.')
         return redirect(INVOICE_DETAIL_URL, pk=pk)
     
     if request.method == 'POST':
@@ -345,8 +346,15 @@ def payment_record(request, pk):
             payment.status = Payment.Status.COMPLETED
             payment.save()
             
-            # Update invoice
-            invoice.record_payment(payment.amount)
+            # Update invoice totals (don't call record_payment — it creates a duplicate Payment)
+            invoice.amount_paid += payment.amount
+            invoice.balance_due = invoice.total - invoice.amount_paid
+            if invoice.balance_due <= 0:
+                invoice.status = Invoice.Status.PAID
+                invoice.paid_date = timezone.now().date()
+            elif invoice.amount_paid > 0:
+                invoice.status = Invoice.Status.PARTIAL
+            invoice.save()
             
             messages.success(request, f'Payment of ${payment.amount} recorded.')
             return redirect(INVOICE_DETAIL_URL, pk=pk)

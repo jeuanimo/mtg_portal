@@ -39,7 +39,7 @@ class Meeting(TimeStampedModel):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     
-    meeting_type = models.CharField(max_length=20, choices=MeetingType.choices, default=MeetingType.VIDEO)
+    meeting_type = models.CharField(max_length=100, default='VIDEO')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.SCHEDULED)
     
     # Scheduling
@@ -70,7 +70,7 @@ class Meeting(TimeStampedModel):
     )
     
     # Video meeting details
-    video_provider = models.CharField(max_length=20, choices=Provider.choices, default=Provider.ZOOM)
+    video_provider = models.CharField(max_length=100, default='ZOOM')
     meeting_url = models.URLField(blank=True, help_text='Join URL for participants')
     host_url = models.URLField(blank=True, help_text='Host start URL')
     meeting_id = models.CharField(max_length=100, blank=True)

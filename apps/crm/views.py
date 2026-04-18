@@ -66,11 +66,16 @@ def lead_list(request):
         ).count(),
     }
     
+    # Distinct source values in use (for filter dropdown)
+    source_choices = [
+        (s, s) for s in Lead.objects.values_list('source', flat=True).distinct().order_by('source') if s
+    ]
+    
     context = {
         'leads': leads,
         'stats': stats,
         'status_choices': Lead.Status.choices,
-        'source_choices': Lead.Source.choices,
+        'source_choices': source_choices,
     }
     return render(request, 'crm/lead_list.html', context)
 

@@ -14,11 +14,13 @@ class TestLeadForm:
         """Test form validation with valid data."""
         form_data = {
             'title': 'New Website Project',
-            'contact': contact.pk,
-            'organization': organization.pk,
+            'contact_name': 'Jane Doe',
+            'contact_email': 'jane@testcompany.com',
+            'organization_name': organization.name,
             'source': 'website',
             'status': 'new',
             'priority': 'medium',
+            'probability': 50,
             'notes': 'Looking for a new website redesign.',
         }
         form = LeadForm(data=form_data)
@@ -38,10 +40,12 @@ class TestLeadForm:
         for source in sources:
             form_data = {
                 'title': 'Test Lead',
-                'contact': contact.pk,
+                'contact_name': 'Jane Doe',
+                'contact_email': 'jane@testcompany.com',
                 'source': source,
                 'status': 'new',
                 'priority': 'medium',
+                'probability': 50,
             }
             form = LeadForm(data=form_data)
             assert form.is_valid(), f"Source '{source}' should be valid: {form.errors}"
@@ -105,6 +109,7 @@ class TestOrganizationForm:
             'name': 'Acme Corp',
             'industry': 'Technology',
             'website': 'https://acme.com',
+            'country': 'United States',
         }
         form = OrganizationForm(data=form_data)
         assert form.is_valid(), form.errors
@@ -120,6 +125,7 @@ class TestOrganizationForm:
         form_data = {
             'name': 'Test Org',
             'website': 'not-a-valid-url',
+            'country': 'United States',
         }
         form = OrganizationForm(data=form_data)
         # Website should fail validation if it's not a URL

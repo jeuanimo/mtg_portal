@@ -72,7 +72,7 @@
                     <h5 class="mb-0">
                         <i class="bi bi-ticket-detailed me-2"></i>Recent Tickets
                     </h5>
-                    <a href="{% url 'tickets:list' %}"
+                    <a href="{% url 'tickets:ticket_list' %}"
                        class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="card-body">
@@ -96,24 +96,24 @@
                                             </td>
                                             <td>{{ ticket.subject|truncatechars:40 }}</td>
                                             <td>
-                                                {% if ticket.priority == 'CRITICAL' %}
-                                                    <span class="badge bg-danger">Critical</span>
-                                                {% elif ticket.priority == 'HIGH' %}
+                                                {% if ticket.priority == 'urgent' %}
+                                                    <span class="badge bg-danger">Urgent</span>
+                                                {% elif ticket.priority == 'high' %}
                                                     <span class="badge bg-warning text-dark">High</span>
-                                                {% elif ticket.priority == 'MEDIUM' %}
+                                                {% elif ticket.priority == 'medium' %}
                                                     <span class="badge bg-info">Medium</span>
                                                 {% else %}
                                                     <span class="badge bg-secondary">Low</span>
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if ticket.status == 'OPEN' %}
-                                                    <span class="badge bg-danger">Open</span>
-                                                {% elif ticket.status == 'IN_PROGRESS' %}
+                                                {% if ticket.status == 'new' %}
+                                                    <span class="badge bg-danger">New</span>
+                                                {% elif ticket.status == 'in_progress' %}
                                                     <span class="badge bg-warning text-dark">In Progress</span>
-                                                {% elif ticket.status == 'PENDING' %}
-                                                    <span class="badge bg-info">Pending</span>
-                                                {% elif ticket.status == 'RESOLVED' %}
+                                                {% elif ticket.status == 'waiting' %}
+                                                    <span class="badge bg-info">Waiting</span>
+                                                {% elif ticket.status == 'resolved' %}
                                                     <span class="badge bg-success">Resolved</span>
                                                 {% else %}
                                                     <span class="badge bg-secondary">{{ ticket.get_status_display }}</span>

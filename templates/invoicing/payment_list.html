@@ -33,7 +33,7 @@
                                     </td>
                                     <td>{{ payment.invoice.organization.name }}</td>
                                     <td>
-                                        {{ payment.get_method_display }}
+                                        {{ payment.method }}
                                         {% if payment.card_last4 %}<small class="text-muted">(*{{ payment.card_last4 }})</small>{% endif %}
                                     </td>
                                     <td>${{ payment.amount|floatformat:2 }}</td>

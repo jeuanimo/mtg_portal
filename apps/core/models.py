@@ -106,7 +106,7 @@ class Document(TimeStampedModel):
     
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    document_type = models.CharField(max_length=20, choices=DocumentType.choices, default=DocumentType.OTHER)
+    document_type = models.CharField(max_length=100, default='other')
     file = models.FileField(upload_to='documents/%Y/%m/')
     file_size = models.PositiveIntegerField(default=0)
     mime_type = models.CharField(max_length=100, blank=True)

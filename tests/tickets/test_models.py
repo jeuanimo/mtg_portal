@@ -170,11 +170,12 @@ class TestTicketAttachments:
     @pytest.mark.django_db
     def test_attachment_model(self, ticket, staff_user):
         """Test creating ticket attachment."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        test_file = SimpleUploadedFile('test_file.pdf', b'fake pdf content', content_type='application/pdf')
         attachment = TicketAttachment.objects.create(
             ticket=ticket,
             uploaded_by=staff_user,
-            file='test_file.pdf',
-            filename='test_file.pdf',
+            file=test_file,
         )
         assert attachment.ticket == ticket
 

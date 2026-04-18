@@ -44,7 +44,7 @@ class Ticket(TimeStampedModel):
     # Classification
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.NEW)
-    category = models.CharField(max_length=20, choices=Category.choices, default=Category.GENERAL)
+    category = models.CharField(max_length=100, default='general')
     
     # Relationships
     created_by = models.ForeignKey(
@@ -207,7 +207,7 @@ class ConsultingProject(TimeStampedModel):
     description = models.TextField()
     
     # Type and status
-    project_type = models.CharField(max_length=20, choices=ProjectType.choices)
+    project_type = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.INTAKE)
     
     # Client
@@ -266,6 +266,15 @@ class ConsultingProject(TimeStampedModel):
         if self.estimated_hours:
             return self.estimated_hours - self.actual_hours
         return None
+
+    @property
+    def progress_percentage(self):
+        if self.status == self.Status.COMPLETED:
+            return 100
+        if self.estimated_hours and self.estimated_hours > 0:
+            pct = int((self.actual_hours / self.estimated_hours) * 100)
+            return min(pct, 100)
+        return 0
 
 
 class ProjectMilestone(TimeStampedModel):

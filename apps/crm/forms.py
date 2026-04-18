@@ -1,6 +1,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Fieldset
+from apps.core.widgets import DatalistTextInput
 from .models import Organization, Contact, Lead, Activity, Task
 
 
@@ -112,6 +113,7 @@ class LeadForm(forms.ModelForm):
             'next_followup': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'notes': forms.Textarea(attrs={'rows': 3}),
             'lost_reason': forms.Textarea(attrs={'rows': 2}),
+            'source': DatalistTextInput(choices=Lead.Source.choices),
         }
     
     def __init__(self, *args, **kwargs):
@@ -217,6 +219,7 @@ class ActivityForm(forms.ModelForm):
         fields = ['activity_type', 'subject', 'description']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
+            'activity_type': DatalistTextInput(choices=Activity.ActivityType.choices),
         }
     
     def __init__(self, *args, **kwargs):

@@ -37,7 +37,7 @@ Usage: {% include 'includes/widgets/meetings_widget.html' with meetings=upcoming
                         {% if meeting.video_provider and meeting.video_provider != 'NONE' %}
                             <div class="mt-1">
                                 <span class="badge bg-secondary">
-                                    <i class="bi bi-camera-video me-1"></i>{{ meeting.get_video_provider_display }}
+                                    <i class="bi bi-camera-video me-1"></i>{{ meeting.video_provider }}
                                 </span>
                             </div>
                         {% endif %}

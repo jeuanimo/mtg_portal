@@ -8,6 +8,7 @@ from django.forms import inlineformset_factory
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit
 
+from apps.core.widgets import DatalistTextInput
 from apps.crm.models import Organization, Contact
 from .models import Invoice, InvoiceItem, Payment, RecurringInvoice, RecurringInvoiceItem
 
@@ -161,6 +162,9 @@ class PaymentForm(forms.ModelForm):
         fields = ['amount', 'method', 'reference_number', 'notes']
         widgets = {
             'notes': forms.Textarea(attrs={'rows': 2}),
+            'method': DatalistTextInput(
+                choices=[(k, v) for k, v in Payment.Method.choices if k != 'stripe']
+            ),
         }
     
     def __init__(self, *args, invoice=None, **kwargs):
@@ -170,11 +174,6 @@ class PaymentForm(forms.ModelForm):
         # Set initial amount to remaining balance
         if invoice:
             self.fields['amount'].initial = invoice.balance_due
-        
-        # Exclude Stripe from manual payment options
-        self.fields['method'].choices = [
-            (k, v) for k, v in Payment.Method.choices if k != 'stripe'
-        ]
         
         self.helper = FormHelper()
         self.helper.layout = Layout(

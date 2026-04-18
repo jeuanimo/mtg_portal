@@ -73,7 +73,7 @@ class Service(TimeStampedModel):
     image = models.ImageField(upload_to='services/', blank=True, null=True)
     
     # Pricing
-    billing_type = models.CharField(max_length=20, choices=BillingType.choices, default=BillingType.HOURLY)
+    billing_type = models.CharField(max_length=100, default='hourly')
     base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     price_description = models.CharField(max_length=100, blank=True, help_text='e.g., "Starting at $150/hr"')
     

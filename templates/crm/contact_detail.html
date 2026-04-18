@@ -83,7 +83,7 @@
                         <div class="list-group-item">
                             <strong>{{ activity.subject }}</strong>
                             <div class="small text-muted">
-                                {{ activity.get_activity_type_display }} on {{ activity.performed_at|date:"M j, Y g:i A" }}
+                                {{ activity.activity_type }} on {{ activity.performed_at|date:"M j, Y g:i A" }}
                             </div>
                         </div>
                     {% empty %}

@@ -110,7 +110,7 @@
                                     {% endif %}
                                 </div>
                                 <span class="badge bg-{% if meeting.meeting_type == 'VIDEO' %}primary{% elif meeting.meeting_type == 'PHONE' %}info{% else %}secondary{% endif %} h-fit">
-                                    {{ meeting.get_meeting_type_display }}
+                                    {{ meeting.meeting_type }}
                                 </span>
                             </div>
                         </a>

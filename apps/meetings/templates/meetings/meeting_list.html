@@ -66,7 +66,7 @@
                         </td>
                         <td>
                             <span class="badge bg-{% if meeting.meeting_type == 'VIDEO' %}primary{% elif meeting.meeting_type == 'DEMO' %}info{% elif meeting.meeting_type == 'CONSULTING' %}success{% else %}secondary{% endif %}">
-                                {{ meeting.get_meeting_type_display }}
+                                {{ meeting.meeting_type }}
                             </span>
                         </td>
                         <td>
