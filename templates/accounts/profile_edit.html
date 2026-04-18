@@ -9,7 +9,65 @@
         </div>
         <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Back to Profile</a>
     </div>
+
+    {# Current photo preview #}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body d-flex align-items-center">
+            {% if request.user.avatar %}
+                <img src="{{ request.user.avatar.url }}"
+                     alt="Current photo"
+                     id="avatar-preview"
+                     class="rounded-circle me-3"
+                     width="80" height="80"
+                     style="object-fit: cover;">
+                <div>
+                    <span class="text-muted small">Current profile photo</span>
+                </div>
+            {% else %}
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3"
+                     id="avatar-preview-placeholder"
+                     style="width: 80px; height: 80px; font-size: 1.5rem;">
+                    {{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <span class="text-muted small">No profile photo set</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">{% crispy form %}</div>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('id_avatar');
+        if (!input) return;
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                let img = document.getElementById('avatar-preview');
+                const placeholder = document.getElementById('avatar-preview-placeholder');
+                if (!img && placeholder) {
+                    img = document.createElement('img');
+                    img.id = 'avatar-preview';
+                    img.className = 'rounded-circle me-3';
+                    img.width = 80;
+                    img.height = 80;
+                    img.style.objectFit = 'cover';
+                    img.alt = 'New photo';
+                    placeholder.parentNode.replaceChild(img, placeholder);
+                }
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+    </script>
 {% endblock %}

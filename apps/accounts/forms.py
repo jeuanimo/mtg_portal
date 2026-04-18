@@ -14,6 +14,7 @@ class UserUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_enctype = 'multipart/form-data'
         self.helper.layout = Layout(
             Row(
                 Column('first_name', css_class='col-md-6'),
