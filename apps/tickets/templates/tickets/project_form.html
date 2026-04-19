@@ -3,6 +3,10 @@
 
 {% block title %}{% if project %}Edit Project{% else %}New Project{% endif %}{% endblock title %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{% endblock extra_css %}
+
 {% block content %}
 <div class="container-fluid py-4">
     <nav aria-label="breadcrumb">
@@ -278,7 +282,21 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
+// Initialize searchable dropdowns
+const tsConfig = {create: false, sortField: {field: 'text', direction: 'asc'}, allowEmptyOption: true};
+const orgTs = new TomSelect('#id_organization', {...tsConfig, placeholder: 'Type to search organizations...'});
+const contactTs = new TomSelect('#id_primary_contact', {...tsConfig, placeholder: 'Type to search contacts...'});
+const pmTs = new TomSelect('#id_project_manager', {...tsConfig, placeholder: 'Type to search project managers...'});
+
+// Map select IDs to their TomSelect instances
+const tsInstances = {
+    'id_organization': orgTs,
+    'id_primary_contact': contactTs,
+    'id_project_manager': pmTs,
+};
+
 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
 function quickAdd(btnId, errBoxId, url, getData, selectId, modalId, clearFields) {
@@ -305,9 +323,12 @@ function quickAdd(btnId, errBoxId, url, getData, selectId, modalId, clearFields)
                 errBox.classList.remove('d-none');
                 return;
             }
-            const select = document.getElementById(selectId);
-            const option = new Option(body.name, body.id, true, true);
-            select.appendChild(option);
+            // Add option to TomSelect and select it
+            const ts = tsInstances[selectId];
+            if (ts) {
+                ts.addOption({value: String(body.id), text: body.name});
+                ts.setValue(String(body.id));
+            }
             clearFields();
             bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
         })
@@ -338,17 +359,14 @@ quickAdd('btn-save-org', 'org-form-errors', "{% url 'tickets:quick_add_org' %}",
 
 // Quick Add Contact
 quickAdd('btn-save-contact', 'contact-form-errors', "{% url 'tickets:quick_add_contact' %}",
-    () => {
-        const orgSelect = document.getElementById('id_organization');
-        return {
-            first_name: document.getElementById('contact_first_name').value,
-            last_name: document.getElementById('contact_last_name').value,
-            email: document.getElementById('contact_email').value,
-            phone: document.getElementById('contact_phone').value,
-            job_title: document.getElementById('contact_job_title').value,
-            organization: document.getElementById('contact_organization').value || orgSelect.value,
-        };
-    },
+    () => ({
+        first_name: document.getElementById('contact_first_name').value,
+        last_name: document.getElementById('contact_last_name').value,
+        email: document.getElementById('contact_email').value,
+        phone: document.getElementById('contact_phone').value,
+        job_title: document.getElementById('contact_job_title').value,
+        organization: document.getElementById('contact_organization').value || orgTs.getValue(),
+    }),
     'id_primary_contact', 'addContactModal',
     () => {
         document.getElementById('contact_first_name').value = '';
@@ -379,17 +397,18 @@ quickAdd('btn-save-pm', 'pm-form-errors', "{% url 'tickets:quick_add_pm' %}",
 
 // Sync organization options into contact modal when it opens
 document.getElementById('addContactModal').addEventListener('show.bs.modal', function () {
-    const orgSelect = document.getElementById('id_organization');
     const contactOrgSelect = document.getElementById('contact_organization');
     contactOrgSelect.innerHTML = '<option value="">---------</option>';
-    for (const opt of orgSelect.options) {
-        if (opt.value) {
-            contactOrgSelect.appendChild(new Option(opt.text, opt.value));
+    const orgOptions = orgTs.options;
+    for (const key of Object.keys(orgOptions)) {
+        if (key) {
+            contactOrgSelect.appendChild(new Option(orgOptions[key].text, key));
         }
     }
     // Pre-select current organization if one is selected
-    if (orgSelect.value) {
-        contactOrgSelect.value = orgSelect.value;
+    const currentOrg = orgTs.getValue();
+    if (currentOrg) {
+        contactOrgSelect.value = currentOrg;
     }
 });
 </script>
