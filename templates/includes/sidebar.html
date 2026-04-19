@@ -130,6 +130,42 @@ Used in base_dashboard.html
                 </li>
             </ul>
         {% endif %}
+        <!-- Automations (Staff Only) -->
+        {% if user.is_staff_user %}
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Automations</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'automations' and request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                       href="{% url 'automations:dashboard' %}">
+                        <i class="bi bi-robot"></i>
+                        Agent Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'automations' and 'campaign' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'automations:campaign_list' %}">
+                        <i class="bi bi-megaphone"></i>
+                        Campaigns
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'automations' and 'agent' in request.resolver_match.url_name %}active{% endif %}"
+                       href="{% url 'automations:agent_list' %}">
+                        <i class="bi bi-gear"></i>
+                        Agents
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'automations' and request.resolver_match.url_name == 'approval_queue' %}active{% endif %}"
+                       href="{% url 'automations:approval_queue' %}">
+                        <i class="bi bi-check2-square"></i>
+                        Approval Queue
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
         <!-- Quick Actions -->
         <hr class="my-3">
         <div class="px-3">

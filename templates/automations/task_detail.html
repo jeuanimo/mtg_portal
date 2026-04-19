@@ -1,0 +1,143 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ task.title }} - MTG Portal{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'automations:dashboard' %}">Automations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'automations:campaign_detail' task.campaign.pk %}">{{ task.campaign.name }}</a></li>
+            <li class="breadcrumb-item active">{{ task.title|truncatechars:40 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">{{ task.title }}</h1>
+            <span class="badge bg-{% if task.status == 'published' %}success{% elif task.status == 'approved' %}primary{% elif task.status == 'in_review' %}warning{% elif task.status == 'rejected' %}danger{% elif task.status == 'draft' %}secondary{% else %}dark{% endif %} me-2">
+                {{ task.get_status_display }}
+            </span>
+            <span class="badge bg-secondary">{{ task.get_content_type_display }}</span>
+            {% if task.platform %}<span class="badge bg-info">{{ task.platform }}</span>{% endif %}
+        </div>
+        <div class="col-auto">
+            {% if task.status == 'in_review' or task.status == 'draft' %}
+                <a href="{% url 'automations:task_review' task.pk %}" class="btn btn-warning">
+                    <i class="bi bi-pencil-square me-1"></i>Review
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Content -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">{% if task.edited_content %}Edited Content{% else %}Generated Content{% endif %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if task.final_content %}
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap;">{{ task.final_content }}</div>
+                    {% else %}
+                        <p class="text-muted">No content generated yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if task.edited_content and task.generated_content %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Original Generated Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap;">{{ task.generated_content }}</div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if task.prompt_used %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Prompt Used</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap;">{{ task.prompt_used }}</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar info -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Details</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="mb-0">
+                        <dt>Campaign</dt>
+                        <dd><a href="{% url 'automations:campaign_detail' task.campaign.pk %}">{{ task.campaign.name }}</a></dd>
+                        {% if task.agent %}
+                            <dt>Agent</dt>
+                            <dd>{{ task.agent.name }}</dd>
+                        {% endif %}
+                        <dt>Created</dt>
+                        <dd>{{ task.created_at }}</dd>
+                        {% if task.reviewed_by %}
+                            <dt>Reviewed By</dt>
+                            <dd>{{ task.reviewed_by.get_full_name|default:task.reviewed_by.email }}</dd>
+                            <dt>Reviewed At</dt>
+                            <dd>{{ task.reviewed_at }}</dd>
+                        {% endif %}
+                        {% if task.published_at %}
+                            <dt>Published</dt>
+                            <dd>{{ task.published_at }}</dd>
+                        {% endif %}
+                        {% if task.publish_url %}
+                            <dt>Published URL</dt>
+                            <dd><a href="{{ task.publish_url }}" target="_blank" rel="noopener">{{ task.publish_url|truncatechars:40 }}</a></dd>
+                        {% endif %}
+                        {% if task.rejection_reason %}
+                            <dt>Rejection Reason</dt>
+                            <dd class="text-danger">{{ task.rejection_reason }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Execution Logs -->
+            {% if logs %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Execution Logs</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for log in logs %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <span>
+                                            {% if log.success %}
+                                                <i class="bi bi-check-circle text-success"></i>
+                                            {% else %}
+                                                <i class="bi bi-x-circle text-danger"></i>
+                                            {% endif %}
+                                            <code>{{ log.model_used }}</code>
+                                        </span>
+                                        <small class="text-muted">{{ log.created_at|timesince }} ago</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ log.input_tokens }}↑ {{ log.output_tokens }}↓ &middot;
+                                        ${{ log.estimated_cost|floatformat:4 }} &middot;
+                                        {{ log.execution_time_ms }}ms
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

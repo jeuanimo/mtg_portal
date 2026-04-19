@@ -29,6 +29,7 @@ urlpatterns = [
     path('projects/', include('apps.projects.urls', namespace='projects')),
     path('meetings/', include('apps.meetings.urls', namespace='meetings')),
     path('dashboard/', include('apps.dashboard.urls', namespace='dashboard')),
+    path('automations/', include('apps.automations.urls', namespace='automations')),
 ]
 
 # Serve media files in development

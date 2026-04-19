@@ -1,0 +1,176 @@
+{% extends "base_dashboard.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ campaign.name }} - MTG Portal{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'automations:dashboard' %}">Automations</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'automations:campaign_list' %}">Campaigns</a></li>
+            <li class="breadcrumb-item active">{{ campaign.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">{{ campaign.name }}</h1>
+            <span class="badge bg-{% if campaign.status == 'active' %}success{% elif campaign.status == 'draft' %}secondary{% elif campaign.status == 'paused' %}warning{% else %}info{% endif %} me-2">
+                {{ campaign.get_status_display }}
+            </span>
+            <span class="badge bg-primary">{{ campaign.get_campaign_type_display }}</span>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'automations:campaign_edit' campaign.pk %}" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <a href="{% url 'automations:metric_add' campaign.pk %}" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up me-1"></i>Add Metric
+            </a>
+        </div>
+    </div>
+
+    <!-- Campaign Info -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {% if campaign.description %}<p>{{ campaign.description }}</p>{% endif %}
+                    {% if campaign.goal_description %}
+                        <h6>Goal</h6>
+                        <p class="text-muted">{{ campaign.goal_description }}</p>
+                    {% endif %}
+                    <div class="row text-muted small">
+                        {% if campaign.agent %}
+                            <div class="col-auto"><i class="bi bi-robot me-1"></i>{{ campaign.agent.name }}</div>
+                        {% endif %}
+                        {% if campaign.target_audience %}
+                            <div class="col-auto"><i class="bi bi-people me-1"></i>{{ campaign.target_audience }}</div>
+                        {% endif %}
+                        {% if campaign.start_date %}
+                            <div class="col-auto"><i class="bi bi-calendar me-1"></i>{{ campaign.start_date }} — {{ campaign.end_date|default:"Ongoing" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="fw-bold fs-4">{{ campaign.task_count }}</div>
+                            <small class="text-muted">Total Tasks</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="fw-bold fs-4">{{ campaign.published_count }}</div>
+                            <small class="text-muted">Published</small>
+                        </div>
+                    </div>
+                    {% if campaign.task_count > 0 %}
+                        <div class="progress mt-3" style="height: 8px;" role="progressbar" aria-valuenow="{{ campaign.completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" style="width: {{ campaign.completion_rate }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ campaign.completion_rate }}% complete</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>Tasks</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if tasks %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Platform</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'automations:task_detail' task.pk %}">{{ task.title|truncatechars:50 }}</a>
+                                    </td>
+                                    <td>{{ task.get_content_type_display }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if task.status == 'published' %}success{% elif task.status == 'approved' %}primary{% elif task.status == 'in_review' %}warning{% elif task.status == 'rejected' %}danger{% elif task.status == 'draft' %}secondary{% elif task.status == 'generating' %}info{% else %}dark{% endif %}">
+                                            {{ task.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ task.platform|default:"—" }}</td>
+                                    <td>{{ task.created_at|timesince }} ago</td>
+                                    <td>
+                                        {% if task.status == 'in_review' %}
+                                            <a href="{% url 'automations:task_review' task.pk %}" class="btn btn-sm btn-warning">Review</a>
+                                        {% else %}
+                                            <a href="{% url 'automations:task_detail' task.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">No tasks in this campaign yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Metrics -->
+    {% if metrics %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Performance Metrics</h5>
+            <a href="{% url 'automations:metric_add' campaign.pk %}" class="btn btn-sm btn-outline-primary">Add Metric</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Platform</th>
+                            <th>Impressions</th>
+                            <th>Clicks</th>
+                            <th>CTR</th>
+                            <th>Conversions</th>
+                            <th>Spend</th>
+                            <th>Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in metrics %}
+                            <tr>
+                                <td>{{ m.date }}</td>
+                                <td>{{ m.platform|default:"All" }}</td>
+                                <td>{{ m.impressions }}</td>
+                                <td>{{ m.clicks }}</td>
+                                <td>{{ m.ctr }}%</td>
+                                <td>{{ m.conversions }}</td>
+                                <td>${{ m.spend|floatformat:2 }}</td>
+                                <td>${{ m.revenue|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

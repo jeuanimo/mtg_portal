@@ -1,0 +1,78 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Campaigns - MTG Portal{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3"><i class="bi bi-megaphone me-2"></i>Campaigns</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'automations:campaign_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>New Campaign
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+        <div class="col-auto">
+            <div class="btn-group" role="group" aria-label="Status filter">
+                <a href="{% url 'automations:campaign_list' %}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+                {% for value, label in status_choices %}
+                    <a href="?status={{ value }}" class="btn btn-sm {% if current_status == value %}btn-primary{% else %}btn-outline-primary{% endif %}">{{ label }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if campaigns %}
+        <div class="row g-4">
+            {% for campaign in campaigns %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <a href="{% url 'automations:campaign_detail' campaign.pk %}" class="text-decoration-none">
+                                        {{ campaign.name }}
+                                    </a>
+                                </h5>
+                                <span class="badge bg-{% if campaign.status == 'active' %}success{% elif campaign.status == 'draft' %}secondary{% elif campaign.status == 'paused' %}warning{% elif campaign.status == 'completed' %}info{% else %}dark{% endif %}">
+                                    {{ campaign.get_status_display }}
+                                </span>
+                            </div>
+                            <p class="card-text text-muted small">{{ campaign.description|truncatechars:120|default:"No description" }}</p>
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span><i class="bi bi-robot me-1"></i>{{ campaign.get_campaign_type_display }}</span>
+                                {% if campaign.agent %}<span>{{ campaign.agent.name }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {{ campaign.task_total }} task{{ campaign.task_total|pluralize }} &middot;
+                                    {{ campaign.tasks_published }} published
+                                </small>
+                                <div>
+                                    <a href="{% url 'automations:campaign_detail' campaign.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'automations:campaign_edit' campaign.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-megaphone display-4 text-muted"></i>
+            <p class="text-muted mt-2">No campaigns found.</p>
+            <a href="{% url 'automations:campaign_create' %}" class="btn btn-primary">Create Your First Campaign</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Agent Effort Dashboard - MTG Portal{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3"><i class="bi bi-robot me-2"></i>Agent Effort Dashboard</h1>
+            <p class="text-muted">Track AI agent campaigns, approvals, and performance</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'automations:campaign_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>New Campaign
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-label">Active Campaigns</div>
+                    <div class="stat-number">{{ active_campaigns }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card success">
+                <div class="card-body">
+                    <div class="stat-label">Active Agents</div>
+                    <div class="stat-number">{{ active_agents }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card {% if tasks_pending_review > 0 %}warning{% endif %}">
+                <div class="card-body">
+                    <div class="stat-label">Pending Review</div>
+                    <div class="stat-number">{{ tasks_pending_review }}</div>
+                    {% if tasks_pending_review > 0 %}
+                        <a href="{% url 'automations:approval_queue' %}" class="text-warning small">Review now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card info">
+                <div class="card-body">
+                    <div class="stat-label">Published (30d)</div>
+                    <div class="stat-number">{{ tasks_published_30d }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cost & Performance Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-currency-dollar me-2"></i>Cost Tracking (30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="fw-bold fs-4">${{ cost_stats.total_cost|floatformat:2|default:"0.00" }}</div>
+                            <small class="text-muted">Total Cost</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold fs-4">{{ cost_stats.total_input_tokens|default:"0" }}</div>
+                            <small class="text-muted">Input Tokens</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold fs-4">{{ cost_stats.total_output_tokens|default:"0" }}</div>
+                            <small class="text-muted">Output Tokens</small>
+                        </div>
+                    </div>
+                    {% if cost_stats.avg_execution_time %}
+                        <hr>
+                        <div class="text-center">
+                            <small class="text-muted">Avg execution: {{ cost_stats.avg_execution_time|floatformat:0 }}ms</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Campaign Metrics (30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="fw-bold fs-4">{{ metric_stats.total_impressions|default:"0" }}</div>
+                            <small class="text-muted">Impressions</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold fs-4">{{ metric_stats.total_clicks|default:"0" }}</div>
+                            <small class="text-muted">Clicks</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold fs-4">{{ metric_stats.total_conversions|default:"0" }}</div>
+                            <small class="text-muted">Conversions</small>
+                        </div>
+                        <div class="col-3">
+                            <div class="fw-bold fs-4">{{ metric_stats.total_new_leads|default:"0" }}</div>
+                            <small class="text-muted">New Leads</small>
+                        </div>
+                    </div>
+                    {% if metric_stats.total_spend or metric_stats.total_revenue %}
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">Spend: ${{ metric_stats.total_spend|floatformat:2|default:"0.00" }}</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Revenue: ${{ metric_stats.total_revenue|floatformat:2|default:"0.00" }}</small>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Approval Queue -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-check2-square me-2"></i>Approval Queue</h5>
+                    <a href="{% url 'automations:approval_queue' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if review_queue %}
+                        <div class="list-group list-group-flush">
+                            {% for task in review_queue %}
+                                <a href="{% url 'automations:task_review' task.pk %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ task.title|truncatechars:50 }}</h6>
+                                        <small class="text-muted">{{ task.created_at|timesince }} ago</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ task.get_content_type_display }} &middot; {{ task.campaign.name }}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No tasks pending review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Campaigns -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-megaphone me-2"></i>Recent Campaigns</h5>
+                    <a href="{% url 'automations:campaign_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_campaigns %}
+                        <div class="list-group list-group-flush">
+                            {% for campaign in recent_campaigns %}
+                                <a href="{% url 'automations:campaign_detail' campaign.pk %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ campaign.name }}</h6>
+                                        <span class="badge bg-{% if campaign.status == 'active' %}success{% elif campaign.status == 'draft' %}secondary{% elif campaign.status == 'paused' %}warning{% else %}info{% endif %}">
+                                            {{ campaign.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ campaign.get_campaign_type_display }}
+                                        {% if campaign.agent %}&middot; {{ campaign.agent.name }}{% endif %}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No campaigns yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Execution Logs -->
+    {% if recent_logs %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-terminal me-2"></i>Recent Agent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Agent</th>
+                                    <th>Task</th>
+                                    <th>Model</th>
+                                    <th>Tokens</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                    <tr>
+                                        <td>{{ log.agent.name|default:"—" }}</td>
+                                        <td>
+                                            <a href="{% url 'automations:task_detail' log.task.pk %}">
+                                                {{ log.task.title|truncatechars:30 }}
+                                            </a>
+                                        </td>
+                                        <td><code>{{ log.model_used }}</code></td>
+                                        <td>{{ log.input_tokens }}↑ {{ log.output_tokens }}↓</td>
+                                        <td>${{ log.estimated_cost|floatformat:4 }}</td>
+                                        <td>
+                                            {% if log.success %}
+                                                <span class="badge bg-success">OK</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">FAIL</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ log.created_at|timesince }} ago</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
