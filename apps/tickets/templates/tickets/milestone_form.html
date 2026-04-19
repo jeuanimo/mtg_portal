@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'tickets:ticket_dashboard' %}">Support</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:project_list' %}">Projects</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'tickets:project_detail' project.pk %}">{{ project.project_number }}</a></li>
+            <li class="breadcrumb-item active">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">{{ title }}</h4>
+                    <small class="text-muted">Project: {{ project.name }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+
+            {% if milestone %}
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body text-end">
+                    <form method="post" action="{% url 'tickets:milestone_delete' milestone.pk %}" onsubmit="return confirm('Delete this milestone?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Delete Milestone
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

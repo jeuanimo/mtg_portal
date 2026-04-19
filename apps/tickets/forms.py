@@ -219,11 +219,14 @@ class ConsultingProjectForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['actual_hours'].required = False
         
         from apps.accounts.models import User
-        self.fields['project_manager'].queryset = User.objects.filter(
+        pm_field = self.fields['project_manager']
+        pm_field.queryset = User.objects.filter(
             role__in=[User.Role.SUPER_ADMIN, User.Role.CONSULTANT]
         )
+        pm_field.label_from_instance = lambda u: u.get_full_name() or u.email
         
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -248,6 +251,35 @@ class ConsultingProjectForm(forms.ModelForm):
             ),
             Submit('submit', 'Save Project', css_class=BTN_PRIMARY),
         )
+
+
+class QuickAddProjectManagerForm(forms.Form):
+    """Quick form to create a new user as a project manager."""
+    first_name = forms.CharField(max_length=150)
+    last_name = forms.CharField(max_length=150)
+    email = forms.EmailField()
+    role = forms.ChoiceField(choices=[
+        ('consultant', 'Consultant'),
+        ('super_admin', 'Super Administrator'),
+    ])
+
+
+class QuickAddOrganizationForm(forms.Form):
+    """Quick form to create a new organization."""
+    name = forms.CharField(max_length=200)
+    email = forms.EmailField(required=False)
+    phone = forms.CharField(max_length=20, required=False)
+    industry = forms.CharField(max_length=100, required=False)
+
+
+class QuickAddContactForm(forms.Form):
+    """Quick form to create a new contact."""
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    phone = forms.CharField(max_length=20, required=False)
+    job_title = forms.CharField(max_length=100, required=False)
+    organization = forms.IntegerField(required=False)
 
 
 class ProjectIntakeForm(forms.Form):
@@ -350,13 +382,12 @@ class ProjectIntakeForm(forms.Form):
 
 
 class MilestoneForm(forms.ModelForm):
-    """Form for project milestones."""
+    """Inline form for project milestones (used in project create/edit formset)."""
     
     class Meta:
         model = ProjectMilestone
-        fields = ['name', 'description', 'due_date', 'status', 'order']
+        fields = ['name', 'milestone_type', 'due_date', 'status', 'order']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 2}),
             'due_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
@@ -378,6 +409,48 @@ MilestoneFormSet = inlineformset_factory(
     extra=2,
     can_delete=True,
 )
+
+
+class MilestoneFullForm(forms.ModelForm):
+    """Standalone form for creating/editing milestones with all scrum fields."""
+    
+    class Meta:
+        model = ProjectMilestone
+        fields = [
+            'name', 'description', 'milestone_type', 'status',
+            'start_date', 'due_date', 'sprint_number', 'sprint_goal',
+            'story_points_planned', 'story_points_completed', 'order',
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'sprint_goal': forms.Textarea(attrs={'rows': 3}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('name', css_class='col-md-6'),
+                Column('milestone_type', css_class='col-md-3'),
+                Column('status', css_class='col-md-3'),
+            ),
+            'description',
+            Row(
+                Column('start_date', css_class='col-md-4'),
+                Column('due_date', css_class='col-md-4'),
+                Column('order', css_class='col-md-4'),
+            ),
+            Row(
+                Column('sprint_number', css_class='col-md-4'),
+                Column('story_points_planned', css_class='col-md-4'),
+                Column('story_points_completed', css_class='col-md-4'),
+            ),
+            'sprint_goal',
+            Submit('submit', 'Save Milestone', css_class=BTN_PRIMARY),
+        )
 
 
 class DeliverableForm(forms.ModelForm):

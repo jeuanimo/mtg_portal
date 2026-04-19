@@ -109,8 +109,8 @@ class ConsultingProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectMilestone)
 class ProjectMilestoneAdmin(admin.ModelAdmin):
-    list_display = ['name', 'project', 'status', 'due_date', 'completed_date', 'order']
-    list_filter = ['status', 'project']
+    list_display = ['name', 'project', 'milestone_type', 'status', 'sprint_number', 'due_date', 'story_points_planned', 'story_points_completed', 'order']
+    list_filter = ['status', 'milestone_type', 'project']
     search_fields = ['name', 'project__name']
 
 

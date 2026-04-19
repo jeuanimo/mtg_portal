@@ -38,10 +38,24 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                {{ form.organization|as_crispy_field }}
+                                <div class="d-flex align-items-end gap-2">
+                                    <div class="flex-grow-1">
+                                        {{ form.organization|as_crispy_field }}
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#addOrgModal" title="Add new organization">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                {{ form.primary_contact|as_crispy_field }}
+                                <div class="d-flex align-items-end gap-2">
+                                    <div class="flex-grow-1">
+                                        {{ form.primary_contact|as_crispy_field }}
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#addContactModal" title="Add new contact">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -50,7 +64,14 @@
                                 {{ form.status|as_crispy_field }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                {{ form.project_manager|as_crispy_field }}
+                                <div class="d-flex align-items-end gap-2">
+                                    <div class="flex-grow-1">
+                                        {{ form.project_manager|as_crispy_field }}
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPmModal" title="Add new project manager">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -83,15 +104,18 @@
                         </div>
 
                         <!-- Milestones -->
-                        <h5 class="mt-4 mb-3">Milestones</h5>
+                        <h5 class="mt-4 mb-3">Milestones / Sprints</h5>
                         <div id="milestones-formset">
                             {{ milestone_formset.management_form }}
                             {% for milestone_form in milestone_formset %}
                             <div class="card mb-3 milestone-form">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             {{ milestone_form.name|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            {{ milestone_form.milestone_type|as_crispy_field }}
                                         </div>
                                         <div class="col-md-3">
                                             {{ milestone_form.due_date|as_crispy_field }}
@@ -99,7 +123,7 @@
                                         <div class="col-md-2">
                                             {{ milestone_form.status|as_crispy_field }}
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-1">
                                             {{ milestone_form.order|as_crispy_field }}
                                         </div>
                                         <div class="col-md-1 d-flex align-items-end mb-3">
@@ -126,4 +150,247 @@
         </div>
     </div>
 </div>
+
+<!-- Quick Add Organization Modal -->
+<div class="modal fade" id="addOrgModal" tabindex="-1" aria-labelledby="addOrgModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOrgModalLabel">Add New Organization</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="org-form-errors" class="alert alert-danger d-none"></div>
+                <div class="mb-3">
+                    <label for="org_name" class="form-label">Organization Name</label>
+                    <input type="text" class="form-control" id="org_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="org_email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="org_email">
+                </div>
+                <div class="mb-3">
+                    <label for="org_phone" class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="org_phone">
+                </div>
+                <div class="mb-3">
+                    <label for="org_industry" class="form-label">Industry</label>
+                    <input type="text" class="form-control" id="org_industry">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-org">
+                    <i class="bi bi-plus-lg"></i> Add &amp; Select
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Contact Modal -->
+<div class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addContactModalLabel">Add New Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="contact-form-errors" class="alert alert-danger d-none"></div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="contact_first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="contact_first_name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="contact_last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="contact_last_name" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="contact_email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="contact_email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="contact_phone" class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="contact_phone">
+                </div>
+                <div class="mb-3">
+                    <label for="contact_job_title" class="form-label">Job Title</label>
+                    <input type="text" class="form-control" id="contact_job_title">
+                </div>
+                <div class="mb-3">
+                    <label for="contact_organization" class="form-label">Organization</label>
+                    <select class="form-select" id="contact_organization">
+                        <option value="">---------</option>
+                    </select>
+                    <small class="text-muted">Auto-linked to selected organization if set above</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-contact">
+                    <i class="bi bi-plus-lg"></i> Add &amp; Select
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Add Project Manager Modal -->
+<div class="modal fade" id="addPmModal" tabindex="-1" aria-labelledby="addPmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPmModalLabel">Add New Project Manager</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pm-form-errors" class="alert alert-danger d-none"></div>
+                <div class="mb-3">
+                    <label for="pm_first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="pm_first_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pm_last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="pm_last_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pm_email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="pm_email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pm_role" class="form-label">Role</label>
+                    <select class="form-select" id="pm_role">
+                        <option value="consultant">Consultant</option>
+                        <option value="super_admin">Super Administrator</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-pm">
+                    <i class="bi bi-plus-lg"></i> Add &amp; Select
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+function quickAdd(btnId, errBoxId, url, getData, selectId, modalId, clearFields) {
+    document.getElementById(btnId).addEventListener('click', function () {
+        const btn = this;
+        const errBox = document.getElementById(errBoxId);
+        errBox.classList.add('d-none');
+        btn.disabled = true;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(getData()),
+        })
+        .then(resp => resp.json().then(body => ({ ok: resp.ok, body })))
+        .then(({ ok, body }) => {
+            btn.disabled = false;
+            if (!ok) {
+                const msgs = Object.values(body.errors).flat();
+                errBox.textContent = msgs.join(' ');
+                errBox.classList.remove('d-none');
+                return;
+            }
+            const select = document.getElementById(selectId);
+            const option = new Option(body.name, body.id, true, true);
+            select.appendChild(option);
+            clearFields();
+            bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
+        })
+        .catch(() => {
+            btn.disabled = false;
+            errBox.textContent = 'An unexpected error occurred.';
+            errBox.classList.remove('d-none');
+        });
+    });
+}
+
+// Quick Add Organization
+quickAdd('btn-save-org', 'org-form-errors', "{% url 'tickets:quick_add_org' %}",
+    () => ({
+        name: document.getElementById('org_name').value,
+        email: document.getElementById('org_email').value,
+        phone: document.getElementById('org_phone').value,
+        industry: document.getElementById('org_industry').value,
+    }),
+    'id_organization', 'addOrgModal',
+    () => {
+        document.getElementById('org_name').value = '';
+        document.getElementById('org_email').value = '';
+        document.getElementById('org_phone').value = '';
+        document.getElementById('org_industry').value = '';
+    }
+);
+
+// Quick Add Contact
+quickAdd('btn-save-contact', 'contact-form-errors', "{% url 'tickets:quick_add_contact' %}",
+    () => {
+        const orgSelect = document.getElementById('id_organization');
+        return {
+            first_name: document.getElementById('contact_first_name').value,
+            last_name: document.getElementById('contact_last_name').value,
+            email: document.getElementById('contact_email').value,
+            phone: document.getElementById('contact_phone').value,
+            job_title: document.getElementById('contact_job_title').value,
+            organization: document.getElementById('contact_organization').value || orgSelect.value,
+        };
+    },
+    'id_primary_contact', 'addContactModal',
+    () => {
+        document.getElementById('contact_first_name').value = '';
+        document.getElementById('contact_last_name').value = '';
+        document.getElementById('contact_email').value = '';
+        document.getElementById('contact_phone').value = '';
+        document.getElementById('contact_job_title').value = '';
+        document.getElementById('contact_organization').value = '';
+    }
+);
+
+// Quick Add Project Manager
+quickAdd('btn-save-pm', 'pm-form-errors', "{% url 'tickets:quick_add_pm' %}",
+    () => ({
+        first_name: document.getElementById('pm_first_name').value,
+        last_name: document.getElementById('pm_last_name').value,
+        email: document.getElementById('pm_email').value,
+        role: document.getElementById('pm_role').value,
+    }),
+    'id_project_manager', 'addPmModal',
+    () => {
+        document.getElementById('pm_first_name').value = '';
+        document.getElementById('pm_last_name').value = '';
+        document.getElementById('pm_email').value = '';
+        document.getElementById('pm_role').value = 'consultant';
+    }
+);
+
+// Sync organization options into contact modal when it opens
+document.getElementById('addContactModal').addEventListener('show.bs.modal', function () {
+    const orgSelect = document.getElementById('id_organization');
+    const contactOrgSelect = document.getElementById('contact_organization');
+    contactOrgSelect.innerHTML = '<option value="">---------</option>';
+    for (const opt of orgSelect.options) {
+        if (opt.value) {
+            contactOrgSelect.appendChild(new Option(opt.text, opt.value));
+        }
+    }
+    // Pre-select current organization if one is selected
+    if (orgSelect.value) {
+        contactOrgSelect.value = orgSelect.value;
+    }
+});
+</script>
 {% endblock content %}

@@ -278,7 +278,7 @@ class ConsultingProject(TimeStampedModel):
 
 
 class ProjectMilestone(TimeStampedModel):
-    """Milestones for project tracking."""
+    """Milestones / sprints for project tracking (Scrum-compatible)."""
     
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
@@ -286,15 +286,30 @@ class ProjectMilestone(TimeStampedModel):
         COMPLETED = 'completed', 'Completed'
         BLOCKED = 'blocked', 'Blocked'
     
+    class MilestoneType(models.TextChoices):
+        SPRINT = 'sprint', 'Sprint'
+        MILESTONE = 'milestone', 'Milestone'
+        RELEASE = 'release', 'Release'
+    
     project = models.ForeignKey(
         ConsultingProject, on_delete=models.CASCADE, related_name='milestones'
     )
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    milestone_type = models.CharField(
+        max_length=20, choices=MilestoneType.choices, default=MilestoneType.MILESTONE
+    )
     
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     due_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
     completed_date = models.DateField(null=True, blank=True)
+    
+    # Scrum fields
+    sprint_number = models.PositiveIntegerField(null=True, blank=True, help_text='Sprint number (for sprint-type milestones)')
+    sprint_goal = models.TextField(blank=True, help_text='Sprint goal or acceptance criteria')
+    story_points_planned = models.PositiveIntegerField(default=0, help_text='Total story points planned')
+    story_points_completed = models.PositiveIntegerField(default=0, help_text='Story points completed')
     
     order = models.PositiveIntegerField(default=0)
     
@@ -304,7 +319,21 @@ class ProjectMilestone(TimeStampedModel):
         ordering = ['order', 'due_date']
     
     def __str__(self):
+        if self.milestone_type == self.MilestoneType.SPRINT and self.sprint_number:
+            return f"Sprint {self.sprint_number}: {self.name}"
         return self.name
+
+    @property
+    def velocity(self):
+        """Return story points completed (sprint velocity)."""
+        return self.story_points_completed
+
+    @property
+    def burndown_percentage(self):
+        """Percentage of planned story points completed."""
+        if self.story_points_planned:
+            return round(self.story_points_completed / self.story_points_planned * 100)
+        return 0
 
 
 class Deliverable(TimeStampedModel):

@@ -22,10 +22,18 @@ urlpatterns = [
     # Consulting Projects
     path('projects/', views.project_list, name='project_list'),
     path('projects/create/', views.project_create, name='project_create'),
+    path('projects/quick-add-pm/', views.quick_add_project_manager, name='quick_add_pm'),
+    path('projects/quick-add-org/', views.quick_add_organization, name='quick_add_org'),
+    path('projects/quick-add-contact/', views.quick_add_contact, name='quick_add_contact'),
     path('projects/<int:pk>/', views.project_detail, name='project_detail'),
     path('projects/<int:pk>/edit/', views.project_edit, name='project_edit'),
     path('projects/<int:pk>/intake/', views.project_intake, name='project_intake'),
     path('projects/intake/', views.project_intake, name='project_intake_new'),
+
+    # Milestones
+    path('projects/<int:project_pk>/milestones/create/', views.milestone_create, name='milestone_create'),
+    path('milestones/<int:pk>/edit/', views.milestone_edit, name='milestone_edit'),
+    path('milestones/<int:pk>/delete/', views.milestone_delete, name='milestone_delete'),
 
     # Deliverables
     path('deliverables/<int:pk>/', views.deliverable_detail, name='deliverable_detail'),

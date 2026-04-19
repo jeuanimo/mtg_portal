@@ -15,13 +15,13 @@ from django.views.decorators.http import require_POST
 from apps.accounts.decorators import staff_required
 from .models import (
     Ticket, TicketAttachment,
-    ConsultingProject, Deliverable,
+    ConsultingProject, ProjectMilestone, Deliverable,
     ChangeRequest, TimeEntry
 )
 from .forms import (
     TicketForm, TicketStaffForm, TicketCommentForm, TicketFilterForm, QuickTicketStatusForm,
     ConsultingProjectForm, ProjectIntakeForm, DeliverableForm, ChangeRequestForm, TimeEntryForm,
-    MilestoneFormSet,
+    MilestoneFormSet, MilestoneFullForm,
 )
 
 # URL name constants
@@ -420,6 +420,93 @@ def project_create(request):
 
 
 @login_required
+@staff_required
+@require_POST
+def quick_add_project_manager(request):
+    """AJAX endpoint to create a new user as project manager."""
+    from django.http import JsonResponse
+    from apps.accounts.models import User
+    from .forms import QuickAddProjectManagerForm
+
+    form = QuickAddProjectManagerForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors}, status=400)
+
+    email = form.cleaned_data['email']
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({'errors': {'email': ['A user with this email already exists.']}}, status=400)
+
+    user = User.objects.create_user(
+        email=email,
+        first_name=form.cleaned_data['first_name'],
+        last_name=form.cleaned_data['last_name'],
+        role=form.cleaned_data['role'],
+    )
+    return JsonResponse({
+        'id': user.pk,
+        'name': user.get_full_name(),
+    })
+
+
+@login_required
+@staff_required
+@require_POST
+def quick_add_organization(request):
+    """AJAX endpoint to create a new organization."""
+    from django.http import JsonResponse
+    from apps.crm.models import Organization
+    from .forms import QuickAddOrganizationForm
+
+    form = QuickAddOrganizationForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors}, status=400)
+
+    name = form.cleaned_data['name']
+    if Organization.objects.filter(name__iexact=name).exists():
+        return JsonResponse({'errors': {'name': ['An organization with this name already exists.']}}, status=400)
+
+    org = Organization.objects.create(
+        name=name,
+        email=form.cleaned_data.get('email') or '',
+        phone=form.cleaned_data.get('phone') or '',
+        industry=form.cleaned_data.get('industry') or '',
+    )
+    return JsonResponse({'id': org.pk, 'name': str(org)})
+
+
+@login_required
+@staff_required
+@require_POST
+def quick_add_contact(request):
+    """AJAX endpoint to create a new contact."""
+    from django.http import JsonResponse
+    from apps.crm.models import Contact, Organization
+    from .forms import QuickAddContactForm
+
+    form = QuickAddContactForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors}, status=400)
+
+    org_id = form.cleaned_data.get('organization')
+    org = None
+    if org_id:
+        try:
+            org = Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({'errors': {'organization': ['Organization not found.']}}, status=400)
+
+    contact = Contact.objects.create(
+        first_name=form.cleaned_data['first_name'],
+        last_name=form.cleaned_data['last_name'],
+        email=form.cleaned_data['email'],
+        phone=form.cleaned_data.get('phone') or '',
+        job_title=form.cleaned_data.get('job_title') or '',
+        organization=org,
+    )
+    return JsonResponse({'id': contact.pk, 'name': str(contact)})
+
+
+@login_required
 def project_detail(request, pk):
     """Project detail view."""
     project = get_object_or_404(
@@ -470,6 +557,67 @@ def project_edit(request, pk):
         'title': f'Edit Project {project.project_number}',
     }
     return render(request, 'tickets/project_form.html', context)
+
+
+@login_required
+@staff_required
+def milestone_create(request, project_pk):
+    """Create a new milestone for a project."""
+    project = get_object_or_404(ConsultingProject, pk=project_pk)
+    
+    if request.method == 'POST':
+        form = MilestoneFullForm(request.POST)
+        if form.is_valid():
+            milestone = form.save(commit=False)
+            milestone.project = project
+            milestone.save()
+            messages.success(request, f'Milestone "{milestone.name}" created.')
+            return redirect(PROJECT_DETAIL_URL, pk=project_pk)
+    else:
+        form = MilestoneFullForm()
+    
+    return render(request, 'tickets/milestone_form.html', {
+        'form': form,
+        'project': project,
+        'title': 'Add Milestone',
+    })
+
+
+@login_required
+@staff_required
+def milestone_edit(request, pk):
+    """Edit a milestone."""
+    milestone = get_object_or_404(ProjectMilestone.objects.select_related('project'), pk=pk)
+    project = milestone.project
+    
+    if request.method == 'POST':
+        form = MilestoneFullForm(request.POST, instance=milestone)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Milestone "{milestone.name}" updated.')
+            return redirect(PROJECT_DETAIL_URL, pk=project.pk)
+    else:
+        form = MilestoneFullForm(instance=milestone)
+    
+    return render(request, 'tickets/milestone_form.html', {
+        'form': form,
+        'project': project,
+        'milestone': milestone,
+        'title': f'Edit Milestone: {milestone.name}',
+    })
+
+
+@login_required
+@staff_required
+@require_POST
+def milestone_delete(request, pk):
+    """Delete a milestone."""
+    milestone = get_object_or_404(ProjectMilestone.objects.select_related('project'), pk=pk)
+    project_pk = milestone.project.pk
+    name = milestone.name
+    milestone.delete()
+    messages.success(request, f'Milestone "{name}" deleted.')
+    return redirect(PROJECT_DETAIL_URL, pk=project_pk)
 
 
 @login_required
