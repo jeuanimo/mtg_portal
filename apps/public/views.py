@@ -62,6 +62,7 @@ def industries(request):
 
 def consultation_request(request):
     """Request consultation form."""
+    available_services = Service.objects.filter(is_active=True).order_by('order', 'title')
     if request.method == 'POST':
         form = ConsultationRequestForm(request.POST)
         if form.is_valid():
@@ -70,20 +71,19 @@ def consultation_request(request):
             if not service_request.source:
                 service_request.source = 'public_consultation'
             service_request.save()
-            
+            form.save_m2m()
             messages.success(
-                request, 
+                request,
                 'Thank you for your consultation request! '
                 'Our team will contact you within 24 hours.'
             )
             return redirect('public:consultation_success')
     else:
         form = ConsultationRequestForm()
-    
-    services = Service.objects.filter(is_active=True)
+
     return render(request, 'public/consultation_request.html', {
         'form': form,
-        'services': services,
+        'available_services': available_services,
     })
 
 

@@ -375,6 +375,9 @@ def project_list(request):
     all_projects = ConsultingProject.objects.all()
     stats = {
         'total': all_projects.count(),
+        'intake': all_projects.filter(status=ConsultingProject.Status.INTAKE).count(),
+        'discovery': all_projects.filter(status=ConsultingProject.Status.DISCOVERY).count(),
+        'proposal': all_projects.filter(status=ConsultingProject.Status.PROPOSAL).count(),
         'in_progress': all_projects.filter(status=ConsultingProject.Status.IN_PROGRESS).count(),
         'on_hold': all_projects.filter(status=ConsultingProject.Status.ON_HOLD).count(),
         'completed': all_projects.filter(status=ConsultingProject.Status.COMPLETED).count(),

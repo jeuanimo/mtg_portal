@@ -124,6 +124,9 @@ class ServiceRequest(TimeStampedModel):
         Service, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='requests'
     )
+    services_requested = models.ManyToManyField(
+        Service, blank=True, related_name='consultation_requests'
+    )
     description = models.TextField(help_text='Describe your needs')
     budget_range = models.CharField(max_length=100, blank=True)
     timeline = models.CharField(max_length=100, blank=True)
