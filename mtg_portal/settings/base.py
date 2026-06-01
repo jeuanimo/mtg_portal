@@ -57,6 +57,7 @@ LOCAL_APPS = [
     'apps.meetings',
     'apps.dashboard',
     'apps.automations',
+    'apps.inbox',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -182,7 +183,13 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@mitchelltechgroup.com')
-SERVER_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@mitchelltechgroup.com')
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
+
+# ── IMAP (portal inbox) ───────────────────────────────────────────────────────
+IMAP_HOST = os.getenv('IMAP_HOST', 'mail.privateemail.com').strip()
+IMAP_PORT = int(os.getenv('IMAP_PORT', '993').strip())
+IMAP_USER = os.getenv('IMAP_USER', '').strip()
+IMAP_PASSWORD = os.getenv('IMAP_PASSWORD', '').strip()
 
 # Logging
 LOGGING = {

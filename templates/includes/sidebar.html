@@ -166,6 +166,36 @@ Used in base_dashboard.html
                 </li>
             </ul>
         {% endif %}
+        <!-- Email (Staff Only) -->
+        {% if user.is_staff_user %}
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Email</span>
+            </h6>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'inbox' and request.resolver_match.url_name == 'email_inbox' %}active{% endif %}"
+                       href="{% url 'inbox:email_inbox' %}">
+                        <i class="bi bi-envelope"></i>
+                        Inbox
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'inbox' and request.resolver_match.url_name == 'email_compose' %}active{% endif %}"
+                       href="{% url 'inbox:email_compose' %}">
+                        <i class="bi bi-pencil-square"></i>
+                        Compose
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.namespace == 'inbox' and request.resolver_match.url_name == 'email_draft_list' %}active{% endif %}"
+                       href="{% url 'inbox:email_draft_list' %}">
+                        <i class="bi bi-journals"></i>
+                        Drafts
+                    </a>
+                </li>
+            </ul>
+        {% endif %}
+
         <!-- Quick Actions -->
         <hr class="my-3">
         <div class="px-3">
