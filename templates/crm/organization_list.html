@@ -31,27 +31,38 @@
                         <th>Industry</th>
                         <th>Website</th>
                         <th>Contacts</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for organization in organizations %}
                         <tr>
                             <td>
-                                <a href="{% url 'crm:organization_detail' organization.pk %}">{{ organization.name }}</a>
+                                <a href="{% url 'crm:organization_detail' organization.pk %}" class="fw-medium text-decoration-none">{{ organization.name }}</a>
                             </td>
-                            <td>{{ organization.industry|default:"-" }}</td>
+                            <td>{{ organization.industry|default:"—" }}</td>
                             <td>
                                 {% if organization.website %}
-                                    <a href="{{ organization.website }}" target="_blank" rel="noreferrer">{{ organization.website }}</a>
+                                    <a href="{{ organization.website }}" target="_blank" rel="noreferrer" class="text-truncate d-inline-block" style="max-width:160px;">{{ organization.website }}</a>
                                 {% else %}
-                                    -
+                                    —
                                 {% endif %}
                             </td>
                             <td>{{ organization.contact_count|default:organization.contacts.count }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'crm:organization_detail' organization.pk %}" class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'crm:organization_edit' organization.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">No organizations found.</td>
+                            <td colspan="5" class="text-center text-muted py-4">No organizations found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

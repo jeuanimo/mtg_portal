@@ -1,42 +1,103 @@
 {% extends 'base_dashboard.html' %}
 
-{% block title %}{{ task.title }}{% endblock title %}
+{% block title %}{{ task.title }} — MTG Portal{% endblock %}
 
 {% block dashboard_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-0">{{ task.title }}</h1>
-        <p class="text-muted mb-0">{{ task.project.name }}</p>
+        <h4 class="mb-0">{{ task.title }}</h4>
+        <p class="text-muted mb-0 small">
+            <a href="{% url 'projects:project_detail' task.project.pk %}" class="text-muted text-decoration-none">
+                {{ task.project.name }}
+            </a>
+        </p>
     </div>
-    <a href="{% url 'projects:task_list' %}" class="btn btn-outline-secondary">Back to Tasks</a>
+    <div class="d-flex gap-2">
+        {% if user.is_staff_user %}
+        <a href="{% url 'projects:task_update' task.pk %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+        <form method="post" action="{% url 'projects:task_delete' task.pk %}" class="d-inline"
+              onsubmit="return confirm('Delete this task?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>Delete
+            </button>
+        </form>
+        {% endif %}
+        <a href="{% url 'projects:project_detail' task.project.pk %}" class="btn btn-outline-secondary btn-sm">
+            Back to Project
+        </a>
+    </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body">
-        <div class="row g-4">
-            <div class="col-md-6">
-                <small class="text-muted d-block">Status</small>
-                <strong>{{ task.get_status_display }}</strong>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Details</h6>
             </div>
-            <div class="col-md-6">
-                <small class="text-muted d-block">Priority</small>
-                <strong>{{ task.get_priority_display }}</strong>
-            </div>
-            <div class="col-md-6">
-                <small class="text-muted d-block">Assigned To</small>
-                <strong>{{ task.assigned_to.get_display_name|default:"Unassigned" }}</strong>
-            </div>
-            <div class="col-md-6">
-                <small class="text-muted d-block">Due Date</small>
-                <strong>{{ task.due_date|date:"M j, Y"|default:"-" }}</strong>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Status</small>
+                        {% if task.status == 'todo' %}
+                            <span class="badge bg-secondary mt-1">To Do</span>
+                        {% elif task.status == 'in_progress' %}
+                            <span class="badge bg-primary mt-1">In Progress</span>
+                        {% elif task.status == 'review' %}
+                            <span class="badge bg-info text-dark mt-1">In Review</span>
+                        {% elif task.status == 'completed' %}
+                            <span class="badge bg-success mt-1">Completed</span>
+                        {% else %}
+                            <span class="badge bg-secondary mt-1">{{ task.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Priority</small>
+                        {% if task.priority == 'high' %}
+                            <span class="badge bg-danger mt-1">High</span>
+                        {% elif task.priority == 'medium' %}
+                            <span class="badge bg-warning text-dark mt-1">Medium</span>
+                        {% else %}
+                            <span class="badge bg-secondary mt-1">Low</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Assigned To</small>
+                        <strong class="d-block mt-1">{{ task.assigned_to.get_display_name|default:"Unassigned" }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Due Date</small>
+                        <strong class="d-block mt-1">{{ task.due_date|date:"M j, Y"|default:"—" }}</strong>
+                    </div>
+                </div>
+
+                {% if task.description %}
+                <hr>
+                <h6 class="text-muted text-uppercase mb-2" style="font-size:.7rem; letter-spacing:.05em;">Description</h6>
+                <div>{{ task.description|linebreaks }}</div>
+                {% endif %}
             </div>
         </div>
+    </div>
 
-        {% if task.description %}
-        <hr>
-        <h5>Description</h5>
-        <p class="mb-0">{{ task.description|linebreaks }}</p>
-        {% endif %}
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Time Tracking</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Estimated Hours</small>
+                    <strong>{{ task.estimated_hours|default:"—" }}</strong>
+                </div>
+                <div>
+                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size:.7rem; letter-spacing:.05em;">Actual Hours</small>
+                    <strong>{{ task.actual_hours|default:"—" }}</strong>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock dashboard_content %}
+{% endblock %}

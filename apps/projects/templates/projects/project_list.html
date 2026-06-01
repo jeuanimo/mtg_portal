@@ -1,12 +1,12 @@
 {% extends 'base_dashboard.html' %}
 
-{% block title %}Projects{% endblock title %}
+{% block title %}Projects — MTG Portal{% endblock %}
 
 {% block dashboard_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-0">Projects</h1>
-        <p class="text-muted mb-0">Track current client work and delivery progress.</p>
+        <h4 class="mb-0">Projects</h4>
+        <p class="text-muted mb-0 small">Track client work and delivery progress.</p>
     </div>
     {% if user.is_staff_user %}
     <a href="{% url 'projects:project_create' %}" class="btn btn-primary">
@@ -15,34 +15,112 @@
     {% endif %}
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Project</th>
-                    <th>Organization</th>
-                    <th>Manager</th>
-                    <th>Status</th>
-                    <th>Target End</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for project in projects %}
-                <tr>
-                    <td><a href="{% url 'projects:project_detail' project.pk %}">{{ project.name }}</a></td>
-                    <td>{{ project.organization.name }}</td>
-                    <td>{{ project.project_manager.get_display_name|default:"Unassigned" }}</td>
-                    <td>{{ project.get_status_display }}</td>
-                    <td>{{ project.target_end_date|date:"M j, Y"|default:"-" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No projects found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Filter -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="id_status" class="form-label small fw-semibold">Status</label>
+                <select name="status" id="id_status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+            </div>
+            {% if current_status %}
+            <div class="col-md-2">
+                <a href="{% url 'projects:project_list' %}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+            </div>
+            {% endif %}
+        </form>
     </div>
 </div>
-{% endblock dashboard_content %}
+
+<!-- Projects Table -->
+<div class="card">
+    <div class="card-body p-0">
+        {% if projects %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Organization</th>
+                        <th>Manager</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Target End</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'projects:project_detail' project.pk %}" class="fw-medium text-decoration-none">
+                                {{ project.name }}
+                            </a>
+                        </td>
+                        <td>{{ project.organization.name }}</td>
+                        <td>{{ project.project_manager.get_display_name|default:"—" }}</td>
+                        <td>
+                            {% if project.status == 'planning' %}
+                                <span class="badge bg-secondary">Planning</span>
+                            {% elif project.status == 'in_progress' %}
+                                <span class="badge bg-primary">In Progress</span>
+                            {% elif project.status == 'on_hold' %}
+                                <span class="badge bg-warning text-dark">On Hold</span>
+                            {% elif project.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif project.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ project.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="min-width:100px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <progress class="flex-grow-1" style="height:6px; width:100%;"
+                                          value="{{ project.completion_percentage }}" max="100"></progress>
+                                <small class="text-muted text-nowrap">{{ project.completion_percentage }}%</small>
+                            </div>
+                        </td>
+                        <td>{{ project.target_end_date|date:"M j, Y"|default:"—" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-primary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if user.is_staff_user %}
+                                <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'projects:project_delete' project.pk %}" class="btn btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-kanban fs-1 text-muted"></i>
+            <p class="text-muted mt-3">No projects found.</p>
+            {% if user.is_staff_user %}
+            <a href="{% url 'projects:project_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-1"></i>Create a Project
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

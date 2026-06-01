@@ -103,17 +103,36 @@
                         <th>Status</th>
                         <th>Value</th>
                         <th>Assigned</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for lead in leads %}
                         <tr>
                             <td>
-                                <a href="{% url 'crm:lead_detail' lead.pk %}">{{ lead.title }}</a>
+                                <a href="{% url 'crm:lead_detail' lead.pk %}" class="fw-medium text-decoration-none">{{ lead.title }}</a>
                             </td>
                             <td>{{ lead.contact.full_name }}</td>
                             <td>{{ lead.organization.name|default:"-" }}</td>
-                            <td>{{ lead.get_status_display }}</td>
+                            <td>
+                                {% if lead.status == 'new' %}
+                                    <span class="badge bg-primary">New</span>
+                                {% elif lead.status == 'contacted' %}
+                                    <span class="badge bg-info text-dark">Contacted</span>
+                                {% elif lead.status == 'qualified' %}
+                                    <span class="badge bg-warning text-dark">Qualified</span>
+                                {% elif lead.status == 'proposal' %}
+                                    <span class="badge bg-secondary">Proposal</span>
+                                {% elif lead.status == 'negotiation' %}
+                                    <span class="badge bg-warning text-dark">Negotiation</span>
+                                {% elif lead.status == 'won' %}
+                                    <span class="badge bg-success">Won</span>
+                                {% elif lead.status == 'lost' %}
+                                    <span class="badge bg-danger">Lost</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ lead.get_status_display }}</span>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if lead.estimated_value %}
                                     ${{ lead.estimated_value|floatformat:0|intcomma }}
@@ -122,10 +141,20 @@
                                 {% endif %}
                             </td>
                             <td>{{ lead.assigned_to.get_display_name|default:"Unassigned" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'crm:lead_detail' lead.pk %}" class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'crm:lead_edit' lead.pk %}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">No leads found.</td>
+                            <td colspan="7" class="text-center text-muted py-4">No leads found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

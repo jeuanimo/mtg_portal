@@ -399,7 +399,12 @@ html {
 
 /* Dashboard Layout */
 .dashboard-layout {
+    padding-top: 56px;
     background-color: #f8f9fa;
+}
+
+.dashboard-navbar {
+    z-index: 1030;
 }
 
 .dashboard-wrapper {
@@ -410,7 +415,12 @@ html {
 .dashboard-main {
     flex: 1;
     padding: 1.5rem;
+    background-color: #f8f9fa;
     overflow-x: hidden;
+}
+
+.search-form-dashboard {
+    max-width: 400px;
 }
 
 /* KPI Cards */
@@ -622,20 +632,13 @@ html {
 @media (max-width: 991.98px) {
     .dashboard-main {
         padding: 1rem;
+        width: 100%;
     }
-    
+
     .sidebar {
-        position: fixed;
-        left: -250px;
-        top: 56px;
-        height: calc(100vh - 56px);
-        z-index: 1020;
+        display: none;
     }
-    
-    .sidebar.show {
-        left: 0;
-    }
-    
+
     .kpi-card .kpi-value {
         font-size: 1.5rem;
     }
