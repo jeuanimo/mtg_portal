@@ -1239,3 +1239,148 @@ html {
 .progress-lg { height: 20px; }
 .avatar-sm { width: 32px; height: 32px; font-size: 0.8rem; }
 .avatar-md { width: 40px; height: 40px; }
+
+/* =====================================================
+   AVATAR CIRCLES (tickets, meetings)
+   ===================================================== */
+
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.avatar-circle-sm {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* =====================================================
+   CRM PIPELINE BOARD
+   ===================================================== */
+
+.pipeline-board {
+    overflow-x: auto;
+}
+
+.pipeline-column {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.pipeline-card {
+    border-left: 3px solid var(--mtg-primary);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+
+.pipeline-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* =====================================================
+   MEETINGS CALENDAR
+   ===================================================== */
+
+.calendar-container {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #dee2e6;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.calendar-day-header {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    text-align: center;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 100px;
+    padding: 0.5rem;
+    vertical-align: top;
+}
+
+.calendar-day.other-month {
+    background: #f8f9fa;
+    color: #adb5bd;
+}
+
+.calendar-day.today {
+    background: #e7f1ff;
+}
+
+.calendar-day-number {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-event {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.25rem;
+    background: var(--mtg-primary);
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-event:hover {
+    opacity: 0.9;
+}
+
+.calendar-event.meeting-confirmed {
+    background: var(--mtg-success);
+}
+
+.calendar-event.meeting-pending {
+    background: var(--mtg-warning);
+    color: #212529;
+}
+
+/* =====================================================
+   INVOICE FORM — line-item formset
+   ===================================================== */
+
+.formset-row {
+    transition: all 0.3s ease;
+}
+
+.formset-row.to-delete {
+    opacity: 0.5;
+    background-color: #f8d7da;
+}

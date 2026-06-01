@@ -1,7 +1,7 @@
 {% extends "base_dashboard.html" %}
 {% load crm_tags %}
 {% block title %}Sales Pipeline - CRM{% endblock title %}
-{% block content %}
+{% block dashboard_content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Sales Pipeline</h1>
         <div>
@@ -93,17 +93,4 @@
             {% endfor %}
         </div>
     </div>
-    <style>
-.pipeline-column {
-    max-height: 500px;
-}
-.pipeline-card {
-    border-left: 3px solid var(--bs-primary);
-    cursor: pointer;
-    transition: box-shadow 0.2s;
-}
-.pipeline-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-    </style>
-{% endblock content %}
+{% endblock dashboard_content %}

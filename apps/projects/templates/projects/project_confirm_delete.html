@@ -1,0 +1,25 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Delete Project{% endblock title %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Delete Project</h1>
+    <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary">Cancel</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <p class="mb-1">Are you sure you want to delete <strong>{{ project.name }}</strong>?</p>
+        <p class="text-muted small">This will permanently delete the project and all associated tasks and documents.</p>
+
+        <form method="post" class="d-flex gap-2 mt-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Yes, Delete Project
+            </button>
+            <a href="{% url 'projects:project_detail' project.pk %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock dashboard_content %}

@@ -1,6 +1,6 @@
 {% extends "base_dashboard.html" %}
 {% block title %}Access Denied{% endblock title %}
-{% block content %}
+{% block dashboard_content %}
     <div class="card border-0 shadow-sm">
         <div class="card-body p-5 text-center">
             <h1 class="h3 mb-3">Access Denied</h1>
@@ -8,4 +8,4 @@
             <a href="{% url 'dashboard:index' %}" class="btn btn-primary">Return to Dashboard</a>
         </div>
     </div>
-{% endblock content %}
+{% endblock dashboard_content %}
