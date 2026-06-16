@@ -4,6 +4,20 @@ from crispy_forms.layout import Layout, Row, Column, Submit, HTML
 from .models import ContactSubmission, ServiceRequest, Service
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    widget = MultipleFileInput
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            return [single_file_clean(item, initial) for item in data]
+        return single_file_clean(data, initial)
+
+
 class ContactForm(forms.ModelForm):
     """Contact form for the public website."""
     
@@ -145,6 +159,17 @@ class ConsultationRequestForm(forms.ModelForm):
         required=False,
         label='Responsive design priority',
     )
+    document_files = MultipleFileField(
+        required=False,
+        label='Upload reference documents',
+        help_text='Upload business docs, screenshots, mockups, feature lists, or brand files.',
+    )
+    document_notes = forms.CharField(
+        required=False,
+        label='Document notes',
+        widget=forms.Textarea(attrs={'rows': 2}),
+        help_text='Optional context about what each file should be used for.',
+    )
 
     class Meta:
         model = ServiceRequest
@@ -158,6 +183,7 @@ class ConsultationRequestForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_class = 'consultation-form'
+        self.helper.form_enctype = 'multipart/form-data'
         self.helper.layout = Layout(
             HTML('<h5 class="mb-3">Your Information</h5>'),
             Row(
@@ -200,6 +226,9 @@ class ConsultationRequestForm(forms.ModelForm):
             ),
             'must_have_features',
             'nice_to_have_features',
+            HTML('<hr class="my-4"><h5 class="mb-3">Supporting Documents</h5>'),
+            'document_files',
+            'document_notes',
             'description',
             Submit('submit', 'Request Consultation', css_class='btn-primary btn-lg w-100')
         )
@@ -212,6 +241,9 @@ class ConsultationRequestForm(forms.ModelForm):
         self.fields['description'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
         self.fields['description'].widget.attrs['rows'] = 4
         self.fields['description'].label = 'Additional Information'
+        self.fields['document_files'].widget.attrs.update({
+            'accept': '.png,.jpg,.jpeg,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf',
+        })
 
     def _is_web_service(self, service):
         """Return True when selected service indicates web design/development."""
@@ -246,3 +278,27 @@ class ConsultationRequestForm(forms.ModelForm):
                 self.add_error(field_name, message)
 
         return cleaned_data
+
+    def clean_document_files(self):
+        """Validate uploaded consultation attachments."""
+        files = self.files.getlist('document_files')
+        if not files:
+            return []
+
+        allowed_extensions = {
+            'png', 'jpg', 'jpeg', 'gif', 'webp',
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf',
+        }
+        max_size = 10 * 1024 * 1024  # 10 MB per file
+
+        for file in files:
+            extension = file.name.rsplit('.', 1)[-1].lower() if '.' in file.name else ''
+            if extension not in allowed_extensions:
+                raise forms.ValidationError(
+                    f'Unsupported file type: {file.name}. Allowed types: images, PDF, Office, and text files.'
+                )
+            if file.size > max_size:
+                raise forms.ValidationError(
+                    f'File too large: {file.name}. Maximum file size is 10 MB.'
+                )
+        return files

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from apps.crm.models import Organization, Contact
 from apps.tickets.models import ConsultingProject
-from .models import Service, ServiceCategory, Testimonial
+from .models import Service, ServiceCategory, Testimonial, ServiceRequestDocument
 from .forms import ContactForm, ConsultationRequestForm
 
 
@@ -54,20 +54,38 @@ def _map_service_to_project_type(service):
     return ConsultingProject.ProjectType.OTHER
 
 
-def _build_intake_payload(form):
+def _build_intake_payload(form, uploaded_documents=None):
     """Build intake payload from consultation form for project intake_responses."""
     fields = [
         'budget_range', 'timeline', 'description', 'preferred_date', 'preferred_time',
         'website_type', 'target_audience', 'ui_style', 'inspiration_url',
         'preferred_color_scheme', 'avoid_colors', 'must_have_features',
         'nice_to_have_features', 'content_ready', 'accessibility_requirements',
-        'responsive_priority',
+        'responsive_priority', 'document_notes',
     ]
     payload = {}
     for field in fields:
         value = form.cleaned_data.get(field)
         payload[field] = value.isoformat() if hasattr(value, 'isoformat') else value
+    payload['attached_documents'] = uploaded_documents or []
     return payload
+
+
+def _save_service_request_documents(service_request, files, notes=''):
+    """Persist uploaded files and return serializable metadata."""
+    uploaded_documents = []
+    for file in files:
+        doc = ServiceRequestDocument.objects.create(
+            service_request=service_request,
+            file=file,
+            notes=(notes or '')[:255],
+        )
+        uploaded_documents.append({
+            'name': doc.original_name,
+            'url': doc.file.url,
+            'notes': doc.notes,
+        })
+    return uploaded_documents
 
 
 def _get_or_create_organization(service_request):
@@ -120,9 +138,15 @@ def _get_or_create_contact(service_request, organization):
     return contact
 
 
-def _create_project_from_service_request(service_request, form, organization, contact):
+def _create_project_from_service_request(
+    service_request,
+    form,
+    organization,
+    contact,
+    uploaded_documents,
+):
     """Create a consulting project and mark the service request as converted."""
-    intake_payload = _build_intake_payload(form)
+    intake_payload = _build_intake_payload(form, uploaded_documents=uploaded_documents)
     intake_payload['selected_service'] = {
         'id': service_request.service_id,
         'title': service_request.service.title if service_request.service else '',
@@ -203,7 +227,7 @@ def industries(request):
 def consultation_request(request):
     """Request consultation form."""
     if request.method == 'POST':
-        form = ConsultationRequestForm(request.POST)
+        form = ConsultationRequestForm(request.POST, request.FILES)
         if form.is_valid():
             service_request = form.save(commit=False)
             service_request.ip_address = _get_client_ip(request)
@@ -211,9 +235,21 @@ def consultation_request(request):
                 service_request.source = 'public_consultation'
             service_request.save()
 
+            uploaded_documents = _save_service_request_documents(
+                service_request,
+                form.cleaned_data.get('document_files') or [],
+                form.cleaned_data.get('document_notes', ''),
+            )
+
             organization = _get_or_create_organization(service_request)
             contact = _get_or_create_contact(service_request, organization)
-            _create_project_from_service_request(service_request, form, organization, contact)
+            _create_project_from_service_request(
+                service_request,
+                form,
+                organization,
+                contact,
+                uploaded_documents,
+            )
 
             messages.success(
                 request,

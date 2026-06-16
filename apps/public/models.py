@@ -157,6 +157,31 @@ class ServiceRequest(TimeStampedModel):
         return f"{self.name} - {self.service or 'General Inquiry'}"
 
 
+class ServiceRequestDocument(TimeStampedModel):
+    """Uploaded files attached to a consultation service request."""
+
+    service_request = models.ForeignKey(
+        ServiceRequest, on_delete=models.CASCADE, related_name='documents'
+    )
+    file = models.FileField(upload_to='service_requests/')
+    original_name = models.CharField(max_length=255, blank=True)
+    notes = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'Service Request Document'
+        verbose_name_plural = 'Service Request Documents'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        display = self.original_name or self.file.name
+        return f"{display} ({self.service_request_id})"
+
+    def save(self, *args, **kwargs):
+        if self.file and not self.original_name:
+            self.original_name = self.file.name.split('/')[-1]
+        super().save(*args, **kwargs)
+
+
 class Testimonial(TimeStampedModel):
     """Client testimonials."""
     

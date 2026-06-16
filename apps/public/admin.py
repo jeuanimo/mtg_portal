@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import ContactSubmission, ServiceCategory, Service, ServiceRequest, Testimonial
+from .models import (
+    ContactSubmission,
+    ServiceCategory,
+    Service,
+    ServiceRequest,
+    ServiceRequestDocument,
+    Testimonial,
+)
 
 
 @admin.register(ContactSubmission)
@@ -44,6 +51,12 @@ class ServiceAdmin(admin.ModelAdmin):
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
+class ServiceRequestDocumentInline(admin.TabularInline):
+    model = ServiceRequestDocument
+    extra = 0
+    readonly_fields = ['original_name', 'file', 'notes', 'created_at', 'updated_at']
+
+
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'service', 'status', 'assigned_to', 'created_at']
@@ -51,6 +64,15 @@ class ServiceRequestAdmin(admin.ModelAdmin):
     search_fields = ['name', 'email', 'company', 'description']
     readonly_fields = ['ip_address', 'created_at', 'updated_at']
     date_hierarchy = 'created_at'
+    inlines = [ServiceRequestDocumentInline]
+
+
+@admin.register(ServiceRequestDocument)
+class ServiceRequestDocumentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'service_request', 'original_name', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['original_name', 'service_request__name', 'service_request__email']
+    readonly_fields = ['created_at', 'updated_at']
 
 
 @admin.register(Testimonial)

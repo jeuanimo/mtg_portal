@@ -63,7 +63,22 @@
                                         <tr>
                                             <td class="text-muted">{{ key|capfirst }}</td>
                                             <td>
-                                                {% if value.items %}
+                                                {% if key == 'attached_documents' %}
+                                                    {% if value %}
+                                                        <ul class="mb-0 ps-3">
+                                                            {% for doc in value %}
+                                                                <li>
+                                                                    <a href="{{ doc.url }}" target="_blank" rel="noopener">{{ doc.name }}</a>
+                                                                    {% if doc.notes %}
+                                                                        <span class="text-muted">- {{ doc.notes }}</span>
+                                                                    {% endif %}
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <span class="text-muted">No documents uploaded.</span>
+                                                    {% endif %}
+                                                {% elif value.items %}
                                                     <ul class="mb-0 ps-3">
                                                         {% for subkey, subvalue in value.items %}
                                                             <li><strong>{{ subkey|capfirst }}:</strong> {{ subvalue|default:"-" }}</li>
