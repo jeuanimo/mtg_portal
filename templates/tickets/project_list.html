@@ -1,0 +1,136 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Consulting Projects{% endblock title %}
+{% block dashboard_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Consulting Projects</h1>
+            <p class="text-muted mb-0">Track active client projects and intake progress.</p>
+        </div>
+        <a href="{% url 'tickets:project_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>New Project
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">Total</small>
+                    <div class="fs-4 fw-semibold">{{ stats.total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">Intake</small>
+                    <div class="fs-4 fw-semibold">{{ stats.intake }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">Discovery</small>
+                    <div class="fs-4 fw-semibold">{{ stats.discovery }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">Proposal</small>
+                    <div class="fs-4 fw-semibold">{{ stats.proposal }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">In Progress</small>
+                    <div class="fs-4 fw-semibold">{{ stats.in_progress }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <small class="text-muted d-block">Completed</small>
+                    <div class="fs-4 fw-semibold">{{ stats.completed }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label for="status-filter" class="form-label">Status</label>
+                    <select id="status-filter" name="status" class="form-select">
+                        <option value="">All statuses</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="type-filter" class="form-label">Project Type</label>
+                    <select id="type-filter" name="type" class="form-select">
+                        <option value="">All types</option>
+                        {% for type_value in type_choices %}
+                            <option value="{{ type_value }}" {% if request.GET.type == type_value %}selected{% endif %}>{{ type_value|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'tickets:project_list' %}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Project</th>
+                        <th>Organization</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Intake Form</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'tickets:project_detail' project.pk %}" class="fw-semibold text-decoration-none">
+                                    {{ project.project_number }} - {{ project.name }}
+                                </a>
+                            </td>
+                            <td>{{ project.organization.name }}</td>
+                            <td>{{ project.project_type|title }}</td>
+                            <td>{{ project.get_status_display }}</td>
+                            <td>
+                                {% if project.intake_responses %}
+                                    <span class="badge bg-success-subtle text-success border">Submitted</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border">Not submitted</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ project.updated_at|date:"M j, Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No projects found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock dashboard_content %}
