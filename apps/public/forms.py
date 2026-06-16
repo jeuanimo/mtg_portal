@@ -41,11 +41,15 @@ class ContactForm(forms.ModelForm):
 class ConsultationRequestForm(forms.ModelForm):
     """Consultation request form."""
 
-    services_requested = forms.ModelMultipleChoiceField(
+    WEB_KEYWORDS = (
+        'web', 'website', 'frontend', 'front-end', 'ui', 'ux', 'design', 'ecommerce'
+    )
+
+    service = forms.ModelChoiceField(
         queryset=Service.objects.filter(is_active=True).order_by('order', 'title'),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label='Services Interested In',
+        required=True,
+        label='Service Needed',
+        empty_label='Select a service...',
     )
 
     preferred_date = forms.DateField(
@@ -65,11 +69,88 @@ class ConsultationRequestForm(forms.ModelForm):
         label='Preferred time'
     )
 
+    website_type = forms.ChoiceField(
+        choices=[
+            ('', 'Select website type...'),
+            ('marketing', 'Marketing / Brochure Site'),
+            ('ecommerce', 'E-commerce Store'),
+            ('web_app', 'Web Application / Portal'),
+            ('landing', 'Landing Page / Campaign Site'),
+            ('other', 'Other'),
+        ],
+        required=False,
+        label='Website type',
+    )
+    target_audience = forms.CharField(
+        required=False,
+        label='Target audience',
+        widget=forms.Textarea(attrs={'rows': 2}),
+    )
+    ui_style = forms.CharField(
+        required=False,
+        label='Preferred UI style',
+        widget=forms.TextInput(
+            attrs={'placeholder': 'Modern, minimal, bold, playful, corporate, etc.'}
+        ),
+    )
+    inspiration_url = forms.URLField(
+        required=False,
+        label='Inspiration URL',
+        widget=forms.URLInput(attrs={'placeholder': 'https://example.com'}),
+    )
+    preferred_color_scheme = forms.CharField(
+        required=False,
+        label='Preferred color scheme',
+        widget=forms.TextInput(
+            attrs={'placeholder': 'Primary, secondary, accent colors or brand palette'}
+        ),
+    )
+    avoid_colors = forms.CharField(
+        required=False,
+        label='Colors to avoid',
+        widget=forms.TextInput(attrs={'placeholder': 'List any colors to avoid'}),
+    )
+    must_have_features = forms.CharField(
+        required=False,
+        label='Must-have frontend features',
+        widget=forms.Textarea(attrs={'rows': 3}),
+    )
+    nice_to_have_features = forms.CharField(
+        required=False,
+        label='Nice-to-have features',
+        widget=forms.Textarea(attrs={'rows': 3}),
+    )
+    content_ready = forms.ChoiceField(
+        choices=[
+            ('', 'Select content readiness...'),
+            ('ready', 'Content is ready'),
+            ('partial', 'Content is partially ready'),
+            ('need_help', 'Need help creating content'),
+        ],
+        required=False,
+        label='Content readiness',
+    )
+    accessibility_requirements = forms.CharField(
+        required=False,
+        label='Accessibility requirements',
+        widget=forms.Textarea(attrs={'rows': 2}),
+    )
+    responsive_priority = forms.ChoiceField(
+        choices=[
+            ('', 'Select priority...'),
+            ('mobile_first', 'Mobile-first'),
+            ('balanced', 'Balanced mobile and desktop'),
+            ('desktop_first', 'Desktop-first'),
+        ],
+        required=False,
+        label='Responsive design priority',
+    )
+
     class Meta:
         model = ServiceRequest
         fields = [
             'name', 'email', 'phone', 'company',
-            'services_requested', 'budget_range', 'timeline',
+            'service', 'budget_range', 'timeline',
             'description'
         ]
 
@@ -88,55 +169,7 @@ class ConsultationRequestForm(forms.ModelForm):
                 Column('company', css_class='col-md-6'),
             ),
             HTML('<hr class="my-4"><h5 class="mb-3">Project Details</h5>'),
-            HTML('''
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Services Interested In</label>
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center"
-                                type="button" id="servicesDropdown"
-                                data-bs-toggle="dropdown" data-bs-auto-close="outside"
-                                aria-expanded="false">
-                            <span id="servicesDropdownLabel">Select services...</span>
-                            <i class="bi bi-chevron-down ms-2"></i>
-                        </button>
-                        <ul class="dropdown-menu w-100 p-2" aria-labelledby="servicesDropdown" style="max-height:260px;overflow-y:auto;">
-                            {% for service in available_services %}
-                            <li>
-                                <label class="dropdown-item d-flex align-items-center gap-2 py-2" style="cursor:pointer;white-space:normal;">
-                                    <input type="checkbox" name="services_requested" value="{{ service.pk }}"
-                                           class="form-check-input mtg-service-cb" style="flex-shrink:0;">
-                                    <span>
-                                        <i class="bi {{ service.icon|default:'bi-gear' }} text-primary me-1"></i>
-                                        <strong>{{ service.title }}</strong>
-                                        <br><small class="text-muted">{{ service.short_description }}</small>
-                                    </span>
-                                </label>
-                            </li>
-                            {% empty %}
-                            <li><span class="dropdown-item text-muted">No services available</span></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-                <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    function updateLabel() {
-                        var checked = document.querySelectorAll('.mtg-service-cb:checked');
-                        var label = document.getElementById('servicesDropdownLabel');
-                        if (checked.length === 0) {
-                            label.textContent = 'Select services...';
-                        } else {
-                            label.textContent = Array.from(checked).map(function(cb) {
-                                return cb.closest('label').querySelector('strong').textContent.trim();
-                            }).join(', ');
-                        }
-                    }
-                    document.querySelectorAll('.mtg-service-cb').forEach(function(cb) {
-                        cb.addEventListener('change', updateLabel);
-                    });
-                });
-                </script>
-            '''),
+            'service',
             Row(
                 Column('budget_range', css_class='col-md-6'),
                 Column('timeline', css_class='col-md-6'),
@@ -146,6 +179,27 @@ class ConsultationRequestForm(forms.ModelForm):
                 Column('preferred_date', css_class='col-md-6'),
                 Column('preferred_time', css_class='col-md-6'),
             ),
+            HTML('<hr class="my-4"><h5 class="mb-3">Web Design Discovery</h5>'
+                 '<p class="text-muted small">Required when selecting web development-related services.</p>'),
+            Row(
+                Column('website_type', css_class='col-md-6'),
+                Column('content_ready', css_class='col-md-6'),
+            ),
+            'target_audience',
+            Row(
+                Column('ui_style', css_class='col-md-6'),
+                Column('preferred_color_scheme', css_class='col-md-6'),
+            ),
+            Row(
+                Column('inspiration_url', css_class='col-md-6'),
+                Column('avoid_colors', css_class='col-md-6'),
+            ),
+            Row(
+                Column('responsive_priority', css_class='col-md-6'),
+                Column('accessibility_requirements', css_class='col-md-6'),
+            ),
+            'must_have_features',
+            'nice_to_have_features',
             'description',
             Submit('submit', 'Request Consultation', css_class='btn-primary btn-lg w-100')
         )
@@ -158,3 +212,37 @@ class ConsultationRequestForm(forms.ModelForm):
         self.fields['description'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
         self.fields['description'].widget.attrs['rows'] = 4
         self.fields['description'].label = 'Additional Information'
+
+    def _is_web_service(self, service):
+        """Return True when selected service indicates web design/development."""
+        if not service:
+            return False
+        haystack = ' '.join([
+            service.title or '',
+            service.slug or '',
+            service.short_description or '',
+        ]).lower()
+        return any(keyword in haystack for keyword in self.WEB_KEYWORDS)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        service = cleaned_data.get('service')
+
+        if not self._is_web_service(service):
+            return cleaned_data
+
+        required_for_web = {
+            'website_type': 'Please choose the website type.',
+            'target_audience': 'Please describe your target audience.',
+            'ui_style': 'Please describe your preferred UI style.',
+            'inspiration_url': 'Please provide at least one inspiration URL.',
+            'preferred_color_scheme': 'Please provide your preferred color scheme.',
+            'must_have_features': 'Please list required frontend features.',
+            'responsive_priority': 'Please select a responsive design priority.',
+        }
+
+        for field_name, message in required_for_web.items():
+            if not cleaned_data.get(field_name):
+                self.add_error(field_name, message)
+
+        return cleaned_data
