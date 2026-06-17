@@ -38,9 +38,13 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() in ('true', '1', 'yes')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# HSTS — start at 1 hour (3600s) to allow recovery if SSL cert issues occur.
+# Once confirmed stable, raise via HSTS_SECONDS env var (e.g. 31536000 = 1 year).
+# NEVER set SECURE_HSTS_PRELOAD=True until the domain has been on HSTS preload
+# list intentionally — once preloaded, it's very hard to undo.
+SECURE_HSTS_SECONDS = int(os.getenv('HSTS_SECONDS', '3600'))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('HSTS_INCLUDE_SUBDOMAINS', 'True').lower() in ('true', '1', 'yes')
+SECURE_HSTS_PRELOAD = os.getenv('HSTS_PRELOAD', 'False').lower() in ('true', '1', 'yes')
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Disable logout via GET in production for CSRF safety (requires POST logout)
