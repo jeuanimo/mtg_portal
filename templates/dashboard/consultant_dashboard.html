@@ -154,14 +154,14 @@
                         <h6 class="mb-0">
                             <i class="bi bi-briefcase text-info me-2"></i>My Projects
                         </h6>
-                        <a href="{% url 'tickets:consulting_list' %}"
+                        <a href="{% url 'tickets:project_list' %}"
                            class="btn btn-sm btn-outline-primary">View All</a>
                     </div>
                     <div class="card-body p-0">
                         {% if recent_projects %}
                             <div class="list-group list-group-flush">
                                 {% for project in recent_projects %}
-                                    <a href="{% url 'tickets:consulting_detail' project.pk %}"
+                                    <a href="{% url 'tickets:project_detail' project.pk %}"
                                        class="list-group-item list-group-item-action">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
@@ -220,6 +220,45 @@
                            class="list-group-item list-group-item-action">
                             <i class="bi bi-calendar-week me-2"></i>Set Availability
                         </a>
+                    </div>
+                </div>
+                <!-- Prospects and Clients -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Prospects and Clients
+                        </h6>
+                        <a href="{% url 'accounts:user_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Prospects</span>
+                            <strong>{{ prospects_count }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Clients</span>
+                            <strong>{{ clients_count }}</strong>
+                        </div>
+                        <hr>
+                        <h6 class="small text-uppercase text-muted">Recent Prospects</h6>
+                        <ul class="list-unstyled mb-3 small">
+                            {% for user_item in recent_prospects %}
+                                <li class="mb-1">{{ user_item.email }}</li>
+                            {% empty %}
+                                <li class="text-muted">No prospects yet.</li>
+                            {% endfor %}
+                        </ul>
+                        <h6 class="small text-uppercase text-muted">Recent Clients</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            {% for user_item in recent_clients %}
+                                <li class="mb-1">
+                                    {{ user_item.email }}
+                                    {% if user_item.organization %}<span class="text-muted">- {{ user_item.organization.name }}</span>{% endif %}
+                                </li>
+                            {% empty %}
+                                <li class="text-muted">No clients yet.</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
                 <!-- Time Tracking Summary -->

@@ -231,6 +231,9 @@ def get_finance_dashboard_context(_user, now):
         due_date__lt=now.date() - timedelta(days=60)
     ).aggregate(total=Sum('balance_due'))['total'] or 0
     
+    client_users = _client_users()
+    prospect_users = _prospect_users()
+
     return {
         'is_finance_dashboard': True,
         'invoices_outstanding': invoices_outstanding,
@@ -245,6 +248,10 @@ def get_finance_dashboard_context(_user, now):
         'aging_30': aging_30,
         'aging_60': aging_60,
         'aging_90plus': aging_90plus,
+        'clients_count': client_users.count(),
+        'prospects_count': prospect_users.count(),
+        'recent_clients': client_users.order_by('-created_at')[:5],
+        'recent_prospects': prospect_users.order_by('-created_at')[:5],
     }
 
 
@@ -292,6 +299,9 @@ def get_consultant_dashboard_context(user, now):
         status__in=Meeting.UPCOMING_STATUSES
     ).distinct().count()
     
+    client_users = _client_users()
+    prospect_users = _prospect_users()
+
     return {
         'is_consultant_dashboard': True,
         'tickets_open': tickets_open,
@@ -302,6 +312,10 @@ def get_consultant_dashboard_context(user, now):
         'time_this_week': time_this_week,
         'upcoming_meetings': upcoming_meetings,
         'meetings_today': meetings_today,
+        'clients_count': client_users.count(),
+        'prospects_count': prospect_users.count(),
+        'recent_clients': client_users.order_by('-created_at')[:5],
+        'recent_prospects': prospect_users.order_by('-created_at')[:5],
     }
 
 
