@@ -58,6 +58,15 @@ class ConsultationRequestForm(forms.ModelForm):
     WEB_KEYWORDS = (
         'web', 'website', 'frontend', 'front-end', 'ui', 'ux', 'design', 'ecommerce'
     )
+    WEB_REQUIRED_FIELDS = {
+        'website_type': 'Please choose the website type.',
+        'target_audience': 'Please describe your target audience.',
+        'ui_style': 'Please describe your preferred UI style.',
+        'inspiration_url': 'Please provide at least one inspiration URL.',
+        'preferred_color_scheme': 'Please provide your preferred color scheme.',
+        'must_have_features': 'Please list required frontend features.',
+        'responsive_priority': 'Please select a responsive design priority.',
+    }
 
     service = forms.ModelChoiceField(
         queryset=Service.objects.filter(is_active=True).order_by('order', 'title'),
@@ -207,6 +216,7 @@ class ConsultationRequestForm(forms.ModelForm):
             ),
             HTML('<hr class="my-4"><h5 class="mb-3">Web Design Discovery</h5>'
                  '<p class="text-muted small">Required when selecting web development-related services.</p>'),
+            HTML('<div id="web-discovery-section">'),
             Row(
                 Column('website_type', css_class='col-md-6'),
                 Column('content_ready', css_class='col-md-6'),
@@ -226,6 +236,36 @@ class ConsultationRequestForm(forms.ModelForm):
             ),
             'must_have_features',
             'nice_to_have_features',
+            HTML('</div>'),
+            HTML('''
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var serviceField = document.getElementById('id_service');
+                    var section = document.getElementById('web-discovery-section');
+                    if (!serviceField || !section) {
+                        return;
+                    }
+
+                    var keywords = ['web', 'website', 'frontend', 'ui', 'ux', 'design', 'ecommerce'];
+                    function isWebServiceSelected() {
+                        var selected = serviceField.options[serviceField.selectedIndex];
+                        if (!selected) {
+                            return false;
+                        }
+                        var text = (selected.text || '').toLowerCase();
+                        return keywords.some(function(keyword) { return text.indexOf(keyword) !== -1; });
+                    }
+
+                    function toggleSection() {
+                        var show = isWebServiceSelected();
+                        section.style.display = show ? '' : 'none';
+                    }
+
+                    serviceField.addEventListener('change', toggleSection);
+                    toggleSection();
+                });
+                </script>
+            '''),
             HTML('<hr class="my-4"><h5 class="mb-3">Supporting Documents</h5>'),
             'document_files',
             'document_notes',
@@ -238,6 +278,9 @@ class ConsultationRequestForm(forms.ModelForm):
         self.fields['email'].widget.attrs['placeholder'] = 'your@email.com'
         self.fields['phone'].widget.attrs['placeholder'] = 'Your phone number'
         self.fields['company'].widget.attrs['placeholder'] = 'Your Company Name'
+        self.fields['service'].help_text = (
+            'Selecting a web-related service requires completing the Web Design Discovery section.'
+        )
         self.fields['description'].widget.attrs['placeholder'] = 'Tell us about your project goals, current challenges, or any specific requirements...'
         self.fields['description'].widget.attrs['rows'] = 4
         self.fields['description'].label = 'Additional Information'
@@ -263,19 +306,17 @@ class ConsultationRequestForm(forms.ModelForm):
         if not self._is_web_service(service):
             return cleaned_data
 
-        required_for_web = {
-            'website_type': 'Please choose the website type.',
-            'target_audience': 'Please describe your target audience.',
-            'ui_style': 'Please describe your preferred UI style.',
-            'inspiration_url': 'Please provide at least one inspiration URL.',
-            'preferred_color_scheme': 'Please provide your preferred color scheme.',
-            'must_have_features': 'Please list required frontend features.',
-            'responsive_priority': 'Please select a responsive design priority.',
-        }
-
-        for field_name, message in required_for_web.items():
+        missing_fields = []
+        for field_name, message in self.WEB_REQUIRED_FIELDS.items():
             if not cleaned_data.get(field_name):
                 self.add_error(field_name, message)
+                missing_fields.append(field_name)
+
+        if missing_fields:
+            self.add_error(
+                'service',
+                'This service requires the Web Design Discovery fields below. Please complete them and resubmit.'
+            )
 
         return cleaned_data
 
