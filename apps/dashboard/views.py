@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from apps.crm.models import Lead
+from apps.accounts.models import User
 from apps.invoicing.models import Invoice, Payment
 from apps.tickets.models import Ticket, ConsultingProject
 from apps.projects.models import Project, Task
@@ -24,6 +25,14 @@ def _upcoming_meetings(now):
         status__in=Meeting.UPCOMING_STATUSES,
         start_time__gte=now,
     )
+
+
+def _client_users():
+    return User.objects.filter(role=User.Role.CLIENT).select_related('organization')
+
+
+def _prospect_users():
+    return User.objects.filter(role=User.Role.PROSPECT).select_related('organization')
 
 
 @login_required
@@ -106,6 +115,10 @@ def get_admin_dashboard_context(_user, now):
     
     # Upcoming meetings
     upcoming_meetings = _upcoming_meetings(now).select_related('organization', 'contact', 'host').order_by('start_time')[:5]
+
+    # Client and prospect visibility
+    client_users = _client_users()
+    prospect_users = _prospect_users()
     
     # Recent activity (combine different models)
     activities = []
@@ -155,6 +168,10 @@ def get_admin_dashboard_context(_user, now):
         'invoices_due': invoices_due,
         'upcoming_meetings': upcoming_meetings,
         'recent_activities': activities[:8],
+        'clients_count': client_users.count(),
+        'prospects_count': prospect_users.count(),
+        'recent_clients': client_users.order_by('-created_at')[:5],
+        'recent_prospects': prospect_users.order_by('-created_at')[:5],
     }
 
 
@@ -306,6 +323,10 @@ def get_staff_dashboard_context(_user, now):
     upcoming_meetings = _upcoming_meetings(now).select_related('organization', 'contact').order_by('start_time')[:5]
     
     invoices_due = _outstanding_invoices().select_related('organization', 'contact').order_by('due_date')[:5]
+
+    # Client and prospect visibility
+    client_users = _client_users()
+    prospect_users = _prospect_users()
     
     return {
         'is_staff_dashboard': True,
@@ -317,6 +338,10 @@ def get_staff_dashboard_context(_user, now):
         'open_tickets': open_tickets,
         'upcoming_meetings': upcoming_meetings,
         'invoices_due': invoices_due,
+        'clients_count': client_users.count(),
+        'prospects_count': prospect_users.count(),
+        'recent_clients': client_users.order_by('-created_at')[:5],
+        'recent_prospects': prospect_users.order_by('-created_at')[:5],
     }
 
 

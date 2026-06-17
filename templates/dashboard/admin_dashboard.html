@@ -22,16 +22,16 @@
         <!-- KPI Cards Row -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-xl-3">
-                {% include 'includes/kpi_card.html' with title='Pipeline Value' value='$'|add:leads_pipeline_value|floatformat:0|intcomma icon='bi-currency-dollar' variant='success' subtitle=leads_new|add:' new leads' %}
+                {% include "includes/kpi_card.html" with title="Pipeline Value" value="$"|add:leads_pipeline_value|floatformat:0|intcomma icon="bi-currency-dollar" variant="success" subtitle=leads_new|add:" new leads" %}
             </div>
             <div class="col-md-6 col-xl-3">
-                {% include 'includes/kpi_card.html' with title='Outstanding Invoices' value='$'|add:invoices_outstanding|floatformat:0|intcomma icon='bi-receipt' variant='warning' subtitle=invoices_overdue|add:' overdue' %}
+                {% include "includes/kpi_card.html" with title="Outstanding Invoices" value="$"|add:invoices_outstanding|floatformat:0|intcomma icon="bi-receipt" variant="warning" subtitle=invoices_overdue|add:" overdue" %}
             </div>
             <div class="col-md-6 col-xl-3">
-                {% include 'includes/kpi_card.html' with title='Open Tickets' value=tickets_open icon='bi-ticket-detailed' variant='info' subtitle=tickets_urgent|add:' urgent' %}
+                {% include "includes/kpi_card.html" with title="Open Tickets" value=tickets_open icon="bi-ticket-detailed" variant="info" subtitle=tickets_urgent|add:" urgent" %}
             </div>
             <div class="col-md-6 col-xl-3">
-                {% include 'includes/kpi_card.html' with title='Meetings Today' value=meetings_today icon='bi-calendar-event' variant='primary' subtitle='Scheduled' %}
+                {% include "includes/kpi_card.html" with title="Meetings Today" value=meetings_today icon="bi-calendar-event" variant="primary" subtitle="Scheduled" %}
             </div>
         </div>
         <!-- Main Content Row -->
@@ -40,23 +40,62 @@
             <div class="col-lg-8">
                 <!-- Pipeline Widget -->
                 <div class="mb-4">
-                    {% include 'includes/widgets/pipeline_widget.html' with leads=recent_leads pipeline_stages=pipeline_stages %}
+                    {% include "includes/widgets/pipeline_widget.html" with leads=recent_leads pipeline_stages=pipeline_stages %}
                 </div>
                 <!-- Tickets Widget -->
                 <div class="mb-4">
-                    {% include 'includes/widgets/tickets_widget.html' with tickets=open_tickets title='Open Tickets' %}
+                    {% include "includes/widgets/tickets_widget.html" with tickets=open_tickets title="Open Tickets" %}
                 </div>
                 <!-- Invoices Due Widget -->
                 <div class="mb-4">
-                    {% include 'includes/widgets/invoices_widget.html' with invoices=invoices_due title='Invoices Due' %}
+                    {% include "includes/widgets/invoices_widget.html" with invoices=invoices_due title="Invoices Due" %}
                 </div>
             </div>
             <!-- Right Column -->
             <div class="col-lg-4">
                 <!-- Upcoming Meetings -->
-                <div class="mb-4">{% include 'includes/widgets/meetings_widget.html' with meetings=upcoming_meetings %}</div>
+                <div class="mb-4">{% include "includes/widgets/meetings_widget.html" with meetings=upcoming_meetings %}</div>
+                <!-- Prospects and Clients -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Prospects and Clients
+                        </h6>
+                        <a href="{% url 'admin:accounts_user_changelist' %}" class="btn btn-sm btn-outline-primary">Manage Users</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Prospects</span>
+                            <strong>{{ prospects_count }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Clients</span>
+                            <strong>{{ clients_count }}</strong>
+                        </div>
+                        <hr>
+                        <h6 class="small text-uppercase text-muted">Recent Prospects</h6>
+                        <ul class="list-unstyled mb-3 small">
+                            {% for user_item in recent_prospects %}
+                                <li class="mb-1">{{ user_item.email }}</li>
+                            {% empty %}
+                                <li class="text-muted">No prospects yet.</li>
+                            {% endfor %}
+                        </ul>
+                        <h6 class="small text-uppercase text-muted">Recent Clients</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            {% for user_item in recent_clients %}
+                                <li class="mb-1">
+                                    {{ user_item.email }}
+                                    {% if user_item.organization %}<span class="text-muted">- {{ user_item.organization.name }}</span>{% endif %}
+                                </li>
+                            {% empty %}
+                                <li class="text-muted">No clients yet.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
                 <!-- Recent Activity -->
-                <div class="mb-4">{% include 'includes/widgets/activity_widget.html' with activities=recent_activities %}</div>
+                <div class="mb-4">{% include "includes/widgets/activity_widget.html" with activities=recent_activities %}</div>
                 <!-- Quick Stats Card -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white">
