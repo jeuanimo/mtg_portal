@@ -173,7 +173,7 @@ class Lead(TimeStampedModel):
     @property
     def weighted_value(self):
         if self.estimated_value and self.probability:
-            return self.estimated_value * (self.probability / 100)
+            return self.estimated_value * self.probability / 100
         return None
     
     @property
