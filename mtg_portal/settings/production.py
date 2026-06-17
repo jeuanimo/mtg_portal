@@ -51,7 +51,18 @@ ACCOUNT_LOGOUT_ON_GET = os.getenv('ACCOUNT_LOGOUT_ON_GET', 'False').lower() in (
 ALLOWED_HOSTS = [h for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h]
 
 # CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+# Explicitly set via CSRF_TRUSTED_ORIGINS env var (comma-separated, include scheme,
+# e.g. "https://example.com,https://www.example.com").
+# Falls back to deriving https:// origins from ALLOWED_HOSTS so the app works
+# even when the env var is not set — avoiding 403 on mobile browsers that send Origin.
+_csrf_env = os.getenv('CSRF_TRUSTED_ORIGINS', '').strip()
+if _csrf_env:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_env.split(',') if o.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        f'https://{host}' for host in ALLOWED_HOSTS  # noqa: F405
+        if host not in ('localhost', '127.0.0.1', '')
+    ]
 
 # Production email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
