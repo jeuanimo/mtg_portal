@@ -22,13 +22,19 @@
         <!-- KPI Cards Row -->
         <div class="row g-4 mb-4">
             <div class="col-md-6 col-xl-3">
-                {% include "includes/kpi_card.html" with title="Pipeline Value" value="$"|add:leads_pipeline_value|floatformat:0|intcomma icon="bi-currency-dollar" variant="success" subtitle=leads_new|add:" new leads" %}
+                {% with fmt=leads_pipeline_value|floatformat:0|intcomma sub=leads_new|stringformat:"s" %}
+                    {% include "includes/kpi_card.html" with title="Pipeline Value" value="$"|add:fmt icon="bi-currency-dollar" variant="success" subtitle=sub|add:" new leads" %}
+                {% endwith %}
             </div>
             <div class="col-md-6 col-xl-3">
-                {% include "includes/kpi_card.html" with title="Outstanding Invoices" value="$"|add:invoices_outstanding|floatformat:0|intcomma icon="bi-receipt" variant="warning" subtitle=invoices_overdue|add:" overdue" %}
+                {% with fmt=invoices_outstanding|floatformat:0|intcomma sub=invoices_overdue|stringformat:"s" %}
+                    {% include "includes/kpi_card.html" with title="Outstanding Invoices" value="$"|add:fmt icon="bi-receipt" variant="warning" subtitle=sub|add:" overdue" %}
+                {% endwith %}
             </div>
             <div class="col-md-6 col-xl-3">
-                {% include "includes/kpi_card.html" with title="Open Tickets" value=tickets_open icon="bi-ticket-detailed" variant="info" subtitle=tickets_urgent|add:" urgent" %}
+                {% with sub=tickets_urgent|stringformat:"s" %}
+                    {% include "includes/kpi_card.html" with title="Open Tickets" value=tickets_open icon="bi-ticket-detailed" variant="info" subtitle=sub|add:" urgent" %}
+                {% endwith %}
             </div>
             <div class="col-md-6 col-xl-3">
                 {% include "includes/kpi_card.html" with title="Meetings Today" value=meetings_today icon="bi-calendar-event" variant="primary" subtitle="Scheduled" %}
